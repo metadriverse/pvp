@@ -1,6 +1,5 @@
-# Reward-free Policy Learning through Active Human Involvement
+# Learning from Active Human Involvement through Proxy Value Propagation
 
-[//]: # (Reward-free Policy Learning through Active Human Involvement)
 
 ## Quick start
 
