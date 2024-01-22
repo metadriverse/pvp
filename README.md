@@ -1,6 +1,8 @@
 TODO LIST:
 * [ ] rename HACO.. to PVPReplayBuffer
 * [ ] remove all useless files
+* [ ] is it wandb supported for all experiments?
+* [ ] metadrive exp check
 
 # Proxy Value Propagation (PVP)
 
@@ -45,12 +47,17 @@ pip install di-engine==0.2.0 markupsafe==2.0.1
 
 ## Launch Experiments
 
-### Metadrive
+### MetaDrive
+
 [Metadrive](https://github.com/metadriverse/metadrive) provides options for three control devices: steering wheel, gamepad and keyboard.
 
 During experiments human subject can always press `E` to pause the experiment and press `Esc` to exit the experiment. The main experiment will run for 40K steps and takes about one hour.
 
-**Steering Wheel (Logitech G29)**
+Click for the experiment details:
+
+<details>
+  <summary><b>MetaDrive - Steering Wheel (Logitech G29)</b></summary>
+  
 ```bash
 cd ~/pvp  # Go to the repo root.
 python pvp/training_script/metadrive/train_pvp_td3_metadrive.py --control joystick
@@ -61,8 +68,13 @@ python pvp/training_script/metadrive/train_pvp_td3_metadrive.py --control joysti
 | Break              | Break pedal             |
 | Human intervention | Left/Right gear shifter |
 | Steering           | Steering wheel          |
+</details>
 
-#### Gamepad (Xbox Wireless Controller)
+
+
+<details>
+  <summary><b>MetaDrive - Gamepad (Xbox Wireless Controller)</b></summary>
+
 ```bash
 python -m training_script.metadrive.train_pvp_td3_metadrive.py --control xboxController
 ```
@@ -72,7 +84,13 @@ python -m training_script.metadrive.train_pvp_td3_metadrive.py --control xboxCon
 | Break              | Left trigger  |
 | Human intervention | X/A           |
 | Steering           | Left stick    |
-#### Keyboard
+</details>
+
+
+
+<details>
+  <summary><b>MetaDrive - Keyboard</b></summary>
+
 ```bash
 python -m training_script.metadrive.train_pvp_td3_metadrive.py --control keyboard
 ```
@@ -82,7 +100,14 @@ python -m training_script.metadrive.train_pvp_td3_metadrive.py --control keyboar
 | Break              | S                                  |
 | Human intervention | Always intervened when key pressed |
 | Steering           | A/D                                |
+</details>
+
+
 ### Atari games
+
+TODO
+
+
 #### Default
 Run default game Breakout-ram-v0: ram observation space
 ```bash

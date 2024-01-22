@@ -1,11 +1,12 @@
 import copy
-from ray import tune
+
+from ray.rllib.agents.ppo.ppo import PPOTrainer
+
 from pvp.utils.expert_common import SaverCallbacks
 from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.utils.train_eval_config import baseline_eval_config
 from pvp.utils.rllib_utils import get_train_parser
 from pvp.utils.rllib_utils.train import train
-from ray.rllib.agents.ppo.ppo import PPOTrainer
+from pvp.utils.train_eval_config import baseline_eval_config
 
 evaluation_config = {"env_config": copy.deepcopy(baseline_eval_config)}
 
