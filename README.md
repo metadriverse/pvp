@@ -1,3 +1,7 @@
+TODO LIST:
+* [ ] rename HACO.. to PVPReplayBuffer
+* [ ] remove all useless files
+
 # Proxy Value Propagation (PVP)
 
 <h3>***NeurIPS 2023 Spotlight***</h3>
