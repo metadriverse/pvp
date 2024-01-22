@@ -4,9 +4,9 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from pvp_iclr_release.utils.carla.core.data.cict_dataset import PathDataset
-from pvp_iclr_release.utils.carla.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
-from pvp_iclr_release.utils.carla.demo.cict_demo.cict_model import ModelGRU
+from pvp.utils.carla.core.data.cict_dataset import PathDataset
+from pvp.utils.carla.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
+from pvp.utils.carla.demo.cict_demo.cict_model import ModelGRU
 from easydict import EasyDict
 from torch.autograd import grad
 from torch.utils.data import DataLoader
@@ -64,7 +64,7 @@ def execute(cfg):
     ipm_transforms = [
         transforms.Resize((cfg.IMG_HEIGHT, cfg.IMG_WIDTH), Image.BICUBIC),
         transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
+        transforms.Normalize((0.5, ), (0.5, ))
     ]
 
     dataset = PathDataset(full_dataset, cfg, transform=ipm_transforms)

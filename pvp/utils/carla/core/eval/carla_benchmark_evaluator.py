@@ -11,8 +11,8 @@ from ding.torch_utils.data_helper import to_tensor
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
-from pvp_iclr_release.utils.carla.core.data.benchmark import ALL_SUITES
-from pvp_iclr_release.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, gather_results, \
+from pvp.utils.carla.core.data.benchmark import ALL_SUITES
+from pvp.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, gather_results, \
     read_pose_txt, get_benchmark_dir
 from .base_evaluator import BaseEvaluator
 
@@ -57,13 +57,13 @@ class CarlaBenchmarkEvaluator(BaseEvaluator):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            env: BaseEnvManager,
-            policy: Any,
-            tb_logger: Optional['SummaryWriter'] = None,  # noqa
-            exp_name: Optional[str] = 'default_experiment',
-            instance_name: Optional[str] = 'benchmark_evaluator',
+        self,
+        cfg: Dict,
+        env: BaseEnvManager,
+        policy: Any,
+        tb_logger: Optional['SummaryWriter'] = None,  # noqa
+        exp_name: Optional[str] = 'default_experiment',
+        instance_name: Optional[str] = 'benchmark_evaluator',
     ) -> None:
         super().__init__(cfg, env, policy, tb_logger=tb_logger, exp_name=exp_name, instance_name=instance_name)
         self._benchmark_dir = self._cfg.benchmark_dir
@@ -133,12 +133,12 @@ class CarlaBenchmarkEvaluator(BaseEvaluator):
         return True
 
     def eval(
-            self,
-            save_ckpt_fn: Callable = None,
-            train_iter: int = -1,
-            envstep: int = -1,
-            policy_kwargs: Optional[Dict] = None,
-            n_episode: Optional[int] = None
+        self,
+        save_ckpt_fn: Callable = None,
+        train_iter: int = -1,
+        envstep: int = -1,
+        policy_kwargs: Optional[Dict] = None,
+        n_episode: Optional[int] = None
     ) -> float:
         """
         Run evaluation with provided policy arguments. It will evaluate all available episodes of the benchmark suite

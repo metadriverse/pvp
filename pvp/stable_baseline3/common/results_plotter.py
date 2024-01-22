@@ -7,7 +7,7 @@ import pandas as pd
 # matplotlib.use('TkAgg')  # Can change to 'Agg' for non-interactive mode
 from matplotlib import pyplot as plt
 
-from pvp_iclr_release.stable_baseline3.common.monitor import load_results
+from pvp.stable_baseline3.common.monitor import load_results
 
 X_TIMESTEPS = "timesteps"
 X_EPISODES = "episodes"
@@ -25,7 +25,7 @@ def rolling_window(array: np.ndarray, window: int) -> np.ndarray:
     :return: rolling window on the input array
     """
     shape = array.shape[:-1] + (array.shape[-1] - window + 1, window)
-    strides = array.strides + (array.strides[-1],)
+    strides = array.strides + (array.strides[-1], )
     return np.lib.stride_tricks.as_strided(array, shape=shape, strides=strides)
 
 
@@ -41,7 +41,7 @@ def window_func(var_1: np.ndarray, var_2: np.ndarray, window: int, func: Callabl
     """
     var_2_window = rolling_window(var_2, window)
     function_on_var2 = func(var_2_window, axis=-1)
-    return var_1[window - 1 :], function_on_var2
+    return var_1[window - 1:], function_on_var2
 
 
 def ts2xy(data_frame: pd.DataFrame, x_axis: str) -> Tuple[np.ndarray, np.ndarray]:

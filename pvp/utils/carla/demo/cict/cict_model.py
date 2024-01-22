@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from pvp_iclr_release.utils.carla.demo.cict_demo.collect_pm import InversePerspectiveMapping
-from pvp_iclr_release.utils.carla.demo.cict_demo.post import Sensor, params
+from pvp.utils.carla.demo.cict_demo.collect_pm import InversePerspectiveMapping
+from pvp.utils.carla.demo.cict_demo.post import Sensor, params
 from torch.autograd import grad
 
 
@@ -23,7 +23,6 @@ def weights_init(m):
 
 
 class UNetDown(nn.Module):
-
     def __init__(self, in_channels, out_channels, kernel_size=4, stride=2, padding=1, norm=True, dropout=0.0):
         super(UNetDown, self).__init__()
 
@@ -38,7 +37,6 @@ class UNetDown(nn.Module):
 
 
 class UNetUp(nn.Module):
-
     def __init__(self, in_channels, out_channels, kernel_size=4, stride=2, padding=1, norm=True, dropout=0.0):
         super(UNetUp, self).__init__()
 
@@ -55,7 +53,6 @@ class UNetUp(nn.Module):
 
 
 class GeneratorUNet(nn.Module):
-
     def __init__(self, params):
         super(GeneratorUNet, self).__init__()
 
@@ -119,7 +116,6 @@ class GeneratorUNet(nn.Module):
 
 
 class Discriminator(nn.Module):
-
     def __init__(self, params):
         super(Discriminator, self).__init__()
 
@@ -147,7 +143,6 @@ class Discriminator(nn.Module):
 
 
 class ModelGRU(nn.Module):
-
     def __init__(self, params):
         super(ModelGRU, self).__init__()
         self.cnn_feature_dim = params['hidden_dim']
@@ -177,7 +172,6 @@ class ModelGRU(nn.Module):
 
 
 class CNN(nn.Module):
-
     def __init__(self, input_dim=1, out_dim=256):
         super(CNN, self).__init__()
         self.out_dim = out_dim
@@ -213,7 +207,6 @@ class CNN(nn.Module):
 
 
 class MLP_COS(nn.Module):
-
     def __init__(self, input_dim=25, out_dim=2):
         super(MLP_COS, self).__init__()
         self.rate = 1.0
@@ -255,7 +248,6 @@ class MLP_COS(nn.Module):
 
 
 class CICTModel():
-
     def __init__(self, cfg):
         self._cfg = cfg
         self.save_dir = self._cfg.SAVE_DIR
@@ -288,7 +280,7 @@ class CICTModel():
         lidar = observation['lidar']
         ipm = self._inverse_perspective_mapping.getIPM(pm)
         ipm = self._inverse_perspective_mapping.get_cost_map(ipm, lidar)
-        ipm_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+        ipm_transforms = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, ), (0.5, ))])
         ipm = ipm_transforms(ipm)
 
         # index = (self._cfg.PRED_T / self._cfg.MAX_T) // self._cfg.DT
@@ -333,7 +325,7 @@ class CICTModel():
             a = torch.mul(torch.norm(pred_axy, dim=-1), sign.flatten()).unsqueeze(1)
 
             v = torch.norm(pred_vxy, dim=-1)
-            k = (pred_vx * pred_ay - pred_vy * pred_ax) / v.unsqueeze(1) ** 3
+            k = (pred_vx * pred_ay - pred_vy * pred_ax) / v.unsqueeze(1)**3
 
             trajectory = {
                 'xy': pred_xy.data.numpy(),

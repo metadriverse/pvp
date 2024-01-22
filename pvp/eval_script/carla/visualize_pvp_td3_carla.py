@@ -6,9 +6,9 @@ from collections import defaultdict
 
 import pandas as pd
 
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_td3
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_td3
+from pvp.utils.carla.pvp_carla_env import PVPEnv
 
 
 def eval_one_checkpoint(model_path, model, eval_env, log_dir, num_episodes):

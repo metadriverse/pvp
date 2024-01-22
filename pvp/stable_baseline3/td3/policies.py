@@ -4,9 +4,9 @@ import gym
 import torch as th
 from torch import nn
 
-from pvp_iclr_release.stable_baseline3.common.policies import BasePolicy, ContinuousCritic, register_policy
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_action_dim
-from pvp_iclr_release.stable_baseline3.common.torch_layers import (
+from pvp.stable_baseline3.common.policies import BasePolicy, ContinuousCritic, register_policy
+from pvp.stable_baseline3.common.preprocessing import get_action_dim
+from pvp.stable_baseline3.common.torch_layers import (
     BaseFeaturesExtractor,
     CombinedExtractor,
     FlattenExtractor,
@@ -14,7 +14,7 @@ from pvp_iclr_release.stable_baseline3.common.torch_layers import (
     create_mlp,
     get_actor_critic_arch,
 )
-from pvp_iclr_release.stable_baseline3.common.type_aliases import Schedule
+from pvp.stable_baseline3.common.type_aliases import Schedule
 
 
 class Actor(BasePolicy):
@@ -31,7 +31,6 @@ class Actor(BasePolicy):
     :param normalize_images: Whether to normalize images or not,
          dividing by 255.0 (True by default)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -105,7 +104,6 @@ class TD3Policy(BasePolicy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -189,7 +187,9 @@ class TD3Policy(BasePolicy):
             self.critic_target = self.make_critic(features_extractor=None)
 
         self.critic_target.load_state_dict(self.critic.state_dict())
-        self.critic.optimizer = self.optimizer_class(self.critic.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs)
+        self.critic.optimizer = self.optimizer_class(
+            self.critic.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs
+        )
 
         # Target networks should always be in eval mode
         self.actor_target.set_training_mode(False)
@@ -267,7 +267,6 @@ class CnnPolicy(TD3Policy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -321,7 +320,6 @@ class MultiInputPolicy(TD3Policy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Dict,

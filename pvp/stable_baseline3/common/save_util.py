@@ -18,8 +18,8 @@ import cloudpickle
 import torch as th
 
 from pvp_iclr_release import stable_baseline3
-from pvp_iclr_release.stable_baseline3.common.type_aliases import TensorDict
-from pvp_iclr_release.stable_baseline3.common.utils import get_device, get_system_info
+from pvp.stable_baseline3.common.type_aliases import TensorDict
+from pvp.stable_baseline3.common.utils import get_device, get_system_info
 
 
 def recursive_getattr(obj: Any, attr: str, *args) -> Any:
@@ -34,7 +34,6 @@ def recursive_getattr(obj: Any, attr: str, *args) -> Any:
     :param attr: Attribute to retrieve
     :return: The attribute
     """
-
     def _getattr(obj: Any, attr: str) -> Any:
         return getattr(obj, attr, *args)
 
@@ -165,9 +164,8 @@ def json_to_data(json_string: str, custom_objects: Optional[Dict[str, Any]] = No
                 deserialized_object = cloudpickle.loads(base64_object)
             except (RuntimeError, TypeError, ValueError):
                 warnings.warn(
-                    f"Could not deserialize object {data_key}. "
-                    + "Consider using `custom_objects` argument to replace "
-                    + "this object."
+                    f"Could not deserialize object {data_key}. " +
+                    "Consider using `custom_objects` argument to replace " + "this object."
                 )
                 deserialized_object = "FailedDeserializedObject"
             return_data[data_key] = deserialized_object
@@ -178,7 +176,9 @@ def json_to_data(json_string: str, custom_objects: Optional[Dict[str, Any]] = No
 
 
 @functools.singledispatch
-def open_path(path: Union[str, pathlib.Path, io.BufferedIOBase], mode: str, verbose: int = 0, suffix: Optional[str] = None):
+def open_path(
+    path: Union[str, pathlib.Path, io.BufferedIOBase], mode: str, verbose: int = 0, suffix: Optional[str] = None
+):
     """
     Opens a path for reading or writing with a preferred suffix and raises debug information.
     If the provided path is a derivative of io.BufferedIOBase it ensures that the file
@@ -235,7 +235,9 @@ def open_path_str(path: str, mode: str, verbose: int = 0, suffix: Optional[str] 
 
 
 @open_path.register(pathlib.Path)
-def open_path_pathlib(path: pathlib.Path, mode: str, verbose: int = 0, suffix: Optional[str] = None) -> io.BufferedIOBase:
+def open_path_pathlib(
+    path: pathlib.Path, mode: str, verbose: int = 0, suffix: Optional[str] = None
+) -> io.BufferedIOBase:
     """
     Open a path given by a string. If writing to the path, the function ensures
     that the path exists.

@@ -4,22 +4,23 @@ import os.path as osp
 
 import gym
 
-from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp_iclr_release.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
-from pvp_iclr_release.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp_iclr_release.stable_baseline3.dqn.dqn import DQN
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.older_utils import get_time_str
+from pvp.stable_baseline3.common.atari_wrappers import AtariWrapper
+from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
+from pvp.stable_baseline3.common.wandb_callback import WandbCallback
+from pvp.stable_baseline3.dqn.dqn import DQN
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.utils.older_utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp-name", default="DQN_Baseline", type=str, help="The experiment name.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    parser.add_argument("--obs-mode", default="image", choices=["vector", "image"],
-                        help="Set to True to upload stats to wandb.")
+    parser.add_argument(
+        "--obs-mode", default="image", choices=["vector", "image"], help="Set to True to upload stats to wandb."
+    )
     parser.add_argument("--env-name", default="SkiingNoFrameskip-v4", type=str, help="Name of Gym environment")
     parser.add_argument("--control", default="keyboard", type=str, help="Choose between joystick and keyboard")
     args = parser.parse_args()
@@ -92,21 +93,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=50000,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=50000, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 

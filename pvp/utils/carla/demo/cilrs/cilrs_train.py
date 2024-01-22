@@ -3,8 +3,8 @@ from collections import defaultdict
 
 import numpy as np
 import torch
-from pvp_iclr_release.utils.carla.core.data import CILRSDataset
-from pvp_iclr_release.utils.carla.core.policy import CILRSPolicy
+from pvp.utils.carla.core.data import CILRSDataset
+from pvp.utils.carla.core.policy import CILRSPolicy
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 from torch.optim import Adam
@@ -18,9 +18,7 @@ config = dict(
         cudnn=True,
         resume=False,
         ckpt_path=None,
-        model=dict(
-            num_branch=4,
-        ),
+        model=dict(num_branch=4, ),
         learn=dict(
             epoches=200,
             batch_size=128,
@@ -29,9 +27,7 @@ config = dict(
             speed_weight=0.05,
             control_weights=[0.5, 0.45, 0.05],
         ),
-        eval=dict(
-            eval_freq=10,
-        )
+        eval=dict(eval_freq=10, )
     ),
     data=dict(
         train=dict(

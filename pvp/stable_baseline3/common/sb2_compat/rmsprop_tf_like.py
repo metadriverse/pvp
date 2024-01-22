@@ -42,7 +42,6 @@ class RMSpropTFLike(Optimizer):
     :param weight_decay: weight decay (L2 penalty) (default: 0)
 
     """
-
     def __init__(
         self,
         params: Iterable[torch.nn.Parameter],

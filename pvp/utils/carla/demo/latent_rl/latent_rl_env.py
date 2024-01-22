@@ -1,8 +1,8 @@
 from typing import Dict, Tuple, Any, Optional
 
 import numpy as np
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv
-from pvp_iclr_release.utils.carla.core.utils.model_utils import common
+from pvp.utils.carla.core.envs import SimpleCarlaEnv
+from pvp.utils.carla.core.utils.model_utils import common
 
 
 class CarlaLatentRLEnv(SimpleCarlaEnv):
@@ -120,16 +120,16 @@ class CarlaLatentRLEnv(SimpleCarlaEnv):
             y2 = point2[1]
             x = (k1 * x1 - k2 * x2 + y2 - y1) / (k1 - k2)
             y = k1 * (x - x1) + y1
-            r = np.sqrt((x - x1) ** 2 + (y - y1) ** 2)
+            r = np.sqrt((x - x1)**2 + (y - y1)**2)
             return x, y, r
 
         def compute_point_line_dis(point_x, point_y, vec_x, vec_y, point2_x, point2_y):
-            b = np.sqrt(vec_x ** 2 + vec_y ** 2)
+            b = np.sqrt(vec_x**2 + vec_y**2)
             a = abs(vec_x * point2_y - vec_y * point2_x - vec_x * point_y + vec_y * point_x)
             return a / b
 
         def dist(loc1, loc2):
-            return ((loc1[0] - loc2[0]) ** 2 + (loc1[1] - loc2[1]) ** 2) ** 0.5
+            return ((loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)**0.5
 
         # retrieve information
         location = self._simulator_databuffer['state']['location']
@@ -204,11 +204,16 @@ class CarlaLatentRLEnv(SimpleCarlaEnv):
                 vec2 = np.array([location[1] - cy, cx - location[0]])
                 angle2 = compute_angle(forward_vector, vec2)
                 lane_angle = min(angle1, angle2)
-                hero_lane_distance = abs(np.sqrt((cx - location[0]) ** 2 + (cy - location[1]) ** 2) - r)
+                hero_lane_distance = abs(np.sqrt((cx - location[0])**2 + (cy - location[1])**2) - r)
             else:
                 lane_angle = compute_angle(forward_vector, node_forward)
                 hero_lane_distance = compute_point_line_dis(
-                    node[0], node[1], node_forward[0], node_forward[1], location[0], location[1],
+                    node[0],
+                    node[1],
+                    node_forward[0],
+                    node_forward[1],
+                    location[0],
+                    location[1],
                 )
 
         if lane_angle < np.pi / 2:
@@ -254,7 +259,6 @@ class CarlaLatentRLEnv(SimpleCarlaEnv):
 
 
 class CarlaLatentEvalEnv(CarlaLatentRLEnv):
-
     def reset(self, col_is_failure=True, **kwargs) -> Dict:
         self._low_speed_count = 0
         self._stuck_count = 0

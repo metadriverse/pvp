@@ -2,12 +2,12 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import torch as th
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.noise import ActionNoise
-from pvp_iclr_release.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
-from pvp_iclr_release.stable_baseline3.td3.td3 import TD3
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.noise import ActionNoise
+from pvp.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.td3.policies import TD3Policy
+from pvp.stable_baseline3.td3.td3 import TD3
 
 
 class DDPG(TD3):
@@ -52,7 +52,6 @@ class DDPG(TD3):
         Setting it to auto, the code will be run on the GPU if possible.
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     """
-
     def __init__(
         self,
         policy: Union[str, Type[TD3Policy]],

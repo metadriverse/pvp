@@ -11,17 +11,17 @@ import gym
 import numpy as np
 import torch as th
 
-from pvp_iclr_release.stable_baseline3.common import utils
-from pvp_iclr_release.stable_baseline3.common.callbacks import BaseCallback, CallbackList, ConvertCallback, EvalCallback
-from pvp_iclr_release.stable_baseline3.common.env_util import is_wrapped
-from pvp_iclr_release.stable_baseline3.common.logger import Logger
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.noise import ActionNoise
-from pvp_iclr_release.stable_baseline3.common.policies import BasePolicy, get_policy_from_name
-from pvp_iclr_release.stable_baseline3.common.preprocessing import check_for_nested_spaces, is_image_space, is_image_space_channels_first
-from pvp_iclr_release.stable_baseline3.common.save_util import load_from_zip_file, recursive_getattr, recursive_setattr, save_to_zip_file
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import (
+from pvp.stable_baseline3.common import utils
+from pvp.stable_baseline3.common.callbacks import BaseCallback, CallbackList, ConvertCallback, EvalCallback
+from pvp.stable_baseline3.common.env_util import is_wrapped
+from pvp.stable_baseline3.common.logger import Logger
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.noise import ActionNoise
+from pvp.stable_baseline3.common.policies import BasePolicy, get_policy_from_name
+from pvp.stable_baseline3.common.preprocessing import check_for_nested_spaces, is_image_space, is_image_space_channels_first
+from pvp.stable_baseline3.common.save_util import load_from_zip_file, recursive_getattr, recursive_setattr, save_to_zip_file
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import (
     check_for_correct_spaces,
     get_device,
     get_schedule_fn,
@@ -29,7 +29,7 @@ from pvp_iclr_release.stable_baseline3.common.utils import (
     set_random_seed,
     update_learning_rate,
 )
-from pvp_iclr_release.stable_baseline3.common.vec_env import (
+from pvp.stable_baseline3.common.vec_env import (
     DummyVecEnv,
     VecEnv,
     VecNormalize,
@@ -82,7 +82,6 @@ class BaseAlgorithm(ABC):
         Default: -1 (only sample at the beginning of the rollout)
     :param supported_action_spaces: The action spaces supported by the algorithm.
     """
-
     def __init__(
         self,
         policy: Type[BasePolicy],
@@ -175,15 +174,20 @@ class BaseAlgorithm(ABC):
 
             if not support_multi_env and self.n_envs > 1:
                 raise ValueError(
-                    "Error: the model does not support multiple envs; it requires " "a single vectorized environment."
+                    "Error: the model does not support multiple envs; it requires "
+                    "a single vectorized environment."
                 )
 
             # Catch common mistake: using MlpPolicy/CnnPolicy instead of MultiInputPolicy
             if policy in ["MlpPolicy", "CnnPolicy"] and isinstance(self.observation_space, gym.spaces.Dict):
-                raise ValueError(f"You must use `MultiInputPolicy` when working with dict observation space, not {policy}")
+                raise ValueError(
+                    f"You must use `MultiInputPolicy` when working with dict observation space, not {policy}"
+                )
 
             if self.use_sde and not isinstance(self.action_space, gym.spaces.Box):
-                raise ValueError("generalized State-Dependent Exploration (gSDE) can only be used with continuous actions.")
+                raise ValueError(
+                    "generalized State-Dependent Exploration (gSDE) can only be used with continuous actions."
+                )
 
     @staticmethod
     def _wrap_env(env: GymEnv, verbose: int = 0, monitor_wrapper: bool = True) -> VecEnv:
@@ -225,9 +229,8 @@ class BaseAlgorithm(ABC):
                         is_image_space(space) and not is_image_space_channels_first(space)
                     )
             else:
-                wrap_with_vectranspose = is_image_space(env.observation_space) and not is_image_space_channels_first(
-                    env.observation_space
-                )
+                wrap_with_vectranspose = is_image_space(env.observation_space
+                                                        ) and not is_image_space_channels_first(env.observation_space)
 
             if wrap_with_vectranspose:
                 if verbose >= 1:
@@ -427,7 +430,7 @@ class BaseAlgorithm(ABC):
         # Avoid resetting the environment when calling ``.learn()`` consecutive times
         if reset_num_timesteps or self._last_obs is None:
             self._last_obs = self.env.reset()  # pytype: disable=annotation-type-mismatch
-            self._last_episode_starts = np.ones((self.env.num_envs,), dtype=bool)
+            self._last_episode_starts = np.ones((self.env.num_envs, ), dtype=bool)
             # Retrieve unnormalized observation for saving into the buffer
             if self._vec_normalize_env is not None:
                 self._last_original_obs = self._vec_normalize_env.get_original_obs()

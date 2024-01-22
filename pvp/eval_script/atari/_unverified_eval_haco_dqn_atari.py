@@ -1,7 +1,7 @@
 import argparse
 import os.path as osp
 
-from pvp_iclr_release.eval_script.atari.eval_atari_utils import evaluate_atari_once
+from pvp.eval_script.atari.eval_atari_utils import evaluate_atari_once
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

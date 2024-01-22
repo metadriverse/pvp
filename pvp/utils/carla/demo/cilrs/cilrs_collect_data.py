@@ -4,10 +4,10 @@ from functools import partial
 import PIL
 import lmdb
 import numpy as np
-from pvp_iclr_release.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
@@ -22,15 +22,13 @@ config = dict(
                 type='behavior',
                 resolution=1,
             ),
-            obs=(
-                dict(
-                    name='rgb',
-                    type='rgb',
-                    size=[400, 300],
-                    position=[1.3, 0.0, 2.3],
-                    fov=100,
-                ),
-            ),
+            obs=(dict(
+                name='rgb',
+                type='rgb',
+                size=[400, 300],
+                position=[1.3, 0.0, 2.3],
+                fov=100,
+            ), ),
             verbose=True,
         ),
         col_is_failure=True,
@@ -96,11 +94,11 @@ def post_process(config):
     all_mea_list = []
 
     for item in tqdm(epi_folder):
-        lmdb_file = lmdb.open(os.path.join(config.policy.collect.dir_path, item, 'measurements.lmdb')).begin(
-            write=False)
+        lmdb_file = lmdb.open(os.path.join(config.policy.collect.dir_path, item,
+                                           'measurements.lmdb')).begin(write=False)
         png_files = [
-            x for x in os.listdir(os.path.join(config.policy.collect.dir_path, item)) if
-            (x.endswith('png') and x.startswith('rgb'))
+            x for x in os.listdir(os.path.join(config.policy.collect.dir_path, item))
+            if (x.endswith('png') and x.startswith('rgb'))
         ]
         png_files.sort()
         for png_file in png_files:

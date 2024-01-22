@@ -4,7 +4,6 @@ from .coordinate_transformation import rotationMatrix3D, intrinsicMatrix
 
 
 class IntrinsicParams(object):
-
     def __init__(self, sensor):
         '''
         Args:
@@ -23,7 +22,6 @@ class IntrinsicParams(object):
 
 
 class ExtrinsicParams(object):
-
     def __init__(self, sensor):
         '''
         Args:
@@ -45,7 +43,6 @@ class ExtrinsicParams(object):
 
 
 class CameraParams(object):
-
     def __init__(self, intrinsic_params, extrinsic_params):
         '''
         Args:

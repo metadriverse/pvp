@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from gym import spaces
 
-from pvp_iclr_release.stable_baseline3.common.preprocessing import is_image_space, is_image_space_channels_first
+from pvp.stable_baseline3.common.preprocessing import is_image_space, is_image_space_channels_first
 
 
 class StackedObservations(object):
@@ -22,7 +22,6 @@ class StackedObservations(object):
     :param channels_order: If "first", stack on first image dimension. If "last", stack on last dimension.
         If None, automatically detect channel to stack over in case of image observation or default to "last" (default).
     """
-
     def __init__(
         self,
         num_envs: int,
@@ -76,7 +75,7 @@ class StackedObservations(object):
         stack_dimension = 1 if channels_first else -1
         repeat_axis = 0 if channels_first else -1
         low = np.repeat(observation_space.low, n_stack, axis=repeat_axis)
-        stackedobs = np.zeros((num_envs,) + low.shape, low.dtype)
+        stackedobs = np.zeros((num_envs, ) + low.shape, low.dtype)
         return channels_first, stack_dimension, stackedobs, repeat_axis
 
     def stack_observation_space(self, observation_space: spaces.Box) -> spaces.Box:
@@ -98,9 +97,9 @@ class StackedObservations(object):
         """
         self.stackedobs[...] = 0
         if self.channels_first:
-            self.stackedobs[:, -observation.shape[self.stack_dimension] :, ...] = observation
+            self.stackedobs[:, -observation.shape[self.stack_dimension]:, ...] = observation
         else:
-            self.stackedobs[..., -observation.shape[self.stack_dimension] :] = observation
+            self.stackedobs[..., -observation.shape[self.stack_dimension]:] = observation
         return self.stackedobs
 
     def update(
@@ -138,9 +137,9 @@ class StackedObservations(object):
                     warnings.warn("VecFrameStack wrapping a VecEnv without terminal_observation info")
                 self.stackedobs[i] = 0
         if self.channels_first:
-            self.stackedobs[:, -observations.shape[self.stack_dimension] :, ...] = observations
+            self.stackedobs[:, -observations.shape[self.stack_dimension]:, ...] = observations
         else:
-            self.stackedobs[..., -observations.shape[self.stack_dimension] :] = observations
+            self.stackedobs[..., -observations.shape[self.stack_dimension]:] = observations
         return self.stackedobs, infos
 
 
@@ -158,7 +157,6 @@ class StackedDictObservations(StackedObservations):
     :param channels_order: If "first", stack on first image dimension. If "last", stack on last dimension.
         If None, automatically detect channel to stack over in case of image observation or default to "last" (default).
     """
-
     def __init__(
         self,
         num_envs: int,
@@ -209,9 +207,9 @@ class StackedDictObservations(StackedObservations):
         for key, obs in observation.items():
             self.stackedobs[key][...] = 0
             if self.channels_first[key]:
-                self.stackedobs[key][:, -obs.shape[self.stack_dimension[key]] :, ...] = obs
+                self.stackedobs[key][:, -obs.shape[self.stack_dimension[key]]:, ...] = obs
             else:
-                self.stackedobs[key][..., -obs.shape[self.stack_dimension[key]] :] = obs
+                self.stackedobs[key][..., -obs.shape[self.stack_dimension[key]]:] = obs
         return self.stackedobs
 
     def update(
@@ -241,12 +239,10 @@ class StackedDictObservations(StackedObservations):
                     if "terminal_observation" in infos[i]:
                         old_terminal = infos[i]["terminal_observation"][key]
                         if self.channels_first[key]:
-                            new_terminal = np.vstack(
-                                (
-                                    self.stackedobs[key][i, :-stack_ax_size, ...],
-                                    old_terminal,
-                                )
-                            )
+                            new_terminal = np.vstack((
+                                self.stackedobs[key][i, :-stack_ax_size, ...],
+                                old_terminal,
+                            ))
                         else:
                             new_terminal = np.concatenate(
                                 (

@@ -6,9 +6,9 @@ from typing import Any, Dict, List, Optional, Union
 import gym
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common import utils
-from pvp_iclr_release.stable_baseline3.common.running_mean_std import RunningMeanStd
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common import utils
+from pvp.stable_baseline3.common.running_mean_std import RunningMeanStd
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
 
 
 class VecNormalize(VecEnvWrapper):
@@ -27,7 +27,6 @@ class VecNormalize(VecEnvWrapper):
     :param norm_obs_keys: Which keys from observation dict to normalize.
         If not specified, all keys will be normalized.
     """
-
     def __init__(
         self,
         venv: VecEnv,
@@ -221,7 +220,8 @@ class VecNormalize(VecEnvWrapper):
             reward = np.clip(reward / np.sqrt(self.ret_rms.var + self.epsilon), -self.clip_reward, self.clip_reward)
         return reward
 
-    def unnormalize_obs(self, obs: Union[np.ndarray, Dict[str, np.ndarray]]) -> Union[np.ndarray, Dict[str, np.ndarray]]:
+    def unnormalize_obs(self, obs: Union[np.ndarray, Dict[str,
+                                                          np.ndarray]]) -> Union[np.ndarray, Dict[str, np.ndarray]]:
         # Avoid modifying by reference the original object
         obs_ = deepcopy(obs)
         if self.norm_obs:

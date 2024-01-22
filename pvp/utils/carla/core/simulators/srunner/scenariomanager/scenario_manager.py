@@ -16,11 +16,11 @@ import time
 
 import py_trees
 
-# from pvp_iclr_release.utils.carla.core.simulators.srunner.autoagents.agent_wrapper import AgentWrapper
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.result_writer import ResultOutputProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.watchdog import Watchdog
+# from pvp.utils.carla.core.simulators.srunner.autoagents.agent_wrapper import AgentWrapper
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.result_writer import ResultOutputProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.watchdog import Watchdog
 
 
 class ScenarioManager(object):
@@ -39,7 +39,6 @@ class ScenarioManager(object):
     4. Trigger a result evaluation with manager.analyze_scenario()
     5. If needed, cleanup with manager.stop_scenario()
     """
-
     def __init__(self, debug_mode=False, sync_mode=False, timeout=2.0):
         """
         Setups up the parameters, which will be filled at load_scenario()

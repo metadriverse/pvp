@@ -36,7 +36,7 @@ def compute_point_line_dis(point_x, point_y, vec_x, vec_y, point2_x, point2_y):
     '''
     Compute the distance between the vehicle and the middle oflane
     '''
-    b = np.sqrt(vec_x ** 2 + vec_y ** 2)
+    b = np.sqrt(vec_x**2 + vec_y**2)
     a = abs(vec_x * point2_y - vec_y * point2_x - vec_x * point_y + vec_y * point_x)
     return a / b
 
@@ -57,9 +57,9 @@ def compute_cirle(point1, vec1, point2, vec2):
     y2 = point2[1]
     x = (k1 * x1 - k2 * x2 + y2 - y1) / (k1 - k2)
     y = k1 * (x - x1) + y1
-    r = np.sqrt((x - x1) ** 2 + (y - y1) ** 2)
+    r = np.sqrt((x - x1)**2 + (y - y1)**2)
     return x, y, r
 
 
 def compute_speed(vec):
-    return np.sqrt(vec.x ** 2 + vec.y ** 2 + vec.z ** 2)
+    return np.sqrt(vec.x**2 + vec.y**2 + vec.z**2)

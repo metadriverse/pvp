@@ -6,12 +6,12 @@ import numpy as np
 import torch as th
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
-from pvp_iclr_release.stable_baseline3.common.preprocessing import maybe_transpose
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import get_linear_fn, is_vectorized_observation, polyak_update
-from pvp_iclr_release.stable_baseline3.dqn.policies import DQNPolicy
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
+from pvp.stable_baseline3.common.preprocessing import maybe_transpose
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import get_linear_fn, is_vectorized_observation, polyak_update
+from pvp.stable_baseline3.dqn.policies import DQNPolicy
 
 
 def compute_entropy(q_values: th.Tensor):
@@ -69,7 +69,6 @@ class DQN(OffPolicyAlgorithm):
         Setting it to auto, the code will be run on the GPU if possible.
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     """
-
     def __init__(
         self,
         policy: Union[str, Type[DQNPolicy]],
@@ -122,7 +121,7 @@ class DQN(OffPolicyAlgorithm):
             seed=seed,
             sde_support=False,
             optimize_memory_usage=optimize_memory_usage,
-            supported_action_spaces=(gym.spaces.Discrete,),
+            supported_action_spaces=(gym.spaces.Discrete, ),
             support_multi_env=True,
         )
 

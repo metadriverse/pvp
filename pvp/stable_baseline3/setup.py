@@ -67,7 +67,6 @@ model = PPO('MlpPolicy', 'CartPole-v1').learn(10000)
 
 """  # noqa:E501
 
-
 setup(
     name="sb3",
     packages=[package for package in find_packages() if package.startswith("sb3")],

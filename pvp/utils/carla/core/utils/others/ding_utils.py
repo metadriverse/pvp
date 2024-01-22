@@ -2,13 +2,13 @@ from ding.utils import deep_merge_dicts
 
 
 def compile_config(
-        cfg,
-        env_manager=None,
-        policy=None,
-        learner=None,
-        collector=None,
-        evaluator=None,
-        buffer=None,
+    cfg,
+    env_manager=None,
+    policy=None,
+    learner=None,
+    collector=None,
+    evaluator=None,
+    buffer=None,
 ):
     if env_manager is not None:
         if cfg.env.manager.get('collect') is not None:

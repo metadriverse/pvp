@@ -1,9 +1,9 @@
 import argparse
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
@@ -39,11 +39,7 @@ eval_config = dict(
     server=[
         dict(carla_host='localhost', carla_ports=[9000, 9016, 2]),
     ],
-    eval=dict(
-        episodes_per_suite=50,
-        suite='StraightTown04-v2',
-        result_dir='./eval'
-    ),
+    eval=dict(episodes_per_suite=50, suite='StraightTown04-v2', result_dir='./eval'),
 )
 
 main_config = EasyDict(eval_config)
@@ -109,7 +105,7 @@ if __name__ == '__main__':
         action="store_true",
         default=False,
         help="if using CARLA challenge model, let sky, we cropped "
-             "it for the models trained only on Town01/train weather",
+        "it for the models trained only on Town01/train weather",
     )
     args = parser.parse_args()
     main(main_config, args)

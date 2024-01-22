@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
 
 
 class VecMonitor(VecEnvWrapper):
@@ -22,7 +22,6 @@ class VecMonitor(VecEnvWrapper):
     :param filename: the location to save a log file, can be None for no log
     :param info_keywords: extra information to log, from the information return of env.step()
     """
-
     def __init__(
         self,
         venv: VecEnv,
@@ -30,7 +29,7 @@ class VecMonitor(VecEnvWrapper):
         info_keywords: Tuple[str, ...] = (),
     ):
         # Avoid circular import
-        from pvp_iclr_release.stable_baseline3.common.monitor import Monitor, ResultsWriter
+        from pvp.stable_baseline3.common.monitor import Monitor, ResultsWriter
 
         # This check is not valid for special `VecEnv`
         # like the ones created by Procgen, that does follow completely
@@ -60,7 +59,10 @@ class VecMonitor(VecEnvWrapper):
 
         if filename:
             self.results_writer = ResultsWriter(
-                filename, header={"t_start": self.t_start, "env_id": env_id}, extra_keys=info_keywords
+                filename, header={
+                    "t_start": self.t_start,
+                    "env_id": env_id
+                }, extra_keys=info_keywords
             )
         else:
             self.results_writer = None

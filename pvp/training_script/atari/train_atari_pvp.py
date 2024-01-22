@@ -4,24 +4,25 @@ import os.path as osp
 
 import gym
 
-from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp_iclr_release.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
-from pvp_iclr_release.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.older_utils import get_time_str
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
-from pvp_iclr_release.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.stable_baseline3.common.atari_wrappers import AtariWrapper
+from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
+from pvp.stable_baseline3.common.wandb_callback import WandbCallback
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.utils.older_utils import get_time_str
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
+from pvp.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp-name", default="Fixed_Discrete_PVP", type=str, help="The experiment name.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    parser.add_argument("--obs-mode", default="image", choices=["vector", "image"],
-                        help="Set to True to upload stats to wandb.")
+    parser.add_argument(
+        "--obs-mode", default="image", choices=["vector", "image"], help="Set to True to upload stats to wandb."
+    )
     parser.add_argument("--env-name", default="BreakoutNoFrameskip-v4", type=str, help="Name of Gym environment")
     args = parser.parse_args()
 
@@ -33,7 +34,6 @@ if __name__ == '__main__':
         print("[WARNING] Please note that you are not using wandb right now!!!")
     obs_mode = args.obs_mode
     env_name = args.env_name
-
 
     # if obs_mode != "vector":
     #     raise ValueError("we current only support state obs in vector")
@@ -54,24 +54,20 @@ if __name__ == '__main__':
         algo=dict(
             policy=CnnPolicy,  # CNN observation
             # replay_buffer_class=oldReplayBuffer,  ###
-            replay_buffer_kwargs=dict(
-                discard_reward=True  # xxx: We run in reward-free manner!
-            ),
+            replay_buffer_kwargs=dict(discard_reward=True  # xxx: We run in reward-free manner!
+                                      ),
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256
-                ),
+                features_extractor_kwargs=dict(features_dim=256),
                 # share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             exploration_initial_eps=.0,
             exploration_final_eps=.0,
-
             env=None,
             learning_rate=1e-4,
-
             optimize_memory_usage=True,
             buffer_size=100_000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  ###
@@ -80,11 +76,9 @@ if __name__ == '__main__':
             gamma=0.99,
             train_freq=1,
             gradient_steps=8,
-
             target_update_interval=1,
             tensorboard_log=log_dir,
             create_eval_env=False,
-
             verbose=2,
             seed=seed,
             device="auto",
@@ -125,21 +119,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=200,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=200, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 

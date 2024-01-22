@@ -4,8 +4,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import gym
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common import base_class
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecEnv, VecMonitor, is_vecenv_wrapped
+from pvp.stable_baseline3.common import base_class
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecEnv, VecMonitor, is_vecenv_wrapped
 
 
 def evaluate_policy(
@@ -54,7 +54,7 @@ def evaluate_policy(
     """
     is_monitor_wrapped = False
     # Avoid circular import
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.stable_baseline3.common.monitor import Monitor
 
     if not isinstance(env, VecEnv):
         env = DummyVecEnv([lambda: env])
@@ -81,9 +81,11 @@ def evaluate_policy(
     current_lengths = np.zeros(n_envs, dtype="int")
     observations = env.reset()
     states = None
-    episode_starts = np.ones((env.num_envs,), dtype=bool)
+    episode_starts = np.ones((env.num_envs, ), dtype=bool)
     while (episode_counts < episode_count_targets).any():
-        actions, states = model.predict(observations, state=states, episode_start=episode_starts, deterministic=deterministic)
+        actions, states = model.predict(
+            observations, state=states, episode_start=episode_starts, deterministic=deterministic
+        )
         observations, rewards, dones, infos = env.step(actions)
         current_rewards += rewards
         current_lengths += 1

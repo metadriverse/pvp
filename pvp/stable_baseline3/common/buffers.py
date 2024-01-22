@@ -6,14 +6,14 @@ import numpy as np
 import torch as th
 from gym import spaces
 
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_action_dim, get_obs_shape
-from pvp_iclr_release.stable_baseline3.common.type_aliases import (
+from pvp.stable_baseline3.common.preprocessing import get_action_dim, get_obs_shape
+from pvp.stable_baseline3.common.type_aliases import (
     DictReplayBufferSamples,
     DictRolloutBufferSamples,
     ReplayBufferSamples,
     RolloutBufferSamples,
 )
-from pvp_iclr_release.stable_baseline3.common.vec_env import VecNormalize
+from pvp.stable_baseline3.common.vec_env import VecNormalize
 
 try:
     # Check memory used by replay buffer when possible
@@ -33,7 +33,6 @@ class BaseBuffer(ABC):
         to which the values will be converted
     :param n_envs: Number of parallel environments
     """
-
     def __init__(
         self,
         buffer_size: int,
@@ -66,7 +65,7 @@ class BaseBuffer(ABC):
         """
         shape = arr.shape
         if len(shape) < 3:
-            shape = shape + (1,)
+            shape = shape + (1, )
         return arr.swapaxes(0, 1).reshape(shape[0] * shape[1], *shape[2:])
 
     def size(self) -> int:
@@ -110,9 +109,9 @@ class BaseBuffer(ABC):
         return self._get_samples(batch_inds, env=env)
 
     @abstractmethod
-    def _get_samples(
-        self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None
-    ) -> Union[ReplayBufferSamples, RolloutBufferSamples]:
+    def _get_samples(self,
+                     batch_inds: np.ndarray,
+                     env: Optional[VecNormalize] = None) -> Union[ReplayBufferSamples, RolloutBufferSamples]:
         """
         :param batch_inds:
         :param env:
@@ -168,7 +167,6 @@ class ReplayBuffer(BaseBuffer):
         separately and treat the task as infinite horizon task.
         https://github.com/DLR-RM/stable-baselines3/issues/284
     """
-
     def __init__(
         self,
         buffer_size: int,
@@ -196,7 +194,9 @@ class ReplayBuffer(BaseBuffer):
             # `observations` contains also the next observation
             self.next_observations = None
         else:
-            self.next_observations = np.zeros((self.buffer_size, self.n_envs) + self.obs_shape, dtype=observation_space.dtype)
+            self.next_observations = np.zeros(
+                (self.buffer_size, self.n_envs) + self.obs_shape, dtype=observation_space.dtype
+            )
 
         self.actions = np.zeros((self.buffer_size, self.n_envs, self.action_dim), dtype=action_space.dtype)
 
@@ -235,8 +235,8 @@ class ReplayBuffer(BaseBuffer):
         # Reshape needed when using multiple envs with discrete observations
         # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
         if isinstance(self.observation_space, spaces.Discrete):
-            obs = obs.reshape((self.n_envs,) + self.obs_shape)
-            next_obs = next_obs.reshape((self.n_envs,) + self.obs_shape)
+            obs = obs.reshape((self.n_envs, ) + self.obs_shape)
+            next_obs = next_obs.reshape((self.n_envs, ) + self.obs_shape)
 
         # Same, for actions
         if isinstance(self.action_space, spaces.Discrete):
@@ -286,7 +286,7 @@ class ReplayBuffer(BaseBuffer):
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> ReplayBufferSamples:
         # Sample randomly the env idx
-        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
+        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds), ))
 
         if self.optimize_memory_usage:
             next_obs = self._normalize_obs(self.observations[(batch_inds + 1) % self.buffer_size, env_indices, :], env)
@@ -333,7 +333,6 @@ class RolloutBuffer(BaseBuffer):
     :param gamma: Discount factor
     :param n_envs: Number of parallel environments
     """
-
     def __init__(
         self,
         buffer_size: int,
@@ -429,7 +428,7 @@ class RolloutBuffer(BaseBuffer):
         # Reshape needed when using multiple envs with discrete observations
         # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
         if isinstance(self.observation_space, spaces.Discrete):
-            obs = obs.reshape((self.n_envs,) + self.obs_shape)
+            obs = obs.reshape((self.n_envs, ) + self.obs_shape)
 
         self.observations[self.pos] = np.array(obs).copy()
         self.actions[self.pos] = np.array(action).copy()
@@ -466,7 +465,7 @@ class RolloutBuffer(BaseBuffer):
 
         start_idx = 0
         while start_idx < self.buffer_size * self.n_envs:
-            yield self._get_samples(indices[start_idx : start_idx + batch_size])
+            yield self._get_samples(indices[start_idx:start_idx + batch_size])
             start_idx += batch_size
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> RolloutBufferSamples:
@@ -497,7 +496,6 @@ class DictReplayBuffer(ReplayBuffer):
         separately and treat the task as infinite horizon task.
         https://github.com/DLR-RM/stable-baselines3/issues/284
     """
-
     def __init__(
         self,
         buffer_size: int,
@@ -575,12 +573,12 @@ class DictReplayBuffer(ReplayBuffer):
             # Reshape needed when using multiple envs with discrete observations
             # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
             if isinstance(self.observation_space.spaces[key], spaces.Discrete):
-                obs[key] = obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                obs[key] = obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             self.observations[key][self.pos] = np.array(obs[key])
 
         for key in self.next_observations.keys():
             if isinstance(self.observation_space.spaces[key], spaces.Discrete):
-                next_obs[key] = next_obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                next_obs[key] = next_obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             self.next_observations[key][self.pos] = np.array(next_obs[key]).copy()
 
         # Same reshape, for actions
@@ -612,11 +610,14 @@ class DictReplayBuffer(ReplayBuffer):
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> DictReplayBufferSamples:
         # Sample randomly the env idx
-        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
+        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds), ))
 
         # Normalize if needed and remove extra dimension (we are using only one env for now)
         obs_ = self._normalize_obs({key: obs[batch_inds, env_indices, :] for key, obs in self.observations.items()})
-        next_obs_ = self._normalize_obs({key: obs[batch_inds, env_indices, :] for key, obs in self.next_observations.items()})
+        next_obs_ = self._normalize_obs(
+            {key: obs[batch_inds, env_indices, :]
+             for key, obs in self.next_observations.items()}
+        )
 
         # Convert to torch tensor
         observations = {key: self.to_torch(obs) for key, obs in obs_.items()}
@@ -628,9 +629,8 @@ class DictReplayBuffer(ReplayBuffer):
             next_observations=next_observations,
             # Only use dones that are not due to timeouts
             # deactivated by default (timeouts is initialized as an array of False)
-            dones=self.to_torch(self.dones[batch_inds, env_indices] * (1 - self.timeouts[batch_inds, env_indices])).reshape(
-                -1, 1
-            ),
+            dones=self.to_torch(self.dones[batch_inds, env_indices] * (1 - self.timeouts[batch_inds, env_indices])
+                                ).reshape(-1, 1),
             rewards=self.to_torch(self._normalize_reward(self.rewards[batch_inds, env_indices].reshape(-1, 1), env)),
         )
 
@@ -659,7 +659,6 @@ class DictRolloutBuffer(RolloutBuffer):
     :param gamma: Discount factor
     :param n_envs: Number of parallel environments
     """
-
     def __init__(
         self,
         buffer_size: int,
@@ -725,7 +724,7 @@ class DictRolloutBuffer(RolloutBuffer):
             # Reshape needed when using multiple envs with discrete observations
             # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
             if isinstance(self.observation_space.spaces[key], spaces.Discrete):
-                obs_ = obs_.reshape((self.n_envs,) + self.obs_shape[key])
+                obs_ = obs_.reshape((self.n_envs, ) + self.obs_shape[key])
             self.observations[key][self.pos] = obs_
 
         self.actions[self.pos] = np.array(action).copy()
@@ -758,13 +757,14 @@ class DictRolloutBuffer(RolloutBuffer):
 
         start_idx = 0
         while start_idx < self.buffer_size * self.n_envs:
-            yield self._get_samples(indices[start_idx : start_idx + batch_size])
+            yield self._get_samples(indices[start_idx:start_idx + batch_size])
             start_idx += batch_size
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> DictRolloutBufferSamples:
 
         return DictRolloutBufferSamples(
-            observations={key: self.to_torch(obs[batch_inds]) for (key, obs) in self.observations.items()},
+            observations={key: self.to_torch(obs[batch_inds])
+                          for (key, obs) in self.observations.items()},
             actions=self.to_torch(self.actions[batch_inds]),
             old_values=self.to_torch(self.values[batch_inds].flatten()),
             old_log_prob=self.to_torch(self.log_probs[batch_inds].flatten()),

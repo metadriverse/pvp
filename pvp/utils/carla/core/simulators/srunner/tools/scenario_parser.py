@@ -12,9 +12,9 @@ import glob
 import os
 import xml.etree.ElementTree as ET
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
     RouteConfiguration
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ScenarioConfiguration, ActorConfigurationData
 
 

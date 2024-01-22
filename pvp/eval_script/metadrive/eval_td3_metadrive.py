@@ -1,17 +1,17 @@
 import argparse
 import os.path as osp
 
-from pvp_iclr_release.eval_script.metadrive.eval_metadrive_utils import pretty_print, make_metadrive_env, PolicyFunction, os, time, \
+from pvp.eval_script.metadrive.eval_metadrive_utils import pretty_print, make_metadrive_env, PolicyFunction, os, time, \
     EVAL_ENV_START, np, pd
 
 
 def evaluate_metadrive_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        total_env_num=50,
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    total_env_num=50,
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
@@ -60,8 +60,8 @@ def evaluate_metadrive_once(
                 print(
                     "Env {}, Num episodes: {} ({}), Num steps in this episode: {} (Ep time {:.2f}, "
                     "Total time {:.2f}). Ckpt: {}".format(
-                        env_index, num_ep_in, ep_count, step_count,
-                        np.mean(ep_times), time.time() - start, ckpt_path
+                        env_index, num_ep_in, ep_count, step_count, np.mean(ep_times),
+                        time.time() - start, ckpt_path
                     )
                 )
                 step_count = 0

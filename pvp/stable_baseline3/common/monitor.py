@@ -11,8 +11,9 @@ import gym
 import numpy as np
 import pandas
 
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymObs, GymStepReturn
+from pvp.stable_baseline3.common.type_aliases import GymObs, GymStepReturn
 from collections import defaultdict
+
 
 class Monitor(gym.Wrapper):
     """
@@ -51,7 +52,10 @@ class Monitor(gym.Wrapper):
         if filename is not None:
             self.results_writer = ResultsWriter(
                 filename,
-                header={"t_start": self.t_start, "env_id": env.spec and env.spec.id},
+                header={
+                    "t_start": self.t_start,
+                    "env_id": env.spec and env.spec.id
+                },
                 extra_keys=record_keys,
             )
         else:
@@ -193,7 +197,6 @@ class ResultsWriter:
     :param reset_keywords: the extra information to log, typically is composed of
         ``reset_keywords`` and ``info_keywords``
     """
-
     def __init__(
         self,
         filename: str = "",

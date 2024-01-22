@@ -15,9 +15,9 @@ import numpy as np
 import shapely.affinity
 import shapely.geometry
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
 
 
 def get_distance_along_route(route, target_location):
@@ -45,8 +45,8 @@ def get_distance_along_route(route, target_location):
             continue
 
         # Calculate distance between previous and current route point
-        interval_length_squared = ((prev_position.x - position.x) ** 2) + ((prev_position.y - position.y) ** 2)
-        distance_squared = ((location.x - prev_position.x) ** 2) + ((location.y - prev_position.y) ** 2)
+        interval_length_squared = ((prev_position.x - position.x)**2) + ((prev_position.y - position.y)**2)
+        distance_squared = ((location.x - prev_position.x)**2) + ((location.y - prev_position.y)**2)
 
         # Close to the current position? Stop calculation
         if distance_squared < 0.01:
@@ -59,8 +59,7 @@ def get_distance_along_route(route, target_location):
             wp = starting_wp.get_left_lane()
             while wp is not None:
                 new_location = wp.transform.location
-                new_distance_squared = ((new_location.x - prev_position.x) **
-                                        2) + ((new_location.y - prev_position.y) ** 2)
+                new_distance_squared = ((new_location.x - prev_position.x)**2) + ((new_location.y - prev_position.y)**2)
 
                 if np.sign(starting_wp.lane_id) != np.sign(wp.lane_id):
                     break
@@ -76,8 +75,7 @@ def get_distance_along_route(route, target_location):
             wp = starting_wp.get_right_lane()
             while wp is not None:
                 new_location = wp.transform.location
-                new_distance_squared = ((new_location.x - prev_position.x) **
-                                        2) + ((new_location.y - prev_position.y) ** 2)
+                new_distance_squared = ((new_location.x - prev_position.x)**2) + ((new_location.y - prev_position.y)**2)
 
                 if np.sign(starting_wp.lane_id) != np.sign(wp.lane_id):
                     break
@@ -251,12 +249,12 @@ def generate_target_waypoint_list(waypoint, turn=0):
 
 
 def generate_target_waypoint_list_multilane(
-        waypoint,
-        change='left',
-        distance_same_lane=10,
-        distance_other_lane=25,
-        total_lane_change_distance=25,
-        check='true'
+    waypoint,
+    change='left',
+    distance_same_lane=10,
+    distance_other_lane=25,
+    total_lane_change_distance=25,
+    check='true'
 ):
     """
     This methods generates a waypoint list which leads the vehicle to a parallel lane.
@@ -468,11 +466,11 @@ def detect_lane_obstacle(actor, extension_factor=3, margin=1.02):
             adversary_yaw = adversary_transform.rotation.yaw
             overlap_adversary = RotatedRectangle(
                 adversary_loc.x, adversary_loc.y, 2 * margin * adversary_bbox.extent.x,
-                                                  2 * margin * adversary_bbox.extent.y, adversary_yaw
+                2 * margin * adversary_bbox.extent.y, adversary_yaw
             )
             overlap_actor = RotatedRectangle(
                 actor_location.x, actor_location.y, 2 * margin * actor_bbox.extent.x * extension_factor,
-                                                    2 * margin * actor_bbox.extent.y, actor_yaw
+                2 * margin * actor_bbox.extent.y, actor_yaw
             )
             overlap_area = overlap_adversary.intersection(overlap_actor).area
             if overlap_area > 0:
@@ -486,7 +484,6 @@ class RotatedRectangle(object):
     """
     This class contains method to draw rectangle and find intersection point.
     """
-
     def __init__(self, c_x, c_y, width, height, angle):
         self.c_x = c_x
         self.c_y = c_y

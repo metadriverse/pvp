@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from gym import spaces
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
 
 
 class VecFrameStack(VecEnvWrapper):
@@ -19,7 +19,6 @@ class VecFrameStack(VecEnvWrapper):
         If None, automatically detect channel to stack over in case of image observation or default to "last" (default).
         Alternatively channels_order can be a dictionary which can be used with environments with Dict observation spaces
     """
-
     def __init__(self, venv: VecEnv, n_stack: int, channels_order: Optional[Union[str, Dict[str, str]]] = None):
         self.venv = venv
         self.n_stack = n_stack
@@ -43,7 +42,7 @@ class VecFrameStack(VecEnvWrapper):
 
     def step_wait(
         self,
-    ) -> Tuple[Union[np.ndarray, Dict[str, np.ndarray]], np.ndarray, np.ndarray, List[Dict[str, Any]],]:
+    ) -> Tuple[Union[np.ndarray, Dict[str, np.ndarray]], np.ndarray, np.ndarray, List[Dict[str, Any]], ]:
 
         observations, rewards, dones, infos = self.venv.step_wait()
 

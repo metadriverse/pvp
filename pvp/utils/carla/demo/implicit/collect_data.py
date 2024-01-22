@@ -5,10 +5,10 @@ from pathlib import Path
 import lmdb
 import numpy as np
 from PIL import Image
-from pvp_iclr_release.utils.carla.core.data import CarlaBenchmarkCollector
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.data import CarlaBenchmarkCollector
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
@@ -63,11 +63,7 @@ config = dict(
     policy=dict(
         target_speed=25,
         noise=False,
-        collect=dict(
-            save_dir='dataset/',
-            n_episode=50,
-            collector=dict()
-        ),
+        collect=dict(save_dir='dataset/', n_episode=50, collector=dict()),
     ),
 )
 

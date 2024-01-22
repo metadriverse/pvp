@@ -6,15 +6,15 @@ import gym
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper, FullyObsWrapper
 
-from pvp_iclr_release.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
-from pvp_iclr_release.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp_iclr_release.stable_baseline3.dqn.dqn import DQN
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.older_utils import get_time_str
-from pvp_iclr_release.training_script.minigrid.minigrid_env import MinigridWrapper, GrayScaleWrapper
-from pvp_iclr_release.training_script.minigrid.minigrid_model import MinigridCNN, MinigridNet, FullObsMinigridPolicyNet
+from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
+from pvp.stable_baseline3.common.wandb_callback import WandbCallback
+from pvp.stable_baseline3.dqn.dqn import DQN
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.utils.older_utils import get_time_str
+from pvp.training_script.minigrid.minigrid_env import MinigridWrapper, GrayScaleWrapper
+from pvp.training_script.minigrid.minigrid_model import MinigridCNN, MinigridNet, FullObsMinigridPolicyNet
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,12 +60,12 @@ if __name__ == '__main__':
                 # features_extractor_class=MinigridCNN,
                 features_extractor_class=FullObsMinigridPolicyNet,
                 activation_fn=torch.nn.ReLU,
-
                 normalize_images=False,
                 # net_arch=[1024, 1024]
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             env=None,
             optimize_memory_usage=True,
 
@@ -78,7 +78,6 @@ if __name__ == '__main__':
             #     end=1e-7,
             #     end_fraction=1.0,
             # ),
-
             exploration_fraction=0.30,  # Reach minimal exploration rate at 30% Total Steps
             exploration_final_eps=0.05,
             # gradient_steps=1,
@@ -96,9 +95,7 @@ if __name__ == '__main__':
             train_freq=1,
             tau=0.005,
             target_update_interval=1,
-
             gradient_steps=32,
-
             tensorboard_log=log_dir,
             create_eval_env=False,
             verbose=2,
@@ -130,21 +127,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=10000,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=10000, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 

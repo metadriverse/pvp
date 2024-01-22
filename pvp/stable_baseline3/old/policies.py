@@ -1,9 +1,9 @@
 from typing import Optional
 
-from pvp_iclr_release.stable_baseline3.common.policies import ContinuousCritic
-from pvp_iclr_release.stable_baseline3.common.torch_layers import BaseFeaturesExtractor
-from pvp_iclr_release.stable_baseline3.common.type_aliases import Schedule
-from pvp_iclr_release.stable_baseline3.sac.policies import SACPolicy
+from pvp.stable_baseline3.common.policies import ContinuousCritic
+from pvp.stable_baseline3.common.torch_layers import BaseFeaturesExtractor
+from pvp.stable_baseline3.common.type_aliases import Schedule
+from pvp.stable_baseline3.sac.policies import SACPolicy
 
 # CAP the standard deviation of the actor
 LOG_STD_MAX = 2
@@ -24,9 +24,7 @@ class oldPolicy(SACPolicy):
         self.critic = self.make_critic()
         critic_parameters = self.critic.parameters()
         self.actor = self.make_actor(features_extractor=self.critic.features_extractor)
-        actor_parameters = [
-            param for name, param in self.actor.named_parameters() if "features_extractor" not in name
-        ]
+        actor_parameters = [param for name, param in self.actor.named_parameters() if "features_extractor" not in name]
         return actor_parameters, critic_parameters
 
     def _build_independent_feature(self):
@@ -45,9 +43,7 @@ class oldPolicy(SACPolicy):
             actor_parameters, critic_parameters = self._build_independent_feature()
 
         self.actor.optimizer = self.optimizer_class(
-            actor_parameters,
-            lr=lr_schedule["actor"](1),
-            **self.optimizer_kwargs
+            actor_parameters, lr=lr_schedule["actor"](1), **self.optimizer_kwargs
         )
 
         # Build cost critic and target cost critic
@@ -61,9 +57,7 @@ class oldPolicy(SACPolicy):
         self.critic_target = self.make_critic(features_extractor=None)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic.optimizer = self.optimizer_class(
-            critic_parameters,
-            lr=lr_schedule["critic"](1),
-            **self.optimizer_kwargs
+            critic_parameters, lr=lr_schedule["critic"](1), **self.optimizer_kwargs
         )
         self.cost_critic_target = self.make_cost_critic(features_extractor=None)
         self.cost_critic_target.load_state_dict(self.cost_critic.state_dict())

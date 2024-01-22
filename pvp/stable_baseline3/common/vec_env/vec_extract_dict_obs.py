@@ -1,6 +1,6 @@
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
 
 
 class VecExtractDictObs(VecEnvWrapper):
@@ -10,7 +10,6 @@ class VecExtractDictObs(VecEnvWrapper):
     :param venv: The vectorized environment
     :param key: The key of the dictionary observation
     """
-
     def __init__(self, venv: VecEnv, key: str):
         self.key = key
         super().__init__(venv=venv, observation_space=venv.observation_space.spaces[self.key])

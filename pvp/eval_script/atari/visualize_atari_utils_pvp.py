@@ -6,15 +6,15 @@ import gym
 import numpy as np
 import pandas as pd
 
-from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-# from pvp_iclr_release.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.utils.print_dict_utils import pretty_print
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.training_script.atari.train_atari_dqn import DQN
-from pvp_iclr_release.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
-from pvp_iclr_release.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
+from pvp.stable_baseline3.common.atari_wrappers import AtariWrapper
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+# from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.utils.print_dict_utils import pretty_print
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.training_script.atari.train_atari_dqn import DQN
+from pvp.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
 
 EVAL_ENV_START = 0
 
@@ -25,19 +25,16 @@ class AtariPolicyFunction:
             policy=CnnPolicy,
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256
-                ),
+                features_extractor_kwargs=dict(features_dim=256),
                 # share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             exploration_initial_eps=.0,
             exploration_final_eps=.0,
-
             env=env,
             learning_rate=1e-4,
-
             optimize_memory_usage=True,
             buffer_size=100000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  ###
@@ -46,11 +43,8 @@ class AtariPolicyFunction:
             gamma=0.99,
             train_freq=1,
             gradient_steps=8,
-
             target_update_interval=1,
-
             create_eval_env=False,
-
             verbose=2,
             # seed=seed,
             device="auto",
@@ -60,29 +54,25 @@ class AtariPolicyFunction:
 
     def __call__(self, o, deterministic=False):
         assert deterministic
-        action, state =  self.algo.predict(o, deterministic=deterministic)
+        action, state = self.algo.predict(o, deterministic=deterministic)
         return action
 
 
 def evaluate_atari_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        env_name="SkiingNoFrameskip-v4",
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    env_name="SkiingNoFrameskip-v4",
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-
-
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.stable_baseline3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
-
-
 
     def _make_env():
         env = gym.make(env_name)
@@ -159,7 +149,6 @@ def evaluate_atari_once(
                     print("Episode finished!")
                     need_break = True
 
-
     except Exception as e:
         raise e
     finally:
@@ -169,7 +158,9 @@ def evaluate_atari_once(
 
 if __name__ == '__main__':
     ret = evaluate_atari_once(
-        ckpt_path=os.path.expanduser("/home/xxx/nvme/model/ski_formal/Fixed_Discrete_pvp_SkiingNoFrameskip-v4_image_seed0_2022-06-05_21-45-47/models/"),
+        ckpt_path=os.path.expanduser(
+            "/home/xxx/nvme/model/ski_formal/Fixed_Discrete_pvp_SkiingNoFrameskip-v4_image_seed0_2022-06-05_21-45-47/models/"
+        ),
         ckpt_index=21000,
         folder_name="/home/xxx/nvme/iclr-visual/ski-pvp/",
         use_render=True,

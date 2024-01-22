@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 import torch as th
 
-from pvp_iclr_release.stable_baseline3.common.buffers import DictReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_obs_shape
-from pvp_iclr_release.stable_baseline3.common.type_aliases import DictReplayBufferSamples
-from pvp_iclr_release.stable_baseline3.common.vec_env import VecEnv, VecNormalize
-from pvp_iclr_release.stable_baseline3.her.goal_selection_strategy import KEY_TO_GOAL_STRATEGY, GoalSelectionStrategy
+from pvp.stable_baseline3.common.buffers import DictReplayBuffer
+from pvp.stable_baseline3.common.preprocessing import get_obs_shape
+from pvp.stable_baseline3.common.type_aliases import DictReplayBufferSamples
+from pvp.stable_baseline3.common.vec_env import VecEnv, VecNormalize
+from pvp.stable_baseline3.her.goal_selection_strategy import KEY_TO_GOAL_STRATEGY, GoalSelectionStrategy
 
 
 def get_time_limit(env: VecEnv, current_max_episode_length: Optional[int]) -> int:
@@ -68,7 +68,6 @@ class HerReplayBuffer(DictReplayBuffer):
         separately and treat the task as infinite horizon task.
         https://github.com/DLR-RM/stable-baselines3/issues/284
     """
-
     def __init__(
         self,
         env: VecEnv,
@@ -82,7 +81,8 @@ class HerReplayBuffer(DictReplayBuffer):
         handle_timeout_termination: bool = True,
     ):
 
-        super(HerReplayBuffer, self).__init__(buffer_size, env.observation_space, env.action_space, device, env.num_envs)
+        super(HerReplayBuffer,
+              self).__init__(buffer_size, env.observation_space, env.action_space, device, env.num_envs)
 
         # convert goal_selection_strategy into GoalSelectionStrategy if string
         if isinstance(goal_selection_strategy, str):
@@ -131,15 +131,15 @@ class HerReplayBuffer(DictReplayBuffer):
 
         # input dimensions for buffer initialization
         input_shape = {
-            "observation": (self.env.num_envs,) + self.obs_shape,
-            "achieved_goal": (self.env.num_envs,) + self.goal_shape,
-            "desired_goal": (self.env.num_envs,) + self.goal_shape,
-            "action": (self.action_dim,),
-            "reward": (1,),
-            "next_obs": (self.env.num_envs,) + self.obs_shape,
-            "next_achieved_goal": (self.env.num_envs,) + self.goal_shape,
-            "next_desired_goal": (self.env.num_envs,) + self.goal_shape,
-            "done": (1,),
+            "observation": (self.env.num_envs, ) + self.obs_shape,
+            "achieved_goal": (self.env.num_envs, ) + self.goal_shape,
+            "desired_goal": (self.env.num_envs, ) + self.goal_shape,
+            "action": (self.action_dim, ),
+            "reward": (1, ),
+            "next_obs": (self.env.num_envs, ) + self.obs_shape,
+            "next_achieved_goal": (self.env.num_envs, ) + self.goal_shape,
+            "next_desired_goal": (self.env.num_envs, ) + self.goal_shape,
+            "done": (1, ),
         }
         self._observation_keys = ["observation", "achieved_goal", "desired_goal"]
         self._buffer = {
@@ -294,7 +294,7 @@ class HerReplayBuffer(DictReplayBuffer):
             else:
                 episode_indices = np.random.randint(0, self.n_episodes_stored, batch_size)
             # A subset of the transitions will be relabeled using HER algorithm
-            her_indices = np.arange(batch_size)[: int(self.her_ratio * batch_size)]
+            her_indices = np.arange(batch_size)[:int(self.her_ratio * batch_size)]
         else:
             assert maybe_vec_env is None, "Transitions must be stored unnormalized in the replay buffer"
             assert n_sampled_goal is not None, "No n_sampled_goal specified for offline sampling of HER transitions"
@@ -333,7 +333,10 @@ class HerReplayBuffer(DictReplayBuffer):
                 her_indices = np.arange(len(episode_indices))
 
         # get selected transitions
-        transitions = {key: self._buffer[key][episode_indices, transitions_indices].copy() for key in self._buffer.keys()}
+        transitions = {
+            key: self._buffer[key][episode_indices, transitions_indices].copy()
+            for key in self._buffer.keys()
+        }
 
         # sample new desired goals and relabel the transitions
         new_goals = self.sample_goals(episode_indices, her_indices, transitions_indices)
@@ -483,8 +486,10 @@ class HerReplayBuffer(DictReplayBuffer):
         if len(observations) > 0:
             for i in range(len(observations["observation"])):
                 self.replay_buffer.add(
-                    {key: obs[i] for key, obs in observations.items()},
-                    {key: next_obs[i] for key, next_obs in next_observations.items()},
+                    {key: obs[i]
+                     for key, obs in observations.items()},
+                    {key: next_obs[i]
+                     for key, next_obs in next_observations.items()},
                     actions[i],
                     rewards[i],
                     # We consider the transition as non-terminal

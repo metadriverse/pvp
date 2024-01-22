@@ -11,16 +11,16 @@ import random
 import carla
 import numpy as np
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner_behavior import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner_behavior import \
     LocalPlanner, RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
     Aggressive, Normal
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import get_speed, positive
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import get_speed, positive
 
 
 class BehaviorAgent(Agent):
@@ -36,7 +36,6 @@ class BehaviorAgent(Agent):
     Finally, different sets of behaviors are encoded in the agent, from cautious
     to a more aggressive ones.
     """
-
     def __init__(self, vehicle, ignore_traffic_light=False, behavior='normal'):
         """
         Constructor method.

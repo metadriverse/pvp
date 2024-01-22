@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
 
 
 class VecCheckNan(VecEnvWrapper):
@@ -15,7 +15,6 @@ class VecCheckNan(VecEnvWrapper):
     :param warn_once: Whether or not to only warn once.
     :param check_inf: Whether or not to check for +inf or -inf as well
     """
-
     def __init__(self, venv: VecEnv, raise_exception: bool = False, warn_once: bool = True, check_inf: bool = True):
         VecEnvWrapper.__init__(self, venv)
         self.raise_exception = raise_exception

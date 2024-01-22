@@ -10,20 +10,20 @@ from typing import Any, Optional
 from ding.utils import EasyTimer, build_logger
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
 
 
 class BaseEvaluator(object):
     config = dict()
 
     def __init__(
-            self,
-            cfg: dict,
-            env: Any = None,
-            policy: Any = None,
-            tb_logger: Optional['SummaryWritter'] = None,  # noqa
-            exp_name: Optional[str] = 'default_experiment',
-            instance_name: Optional[str] = 'base_evaluator',
+        self,
+        cfg: dict,
+        env: Any = None,
+        policy: Any = None,
+        tb_logger: Optional['SummaryWritter'] = None,  # noqa
+        exp_name: Optional[str] = 'default_experiment',
+        instance_name: Optional[str] = 'base_evaluator',
     ) -> None:
         if 'cfg_type' not in cfg:
             self._cfg = self.__class__.default_config()

@@ -1,12 +1,12 @@
 import torch
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv
-from pvp_iclr_release.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp_iclr_release.utils.carla.core.policy import LBCBirdviewPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv
+from pvp.utils.carla.core.eval import SingleCarlaEvaluator
+from pvp.utils.carla.core.policy import LBCBirdviewPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
+from pvp.utils.carla.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
 
 lbc_config = dict(
     env=dict(
@@ -22,31 +22,19 @@ lbc_config = dict(
                 threshold_before=9.0,
                 threshold_after=1.5,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[320, 320],
-                    pixels_per_meter=5,
-                    pixels_ahead_vehicle=100,
-                ),
-            ),
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[320, 320],
+                pixels_per_meter=5,
+                pixels_ahead_vehicle=100,
+            ), ),
         ),
-        visualize=dict(
-            type='birdview',
-            outputs=['show']
-        ),
+        visualize=dict(type='birdview', outputs=['show']),
         wrapper=dict(),
     ),
     server=[dict(carla_host='localhost', carla_ports=[9000, 9002, 2])],
-    policy=dict(
-        ckpt_path='model-256.th',
-        eval=dict(
-            evaluator=dict(
-                render=True,
-            ),
-        )
-    ),
+    policy=dict(ckpt_path='model-256.th', eval=dict(evaluator=dict(render=True, ), )),
 )
 
 main_config = EasyDict(lbc_config)

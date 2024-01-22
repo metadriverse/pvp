@@ -1,11 +1,11 @@
 import copy
 from ray import tune
 
-from pvp_iclr_release.utils.expert_common import SaverCallbacks
-from pvp_iclr_release.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.utils.train_eval_config import baseline_eval_config
-from pvp_iclr_release.utils.rllib_utils import get_train_parser
-from pvp_iclr_release.utils.rllib_utils.train import train
+from pvp.utils.expert_common import SaverCallbacks
+from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.utils.train_eval_config import baseline_eval_config
+from pvp.utils.rllib_utils import get_train_parser
+from pvp.utils.rllib_utils.train import train
 from ray.rllib.agents.ddpg.td3 import TD3Trainer
 
 evaluation_config = {"env_config": copy.deepcopy(baseline_eval_config)}
@@ -18,9 +18,7 @@ if __name__ == '__main__':
 
     config = dict(
         env=HumanInTheLoopEnv,
-        env_config=dict(
-            main_exp=False
-        ),
+        env_config=dict(main_exp=False),
 
         # ===== Evaluation =====
         evaluation_interval=1,
@@ -63,8 +61,6 @@ if __name__ == '__main__':
         custom_callback=SaverCallbacks,
         # test_mode=True,
         # local_mode=True
-
         wandb_key_file="~/wandb_api_key_file.txt",
         wandb_project="old_2022",
-
     )

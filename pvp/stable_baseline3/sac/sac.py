@@ -5,14 +5,15 @@ import numpy as np
 import torch as th
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.noise import ActionNoise
-from pvp_iclr_release.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import get_schedule_fn, update_learning_rate, polyak_update
-from pvp_iclr_release.stable_baseline3.sac.policies import SACPolicy
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.noise import ActionNoise
+from pvp.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import get_schedule_fn, update_learning_rate, polyak_update
+from pvp.stable_baseline3.sac.policies import SACPolicy
 
 from collections import defaultdict
+
 
 class SAC(OffPolicyAlgorithm):
     """
@@ -72,45 +73,40 @@ class SAC(OffPolicyAlgorithm):
         Setting it to auto, the code will be run on the GPU if possible.
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     """
-
     def __init__(
-            self,
-            policy: Union[str, Type[SACPolicy]],
-            env: Union[GymEnv, str],
-            policy_base = SACPolicy,
-            learning_rate: Union[float, Schedule, Dict] = None,
-            buffer_size: int = 1_000_000,  # 1e6
-            learning_starts: int = 100,
-            batch_size: int = 256,
-            tau: float = 0.005,
-            gamma: float = 0.99,
-            train_freq: Union[int, Tuple[int, str]] = 1,
-            gradient_steps: int = 1,
-            action_noise: Optional[ActionNoise] = None,
-            replay_buffer_class: Optional[ReplayBuffer] = None,
-            replay_buffer_kwargs: Optional[Dict[str, Any]] = None,
-            optimize_memory_usage: bool = False,
-            ent_coef: Union[str, float] = "auto",
-            target_update_interval: int = 1,
-            target_entropy: Union[str, float] = "auto",
-            use_sde: bool = False,
-            sde_sample_freq: int = -1,
-            use_sde_at_warmup: bool = False,
-            tensorboard_log: Optional[str] = None,
-            create_eval_env: bool = False,
-            policy_kwargs: Optional[Dict[str, Any]] = None,
-            verbose: int = 0,
-            seed: Optional[int] = None,
-            device: Union[th.device, str] = "auto",
-            _init_setup_model: bool = True,
-            monitor_wrapper=False,
+        self,
+        policy: Union[str, Type[SACPolicy]],
+        env: Union[GymEnv, str],
+        policy_base=SACPolicy,
+        learning_rate: Union[float, Schedule, Dict] = None,
+        buffer_size: int = 1_000_000,  # 1e6
+        learning_starts: int = 100,
+        batch_size: int = 256,
+        tau: float = 0.005,
+        gamma: float = 0.99,
+        train_freq: Union[int, Tuple[int, str]] = 1,
+        gradient_steps: int = 1,
+        action_noise: Optional[ActionNoise] = None,
+        replay_buffer_class: Optional[ReplayBuffer] = None,
+        replay_buffer_kwargs: Optional[Dict[str, Any]] = None,
+        optimize_memory_usage: bool = False,
+        ent_coef: Union[str, float] = "auto",
+        target_update_interval: int = 1,
+        target_entropy: Union[str, float] = "auto",
+        use_sde: bool = False,
+        sde_sample_freq: int = -1,
+        use_sde_at_warmup: bool = False,
+        tensorboard_log: Optional[str] = None,
+        create_eval_env: bool = False,
+        policy_kwargs: Optional[Dict[str, Any]] = None,
+        verbose: int = 0,
+        seed: Optional[int] = None,
+        device: Union[th.device, str] = "auto",
+        _init_setup_model: bool = True,
+        monitor_wrapper=False,
     ):
         if learning_rate is None:
-            learning_rate = dict(
-                actor=3e-4,
-                critic=3e-4,
-                entropy=3e-4
-            )
+            learning_rate = dict(actor=3e-4, critic=3e-4, entropy=3e-4)
 
         super(SAC, self).__init__(
             policy,
@@ -206,10 +202,7 @@ class SAC(OffPolicyAlgorithm):
         # Switch to train mode (this affects batch norm / dropout)
         self.policy.set_training_mode(True)
         # Update optimizers learning rate
-        optimizers = {
-            "actor": self.actor.optimizer,
-            "critic": self.critic.optimizer
-        }
+        optimizers = {"actor": self.actor.optimizer, "critic": self.critic.optimizer}
         if self.ent_coef_optimizer is not None:
             optimizers["entropy"] = self.ent_coef_optimizer
 
@@ -317,16 +310,16 @@ class SAC(OffPolicyAlgorithm):
         #     self.logger.record("train/ent_coef_loss", np.mean(ent_coef_losses))
 
     def learn(
-            self,
-            total_timesteps: int,
-            callback: MaybeCallback = None,
-            log_interval: int = 4,
-            eval_env: Optional[GymEnv] = None,
-            eval_freq: int = -1,
-            n_eval_episodes: int = 5,
-            tb_log_name: str = "SAC",
-            eval_log_path: Optional[str] = None,
-            reset_num_timesteps: bool = True,
+        self,
+        total_timesteps: int,
+        callback: MaybeCallback = None,
+        log_interval: int = 4,
+        eval_env: Optional[GymEnv] = None,
+        eval_freq: int = -1,
+        n_eval_episodes: int = 5,
+        tb_log_name: str = "SAC",
+        eval_log_path: Optional[str] = None,
+        reset_num_timesteps: bool = True,
     ) -> OffPolicyAlgorithm:
 
         return super(SAC, self).learn(

@@ -5,13 +5,13 @@ import gym
 import numpy as np
 import torch as th
 
-from pvp_iclr_release.stable_baseline3.common.base_class import BaseAlgorithm
-from pvp_iclr_release.stable_baseline3.common.buffers import DictRolloutBuffer, RolloutBuffer
-from pvp_iclr_release.stable_baseline3.common.callbacks import BaseCallback
-from pvp_iclr_release.stable_baseline3.common.policies import ActorCriticPolicy, BasePolicy
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import obs_as_tensor, safe_mean
-from pvp_iclr_release.stable_baseline3.common.vec_env import VecEnv
+from pvp.stable_baseline3.common.base_class import BaseAlgorithm
+from pvp.stable_baseline3.common.buffers import DictRolloutBuffer, RolloutBuffer
+from pvp.stable_baseline3.common.callbacks import BaseCallback
+from pvp.stable_baseline3.common.policies import ActorCriticPolicy, BasePolicy
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import obs_as_tensor, safe_mean
+from pvp.stable_baseline3.common.vec_env import VecEnv
 
 
 class OnPolicyAlgorithm(BaseAlgorithm):
@@ -48,7 +48,6 @@ class OnPolicyAlgorithm(BaseAlgorithm):
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     :param supported_action_spaces: The action spaces supported by the algorithm.
     """
-
     def __init__(
         self,
         policy: Union[str, Type[ActorCriticPolicy]],
@@ -195,11 +194,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             # Handle timeout by bootstraping with value function
             # see GitHub issue #633
             for idx, done in enumerate(dones):
-                if (
-                    done
-                    and infos[idx].get("terminal_observation") is not None
-                    and infos[idx].get("TimeLimit.truncated", False)
-                ):
+                if (done and infos[idx].get("terminal_observation") is not None
+                        and infos[idx].get("TimeLimit.truncated", False)):
                     terminal_obs = self.policy.obs_to_tensor(infos[idx]["terminal_observation"])[0]
                     with th.no_grad():
                         terminal_value = self.policy.predict_values(terminal_obs)[0]
@@ -241,14 +237,17 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         iteration = 0
 
         total_timesteps, callback = self._setup_learn(
-            total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
+            total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps,
+            tb_log_name
         )
 
         callback.on_training_start(locals(), globals())
 
         while self.num_timesteps < total_timesteps:
 
-            continue_training = self.collect_rollouts(self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps)
+            continue_training = self.collect_rollouts(
+                self.env, callback, self.rollout_buffer, n_rollout_steps=self.n_steps
+            )
 
             if continue_training is False:
                 break
@@ -261,8 +260,12 @@ class OnPolicyAlgorithm(BaseAlgorithm):
                 fps = int((self.num_timesteps - self._num_timesteps_at_start) / (time.time() - self.start_time))
                 self.logger.record("time/iterations", iteration)
                 if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
-                    self.logger.record("rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]))
-                    self.logger.record("rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]))
+                    self.logger.record(
+                        "rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer])
+                    )
+                    self.logger.record(
+                        "rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer])
+                    )
 
                     # xxx: We modify here to record environment information
                     first_ep_info = self.ep_info_buffer[-1]

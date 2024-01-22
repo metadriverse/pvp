@@ -18,8 +18,8 @@ import carla
 import ephem
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
 
 
 class Weather(object):
@@ -45,7 +45,6 @@ class Weather(object):
             for which the sun position is obtained.
         datetime (datetime): Date and time in UTC (required for animation only).
     """
-
     def __init__(self, carla_weather, dtime=None, animation=False):
         """
         Class constructor
@@ -104,7 +103,6 @@ class WeatherBehavior(py_trees.behaviour.Behaviour):
         _weather (srunner.scenariomanager.weather_sim.Weather): Weather settings.
         _current_time (float): Current CARLA time [seconds].
     """
-
     def __init__(self, name="WeatherBehavior"):
         """
         Setup parameters

@@ -31,7 +31,6 @@ class Video(object):
     :param frames: frames to create the video from
     :param fps: frames per second
     """
-
     def __init__(self, frames: th.Tensor, fps: Union[float, int]):
         self.frames = frames
         self.fps = fps
@@ -44,7 +43,6 @@ class Figure(object):
     :param figure: figure to log
     :param close: if true, close the figure after logging it
     """
-
     def __init__(self, figure: plt.figure, close: bool):
         self.figure = figure
         self.close = close
@@ -59,7 +57,6 @@ class Image(object):
         More info in add_image method doc at https://pytorch.org/docs/stable/tensorboard.html
         Gym envs normally use 'HWC' (channel last)
     """
-
     def __init__(self, image: Union[th.Tensor, np.ndarray, str], dataformats: str):
         self.image = image
         self.dataformats = dataformats
@@ -81,8 +78,9 @@ class KVWriter(object):
     """
     Key Value writer
     """
-
-    def write(self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0) -> None:
+    def write(
+        self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0
+    ) -> None:
         """
         Write a dictionary to file
 
@@ -103,7 +101,6 @@ class SeqWriter(object):
     """
     sequence writer
     """
-
     def write_sequence(self, sequence: List) -> None:
         """
         write_sequence an array to file
@@ -153,11 +150,11 @@ class HumanOutputFormat(KVWriter, SeqWriter):
                 value_str = str(value)
 
             if key.find("/") > 0:  # Find tag and add it to the dict
-                tag = key[: key.find("/") + 1]
+                tag = key[:key.find("/") + 1]
                 key2str[self._truncate(tag)] = ""
             # Remove tag from key
             if tag is not None and tag in key:
-                key = str("   " + key[len(tag) :])
+                key = str("   " + key[len(tag):])
 
             key2str[self._truncate(key)] = self._truncate(value_str)
 
@@ -186,7 +183,7 @@ class HumanOutputFormat(KVWriter, SeqWriter):
     # xxx: We want longer print table!
     # def _truncate(cls, string: str, max_length: int = 23) -> str:
     def _truncate(cls, string: str, max_length: int = 30) -> str:
-        return string[: max_length - 3] + "..." if len(string) > max_length else string
+        return string[:max_length - 3] + "..." if len(string) > max_length else string
 
     def write_sequence(self, sequence: List) -> None:
         sequence = list(sequence)
@@ -216,7 +213,6 @@ def filter_excluded_keys(
     :param _format: format for which this filter is run
     :return: dict without the excluded keys
     """
-
     def is_excluded(key: str) -> bool:
         return key in key_excluded and key_excluded[key] is not None and _format in key_excluded[key]
 
@@ -232,7 +228,9 @@ class JSONOutputFormat(KVWriter):
         """
         self.file = open(filename, "wt")
 
-    def write(self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0) -> None:
+    def write(
+        self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0
+    ) -> None:
         def cast_to_json_serializable(value: Any):
             if isinstance(value, Video):
                 raise FormatUnsupportedError(["json"], "video")
@@ -277,7 +275,9 @@ class CSVOutputFormat(KVWriter):
         self.separator = ","
         self.quotechar = '"'
 
-    def write(self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0) -> None:
+    def write(
+        self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0
+    ) -> None:
         # Add our current row to the history
         key_values = filter_excluded_keys(key_values, key_excluded, "csv")
         extra_keys = key_values.keys() - self.keys
@@ -338,7 +338,9 @@ class TensorBoardOutputFormat(KVWriter):
         assert SummaryWriter is not None, "tensorboard is not installed, you can use " "pip install tensorboard to do so"
         self.writer = SummaryWriter(log_dir=folder)
 
-    def write(self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0) -> None:
+    def write(
+        self, key_values: Dict[str, Any], key_excluded: Dict[str, Union[str, Tuple[str, ...]]], step: int = 0
+    ) -> None:
 
         for (key, value), (_, excluded) in zip(sorted(key_values.items()), sorted(key_excluded.items())):
 
@@ -412,7 +414,6 @@ class Logger(object):
     :param folder: the logging location
     :param output_formats: the list of output formats
     """
-
     def __init__(self, folder: Optional[str], output_formats: List[KVWriter]):
         self.name_to_value = defaultdict(float)  # values this iteration
         self.name_to_count = defaultdict(int)

@@ -4,15 +4,15 @@ import gym
 import torch as th
 from torch import nn
 
-from pvp_iclr_release.stable_baseline3.common.policies import BasePolicy, register_policy
-from pvp_iclr_release.stable_baseline3.common.torch_layers import (
+from pvp.stable_baseline3.common.policies import BasePolicy, register_policy
+from pvp.stable_baseline3.common.torch_layers import (
     BaseFeaturesExtractor,
     CombinedExtractor,
     FlattenExtractor,
     NatureCNN,
     create_mlp,
 )
-from pvp_iclr_release.stable_baseline3.common.type_aliases import Schedule
+from pvp.stable_baseline3.common.type_aliases import Schedule
 
 
 class QNetwork(BasePolicy):
@@ -26,7 +26,6 @@ class QNetwork(BasePolicy):
     :param normalize_images: Whether to normalize images or not,
          dividing by 255.0 (True by default)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -104,7 +103,6 @@ class DQNPolicy(BasePolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -225,7 +223,6 @@ class CnnPolicy(DQNPolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -270,7 +267,6 @@ class MultiInputPolicy(DQNPolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Dict,

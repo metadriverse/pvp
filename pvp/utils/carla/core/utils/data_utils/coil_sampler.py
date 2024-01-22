@@ -9,7 +9,6 @@ class RandomSampler(Sampler):
     Arguments:
         indices (list): a list of indices
     """
-
     def __init__(self, keys, cfg, executed_iterations):
         self.iterations_to_execute = ((cfg.NUMBER_ITERATIONS) * cfg.BATCH_SIZE) - \
                                      (executed_iterations)

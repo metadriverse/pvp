@@ -5,12 +5,12 @@ import numpy as np
 import torch as th
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.noise import ActionNoise
-from pvp_iclr_release.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import polyak_update
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.noise import ActionNoise
+from pvp.stable_baseline3.common.off_policy_algorithm import OffPolicyAlgorithm
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import polyak_update
+from pvp.stable_baseline3.td3.policies import TD3Policy
 
 
 class TD3(OffPolicyAlgorithm):
@@ -59,7 +59,6 @@ class TD3(OffPolicyAlgorithm):
         Setting it to auto, the code will be run on the GPU if possible.
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     """
-
     def __init__(
         self,
         policy: Union[str, Type[TD3Policy]],
@@ -86,7 +85,6 @@ class TD3(OffPolicyAlgorithm):
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
         _init_setup_model: bool = True,
-
         monitor_wrapper=False,
     ):
 
@@ -176,7 +174,8 @@ class TD3(OffPolicyAlgorithm):
             # Delayed policy updates
             if self._n_updates % self.policy_delay == 0:
                 # Compute actor loss
-                actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations)).mean()
+                actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations
+                                                                                          )).mean()
                 actor_losses.append(actor_loss.item())
 
                 # Optimize the actor
@@ -218,8 +217,9 @@ class TD3(OffPolicyAlgorithm):
         )
 
     def _excluded_save_params(self) -> List[str]:
-        return super(TD3, self)._excluded_save_params() + ["actor", "critic", "actor_target", "critic_target", "human_data_buffer", "replay_buffer"]
-
+        return super(TD3, self)._excluded_save_params() + [
+            "actor", "critic", "actor_target", "critic_target", "human_data_buffer", "replay_buffer"
+        ]
 
     def _get_torch_save_params(self) -> Tuple[List[str], List[str]]:
         state_dicts = ["policy", "actor.optimizer", "critic.optimizer"]

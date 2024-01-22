@@ -102,9 +102,9 @@ def calculate_speed(actor):
     """
     Method to calculate the velocity of a actor  in m/s
     """
-    speed_squared = actor.get_velocity().x ** 2
-    speed_squared += actor.get_velocity().y ** 2
-    speed_squared += actor.get_velocity().z ** 2
+    speed_squared = actor.get_velocity().x**2
+    speed_squared += actor.get_velocity().y**2
+    speed_squared += actor.get_velocity().z**2
     return math.sqrt(speed_squared)
 
 

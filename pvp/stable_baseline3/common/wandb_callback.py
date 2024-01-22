@@ -56,9 +56,10 @@ import os
 import wandb
 from wandb.sdk.lib import telemetry as wb_telemetry
 
-from pvp_iclr_release.stable_baseline3.common.callbacks import BaseCallback
+from pvp.stable_baseline3.common.callbacks import BaseCallback
 
 logger = logging.getLogger(__name__)
+
 
 def get_api_key_file(wandb_key_file):
     if wandb_key_file is not None:
@@ -71,6 +72,7 @@ def get_api_key_file(wandb_key_file):
     path = os.path.join(root, "wandb", "wandb_api_key_file.txt")
     print("We are using this wandb key file: ", path)
     return path
+
 
 class WandbCallback(BaseCallback):
     """ Log SB3 experiments to Weights and Biases
@@ -85,18 +87,17 @@ class WandbCallback(BaseCallback):
         model_save_freq: Frequency to save the model
         gradient_save_freq: Frequency to log gradient. The default value is 0 so the gradients are not logged
     """
-
     def __init__(
-            self,
-            trial_name,
-            exp_name,
-            project_name,
-            config=None,
-            team_name="drivingforce",
-            verbose: int = 0,
-            model_save_path: str = None,
-            model_save_freq: int = 0,
-            gradient_save_freq: int = 0,
+        self,
+        trial_name,
+        exp_name,
+        project_name,
+        config=None,
+        team_name="drivingforce",
+        verbose: int = 0,
+        model_save_path: str = None,
+        model_save_freq: int = 0,
+        gradient_save_freq: int = 0,
     ):
 
         # xxx: Setup our key
@@ -138,7 +139,7 @@ class WandbCallback(BaseCallback):
             self.path = os.path.join(self.model_save_path, "model.zip")
         else:
             assert (
-                    self.model_save_freq == 0
+                self.model_save_freq == 0
             ), "to use the `model_save_freq` you have to set the `model_save_path` parameter"
 
     def _init_callback(self) -> None:

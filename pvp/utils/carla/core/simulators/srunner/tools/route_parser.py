@@ -12,9 +12,9 @@ import xml.etree.ElementTree as ET
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
     RouteScenarioConfiguration
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 # TODO  check this threshold, it could be a bit larger but not so large that we cluster scenarios.
 TRIGGER_THRESHOLD = 10.0  # Threshold to say if a trigger position is new or repeated, works for matching positions
@@ -25,7 +25,6 @@ class RouteParser(object):
     """
     Pure static class used to parse all the route and scenario configuration parameters.
     """
-
     @staticmethod
     def parse_annotations_file(annotation_filename):
         """
@@ -160,7 +159,6 @@ class RouteParser(object):
             world_location:
             route_description:
         """
-
         def match_waypoints(waypoint1, wtransform):
             """
             Check if waypoint1 and wtransform are similar
@@ -200,7 +198,6 @@ class RouteParser(object):
             - SignalJunctionCrossingRoute
         and changes to these tags will affect them
         """
-
         def check_this_waypoint(tuple_wp_turn):
             """
             Decides whether or not the waypoint will define the scenario behavior

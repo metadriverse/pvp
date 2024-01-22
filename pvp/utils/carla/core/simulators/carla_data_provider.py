@@ -7,9 +7,9 @@ import numpy as np
 import shapely
 from six import iteritems
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import calculate_speed, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import calculate_speed, \
     convert_waypoint_to_transform
 
 
@@ -343,7 +343,6 @@ class CarlaDataProvider(object):
         """
         Calculates the yaw of the waypoint that represents the trigger volume of the traffic light
         """
-
         def rotate_point(point, angle):
             """
             rotate a given point by a given angle
@@ -365,11 +364,11 @@ class CarlaDataProvider(object):
 
     @staticmethod
     def update_light_states(
-            ego_light: carla.Actor,
-            annotations: Dict,
-            states: Dict,
-            freeze: bool = False,
-            timeout: int = 1000000000
+        ego_light: carla.Actor,
+        annotations: Dict,
+        states: Dict,
+        freeze: bool = False,
+        timeout: int = 1000000000
     ) -> List:
         """
         Update traffic light states
@@ -570,11 +569,11 @@ class CarlaDataProvider(object):
 
     @staticmethod
     def create_blueprint(
-            model: str,
-            rolename: str = 'npc',
-            color: Any = None,
-            actor_category: str = "car",
-            disable_two_wheels: bool = False
+        model: str,
+        rolename: str = 'npc',
+        color: Any = None,
+        actor_category: str = "car",
+        disable_two_wheels: bool = False
     ) -> Any:
         """
         Function to setup the blueprint of an actor given its model and other relevant parameters
@@ -647,14 +646,14 @@ class CarlaDataProvider(object):
 
     @staticmethod
     def request_new_actor(
-            model: str,
-            spawn_point: Any,
-            rolename: str = 'actor',
-            autopilot: bool = False,
-            random_location: bool = False,
-            color: Any = None,
-            actor_category: str = "car",
-            disable_two_wheels: bool = False,
+        model: str,
+        spawn_point: Any,
+        rolename: str = 'actor',
+        autopilot: bool = False,
+        random_location: bool = False,
+        color: Any = None,
+        actor_category: str = "car",
+        disable_two_wheels: bool = False,
     ) -> carla.Actor:
         """
         This method tries to create a new actor, returning it if successful (None otherwise).
@@ -702,13 +701,13 @@ class CarlaDataProvider(object):
 
     @staticmethod
     def request_new_batch_actors(
-            model: str,
-            amount: int,
-            spawn_points: List,
-            autopilot: bool = False,
-            random_location: bool = False,
-            rolename: str = 'npc',
-            disable_two_wheels: bool = False
+        model: str,
+        amount: int,
+        spawn_points: List,
+        autopilot: bool = False,
+        random_location: bool = False,
+        rolename: str = 'npc',
+        disable_two_wheels: bool = False
     ) -> List:
         """
         Simplified version of "request_new_actors". This method also create several actors in batch.

@@ -3,9 +3,9 @@ from typing import Any, Callable, Dict, Optional, Type, Union
 
 import gym
 
-from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv
+from pvp.stable_baseline3.common.atari_wrappers import AtariWrapper
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv
 
 
 def unwrap_wrapper(env: gym.Env, wrapper_class: Type[gym.Wrapper]) -> Optional[gym.Wrapper]:

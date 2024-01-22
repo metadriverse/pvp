@@ -12,7 +12,6 @@ Orders = Enum("Order", "Follow_Lane Straight Right Left ChangelaneLeft Changelan
 
 
 class ImplicitPolicy():
-
     def __init__(self, cfg):
         self.args = cfg
         self.args.steps_image = [-10, -2, -1, 0]
@@ -178,8 +177,8 @@ class ImplicitPolicy():
         right_vec = [forward_vector[1], -forward_vector[0]]
 
         targets = []
-        targets.append(np.sqrt((location[0] - node[0]) ** 2 + (location[1] - node[1]) ** 2))
-        targets.append(np.sqrt((location[0] - next[0]) ** 2 + (location[1] - next[1]) ** 2))
+        targets.append(np.sqrt((location[0] - node[0])**2 + (location[1] - node[1])**2))
+        targets.append(np.sqrt((location[0] - next[0])**2 + (location[1] - next[1])**2))
 
         node_sign = np.sign(node_forward[0] * right_vec[0] + node_forward[1] * right_vec[1])
         next_sign = np.sign(next_forward[0] * right_vec[0] + next_forward[1] * right_vec[1])

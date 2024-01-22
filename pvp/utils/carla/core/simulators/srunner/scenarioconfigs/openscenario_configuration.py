@@ -16,11 +16,11 @@ import carla
 import xmlschema
 
 # pylint: enable=line-too-long
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider  # workaround
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider  # workaround
 # pylint: disable=line-too-long
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ActorConfigurationData, ScenarioConfiguration
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.openscenario_parser import OpenScenarioParser
+from pvp.utils.carla.core.simulators.srunner.tools.openscenario_parser import OpenScenarioParser
 
 
 class OpenScenarioConfiguration(ScenarioConfiguration):
@@ -28,7 +28,6 @@ class OpenScenarioConfiguration(ScenarioConfiguration):
     Limitations:
     - Only one Story + Init is supported per Storyboard
     """
-
     def __init__(self, filename, client):
 
         self.xml_tree = ET.parse(filename)

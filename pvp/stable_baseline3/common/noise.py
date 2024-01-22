@@ -9,7 +9,6 @@ class ActionNoise(ABC):
     """
     The action noise base class
     """
-
     def __init__(self):
         super(ActionNoise, self).__init__()
 
@@ -31,7 +30,6 @@ class NormalActionNoise(ActionNoise):
     :param mean: the mean value of the noise
     :param sigma: the scale of the noise (std here)
     """
-
     def __init__(self, mean: np.ndarray, sigma: np.ndarray):
         self._mu = mean
         self._sigma = sigma
@@ -56,7 +54,6 @@ class OrnsteinUhlenbeckActionNoise(ActionNoise):
     :param dt: the timestep for the noise
     :param initial_noise: the initial value for the noise output, (if None: 0)
     """
-
     def __init__(
         self,
         mean: np.ndarray,
@@ -76,9 +73,8 @@ class OrnsteinUhlenbeckActionNoise(ActionNoise):
 
     def __call__(self) -> np.ndarray:
         noise = (
-            self.noise_prev
-            + self._theta * (self._mu - self.noise_prev) * self._dt
-            + self._sigma * np.sqrt(self._dt) * np.random.normal(size=self._mu.shape)
+            self.noise_prev + self._theta * (self._mu - self.noise_prev) * self._dt +
+            self._sigma * np.sqrt(self._dt) * np.random.normal(size=self._mu.shape)
         )
         self.noise_prev = noise
         return noise
@@ -100,7 +96,6 @@ class VectorizedActionNoise(ActionNoise):
     :param base_noise: ActionNoise The noise generator to use
     :param n_envs: The number of parallel environments
     """
-
     def __init__(self, base_noise: ActionNoise, n_envs: int):
         try:
             self.n_envs = int(n_envs)
@@ -159,7 +154,8 @@ class VectorizedActionNoise(ActionNoise):
 
         if len(different_types):
             raise ValueError(
-                f"Noise instances at indices {different_types} don't match the type of base_noise", type(self.base_noise)
+                f"Noise instances at indices {different_types} don't match the type of base_noise",
+                type(self.base_noise)
             )
 
         self._noises = noises

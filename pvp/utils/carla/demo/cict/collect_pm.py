@@ -40,7 +40,6 @@ def getLinearPose(pose1, pose2, min_dist):
 
 
 class CollectPerspectiveImage(object):
-
     def __init__(self, param, sensor):
         self.longitudinal_sample_number_near = param.longitudinal_sample_number_near
         self.longitudinal_sample_number_far = param.longitudinal_sample_number_far
@@ -170,7 +169,6 @@ class CollectPerspectiveImage(object):
 
 
 class InversePerspectiveMapping(object):
-
     def __init__(self, param, sensor):
         self.sensor = sensor
         self.camera_params = CameraParams(IntrinsicParams(sensor), ExtrinsicParams(sensor))

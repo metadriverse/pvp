@@ -4,10 +4,10 @@ import torch as th
 from gym import spaces
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.on_policy_algorithm import OnPolicyAlgorithm
-from pvp_iclr_release.stable_baseline3.common.policies import ActorCriticPolicy
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import explained_variance
+from pvp.stable_baseline3.common.on_policy_algorithm import OnPolicyAlgorithm
+from pvp.stable_baseline3.common.policies import ActorCriticPolicy
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from pvp.stable_baseline3.common.utils import explained_variance
 
 
 class A2C(OnPolicyAlgorithm):
@@ -50,7 +50,6 @@ class A2C(OnPolicyAlgorithm):
         Setting it to auto, the code will be run on the GPU if possible.
     :param _init_setup_model: Whether or not to build the network at the creation of the instance
     """
-
     def __init__(
         self,
         policy: Union[str, Type[ActorCriticPolicy]],

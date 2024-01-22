@@ -12,8 +12,8 @@ import numpy as np
 import shapely.geometry
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
 
 DEFAULT_CAMERA_CONFIG = {
     'size': [384, 160],
@@ -69,11 +69,10 @@ class SensorHelper(object):
 
     :Interfaces: setup_sensors, get_sensors_data, clear_up
     """
-
     def __init__(
-            self,
-            obs_cfg: Dict,
-            aug_cfg: Optional[Dict] = None,
+        self,
+        obs_cfg: Dict,
+        aug_cfg: Optional[Dict] = None,
     ) -> None:
         self._obs_cfg = obs_cfg
         self._aug_cfg = aug_cfg
@@ -227,7 +226,6 @@ class CallBack(object):
     """
     Class the sensors listen to in order to receive their data each frame
     """
-
     def __init__(self, tag: str, type: str, wrapper: Any) -> None:
         """
         Initializes the call back
@@ -293,7 +291,6 @@ class CollisionSensor(object):
 
     :Interfaces: clear
     """
-
     def __init__(self, parent_actor: carla.Actor, col_threshold: float) -> None:
         self.sensor = None
         self._history = deque(maxlen=500)
@@ -316,7 +313,7 @@ class CollisionSensor(object):
         if not self:
             return
         impulse = event.normal_impulse
-        intensity = math.sqrt(impulse.x ** 2 + impulse.y ** 2 + impulse.z ** 2)
+        intensity = math.sqrt(impulse.x**2 + impulse.y**2 + impulse.z**2)
         self._history.append((event.frame, intensity))
         if intensity > self._threshold:
             self.collided = True
@@ -344,7 +341,6 @@ class TrafficLightHelper(object):
     :Interfaces:
         - tick
     """
-
     def __init__(self, hero_vehicle: carla.Actor, debug: bool = False) -> None:
         self._hero_vehicle = hero_vehicle
         self._world = CarlaDataProvider.get_world()
@@ -385,7 +381,7 @@ class TrafficLightHelper(object):
                 carla.TrafficLightState.Off: TrafficLightState.OFF,
             }[self._active_light.state]
             delta = vehicle_location - light_trigger_location
-            distance = np.sqrt(sum([delta.x ** 2, delta.y ** 2, delta.z ** 2]))
+            distance = np.sqrt(sum([delta.x**2, delta.y**2, delta.z**2]))
             self.active_light_dis = min(200, distance)
             if self.active_light_dis < self._light_dis_thresh:
                 if self._last_light is None or self._active_light.id != self._last_light.id:

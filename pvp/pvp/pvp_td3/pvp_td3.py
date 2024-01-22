@@ -6,12 +6,12 @@ import torch as th
 import os
 import pathlib
 import io
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.utils import polyak_update
-from pvp_iclr_release.stable_baseline3.td3.td3 import TD3
-from pvp_iclr_release.stable_baseline3.old.old_buffer import oldReplayBuffer, concat_samples
-from pvp_iclr_release.stable_baseline3.common.save_util import load_from_pkl, save_to_pkl
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, RolloutReturn, Schedule, TrainFreq, \
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.utils import polyak_update
+from pvp.stable_baseline3.td3.td3 import TD3
+from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer, concat_samples
+from pvp.stable_baseline3.common.save_util import load_from_pkl, save_to_pkl
+from pvp.stable_baseline3.common.type_aliases import GymEnv, MaybeCallback, RolloutReturn, Schedule, TrainFreq, \
     TrainFrequencyUnit
 from torch.nn import functional as F
 
@@ -33,20 +33,21 @@ class pvpTD3(TD3):
         else:
             self.intervention_start_stop_td = True
         self.q_value_bound = q_value_bound
-        self.use_balance_sample=use_balance_sample
+        self.use_balance_sample = use_balance_sample
         super(pvpTD3, self).__init__(*args, **kwargs)
-
 
     def _setup_model(self) -> None:
         super(pvpTD3, self)._setup_model()
         if self.use_balance_sample:
-            self.human_data_buffer = oldReplayBuffer(self.buffer_size,
-                                                      self.observation_space,
-                                                      self.action_space,
-                                                      self.device,
-                                                      n_envs=self.n_envs,
-                                                      optimize_memory_usage=self.optimize_memory_usage,
-                                                      **self.replay_buffer_kwargs)
+            self.human_data_buffer = oldReplayBuffer(
+                self.buffer_size,
+                self.observation_space,
+                self.action_space,
+                self.device,
+                n_envs=self.n_envs,
+                optimize_memory_usage=self.optimize_memory_usage,
+                **self.replay_buffer_kwargs
+            )
         else:
             self.human_data_buffer = self.replay_buffer
 
@@ -98,14 +99,19 @@ class pvpTD3(TD3):
                 if not self.intervention_start_stop_td:
                     l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
                 else:
-                    l = 0.5 * F.mse_loss(replay_data.stop_td * current_q_behavior,
-                                         replay_data.stop_td * target_q_values)
+                    l = 0.5 * F.mse_loss(
+                        replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
+                    )
 
                 # xxx: Here is the CQL loss with Q value bound
-                l += th.mean(replay_data.interventions * self.cql_coefficient * (
-                    F.mse_loss(current_q_behavior, self.q_value_bound * th.ones_like(current_q_behavior))))
-                l += th.mean(replay_data.interventions * self.cql_coefficient * (
-                    F.mse_loss(current_q_novice, -self.q_value_bound * th.ones_like(current_q_novice))))
+                l += th.mean(
+                    replay_data.interventions * self.cql_coefficient *
+                    (F.mse_loss(current_q_behavior, self.q_value_bound * th.ones_like(current_q_behavior)))
+                )
+                l += th.mean(
+                    replay_data.interventions * self.cql_coefficient *
+                    (F.mse_loss(current_q_novice, -self.q_value_bound * th.ones_like(current_q_novice)))
+                )
                 # xxx: harm performance
                 # l += th.mean((1 - replay_data.stop_td) * self.cql_coefficient * (
                 #     F.mse_loss(current_q_behavior, -self.q_value_bound * th.ones_like(current_q_behavior))))
@@ -124,8 +130,8 @@ class pvpTD3(TD3):
             # Delayed policy updates
             if self._n_updates % self.policy_delay == 0:
                 # Compute actor loss
-                actor_loss = -self.critic.q1_forward(replay_data.observations,
-                                                     self.actor(replay_data.observations)).mean()
+                actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations
+                                                                                          )).mean()
                 actor_losses.append(actor_loss.item())
 
                 # Optimize the actor
@@ -144,27 +150,30 @@ class pvpTD3(TD3):
             self.logger.record("train/{}".format(key), np.mean(values))
 
     def _store_transition(
-            self,
-            replay_buffer: ReplayBuffer,
-            buffer_action: np.ndarray,
-            new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
-            reward: np.ndarray,
-            dones: np.ndarray,
-            infos: List[Dict[str, Any]],
+        self,
+        replay_buffer: ReplayBuffer,
+        buffer_action: np.ndarray,
+        new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
+        reward: np.ndarray,
+        dones: np.ndarray,
+        infos: List[Dict[str, Any]],
     ) -> None:
         if infos[0]["takeover"] or infos[0]["takeover_start"]:
             replay_buffer = self.human_data_buffer
         super(pvpTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
-    def save_replay_buffer(self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path, io.BufferedIOBase]) -> None:
+    def save_replay_buffer(
+        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
+                                                                                          io.BufferedIOBase]
+    ) -> None:
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
         super(pvpTD3, self).save_replay_buffer(path_replay)
 
     def load_replay_buffer(
-            self,
-            path_human: Union[str, pathlib.Path, io.BufferedIOBase],
-            path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
-            truncate_last_traj: bool = True,
+        self,
+        path_human: Union[str, pathlib.Path, io.BufferedIOBase],
+        path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
+        truncate_last_traj: bool = True,
     ) -> None:
         """
         Load a replay buffer from a pickle file.
@@ -176,7 +185,9 @@ class pvpTD3(TD3):
             If set to ``False``, we assume that we continue the same trajectory (same episode).
         """
         self.human_data_buffer = load_from_pkl(path_human, self.verbose)
-        assert isinstance(self.human_data_buffer, ReplayBuffer), "The replay buffer must inherit from ReplayBuffer class"
+        assert isinstance(
+            self.human_data_buffer, ReplayBuffer
+        ), "The replay buffer must inherit from ReplayBuffer class"
 
         # Backward compatibility with SB3 < 2.1.0 replay buffer
         # Keep old behavior: do not handle timeout termination separately
@@ -186,26 +197,26 @@ class pvpTD3(TD3):
         super(pvpTD3, self).load_replay_buffer(path_replay, truncate_last_traj)
 
     def learn(
-            self,
-            total_timesteps: int,
-            callback: MaybeCallback = None,
-            log_interval: int = 4,
-            eval_env: Optional[GymEnv] = None,
-            eval_freq: int = -1,
-            n_eval_episodes: int = 5,
-            tb_log_name: str = "run",
-            eval_log_path: Optional[str] = None,
-            reset_num_timesteps: bool = True,
-            save_timesteps: int = 2000,
-            buffer_save_timesteps:int =  2000,
-            save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            save_buffer: bool = False,
-            load_buffer: bool = False,
-            load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            warmup: bool = False,
-            warmup_steps: int = 5000,
+        self,
+        total_timesteps: int,
+        callback: MaybeCallback = None,
+        log_interval: int = 4,
+        eval_env: Optional[GymEnv] = None,
+        eval_freq: int = -1,
+        n_eval_episodes: int = 5,
+        tb_log_name: str = "run",
+        eval_log_path: Optional[str] = None,
+        reset_num_timesteps: bool = True,
+        save_timesteps: int = 2000,
+        buffer_save_timesteps: int = 2000,
+        save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        save_buffer: bool = False,
+        load_buffer: bool = False,
+        load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        warmup: bool = False,
+        warmup_steps: int = 5000,
     ) -> "OffPolicyAlgorithm":
 
         total_timesteps, callback = self._setup_learn(
@@ -219,7 +230,7 @@ class pvpTD3(TD3):
             tb_log_name,
         )
         if load_buffer:
-            self.load_replay_buffer(load_path_human,load_path_replay)
+            self.load_replay_buffer(load_path_human, load_path_replay)
         callback.on_training_start(locals(), globals())
         if warmup:
             assert load_buffer, "warmup is useful only when load buffer"
@@ -248,11 +259,15 @@ class pvpTD3(TD3):
                 if gradient_steps > 0:
                     self.train(batch_size=self.batch_size, gradient_steps=gradient_steps)
             if save_buffer and self.num_timesteps > 0 and self.num_timesteps % buffer_save_timesteps == 0:
-                buffer_location_human = os.path.join(save_path_human, "human_buffer_" + str(self.num_timesteps) + ".pkl")
-                buffer_location_replay = os.path.join(save_path_replay, "replay_buffer_" + str(self.num_timesteps) + ".pkl")
+                buffer_location_human = os.path.join(
+                    save_path_human, "human_buffer_" + str(self.num_timesteps) + ".pkl"
+                )
+                buffer_location_replay = os.path.join(
+                    save_path_replay, "replay_buffer_" + str(self.num_timesteps) + ".pkl"
+                )
                 print("Saving..." + str(buffer_location_human))
                 print("Saving..." + str(buffer_location_replay))
-                self.save_replay_buffer(buffer_location_human,buffer_location_replay)
+                self.save_replay_buffer(buffer_location_human, buffer_location_replay)
 
         callback.on_training_end()
 

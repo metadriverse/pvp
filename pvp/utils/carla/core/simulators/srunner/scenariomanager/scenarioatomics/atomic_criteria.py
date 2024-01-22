@@ -22,9 +22,9 @@ import numpy as np
 import py_trees
 import shapely
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.traffic_events import TrafficEvent, \
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.traffic_events import TrafficEvent, \
     TrafficEventType
 
 
@@ -42,15 +42,14 @@ class Criterion(py_trees.behaviour.Behaviour):
     - test_status: Used to access the result of the criterion
     - optional: Indicates if a criterion is optional (not used for overall analysis)
     """
-
     def __init__(
-            self,
-            name,
-            actor,
-            expected_value_success,
-            expected_value_acceptable=None,
-            optional=False,
-            terminate_on_failure=False
+        self,
+        name,
+        actor,
+        expected_value_success,
+        expected_value_acceptable=None,
+        optional=False,
+        terminate_on_failure=False
     ):
         super(Criterion, self).__init__(name)
         self.logger.debug("%s.__init__()" % (self.__class__.__name__))
@@ -90,7 +89,6 @@ class MaxVelocityTest(Criterion):
     - max_velocity_allowed: maximum allowed velocity in m/s
     - optional [optional]: If True, the result is not considered for an overall pass/fail result
     """
-
     def __init__(self, actor, max_velocity_allowed, optional=False, name="CheckMaximumVelocity"):
         """
         Setup actor and maximum allowed velovity
@@ -135,7 +133,6 @@ class DrivenDistanceTest(Criterion):
                            the test result is ACCEPTABLE
     - optional [optional]: If True, the result is not considered for an overall pass/fail result
     """
-
     def __init__(self, actor, distance_success, distance_acceptable=None, optional=False, name="CheckDrivenDistance"):
         """
         Setup actor
@@ -204,9 +201,8 @@ class AverageVelocityTest(Criterion):
                                the test result is ACCEPTABLE
     - optional [optional]: If True, the result is not considered for an overall pass/fail result
     """
-
     def __init__(
-            self, actor, avg_velocity_success, avg_velocity_acceptable=None, optional=False, name="CheckAverageVelocity"
+        self, actor, avg_velocity_success, avg_velocity_acceptable=None, optional=False, name="CheckAverageVelocity"
     ):
         """
         Setup actor and average velovity expected
@@ -285,13 +281,13 @@ class CollisionTest(Criterion):
     MAX_ID_TIME = 5  # Amount of time the last collision if is remembered
 
     def __init__(
-            self,
-            actor,
-            other_actor=None,
-            other_actor_type=None,
-            optional=False,
-            name="CollisionTest",
-            terminate_on_failure=False
+        self,
+        actor,
+        other_actor=None,
+        other_actor_type=None,
+        optional=False,
+        name="CollisionTest",
+        terminate_on_failure=False
     ):
         """
         Construction with sensor setup
@@ -439,14 +435,13 @@ class ActorSpeedAboveThresholdTest(Criterion):
     - below_threshold_max_time: Maximum time (in seconds) the actor can remain under the speed threshold
     - terminate_on_failure [optional]: If True, the complete scenario will terminate upon failure of this test
     """
-
     def __init__(
-            self,
-            actor,
-            speed_threshold,
-            below_threshold_max_time,
-            name="ActorSpeedAboveThresholdTest",
-            terminate_on_failure=False
+        self,
+        actor,
+        speed_threshold,
+        below_threshold_max_time,
+        name="ActorSpeedAboveThresholdTest",
+        terminate_on_failure=False
     ):
         """
         Class constructor.
@@ -518,7 +513,6 @@ class KeepLaneTest(Criterion):
     - actor: CARLA actor to be used for this test
     - optional [optional]: If True, the result is not considered for an overall pass/fail result
     """
-
     def __init__(self, actor, optional=False, name="CheckKeepLane"):
         """
         Construction with sensor setup
@@ -578,7 +572,6 @@ class ReachedRegionTest(Criterion):
     - actor: CARLA actor to be used for this test
     - min_x, max_x, min_y, max_y: Bounding box of the checked region
     """
-
     def __init__(self, actor, min_x, max_x, min_y, max_y, name="ReachedRegionTest"):
         """
         Setup trigger region (rectangle provided by
@@ -633,7 +626,6 @@ class OffRoadTest(Criterion):
             when using the output argument
         terminate_on_failure (bool): If True, the atomic will fail when the duration condition has been met.
     """
-
     def __init__(self, actor, duration=0, optional=False, terminate_on_failure=False, name="OffRoadTest"):
         """
         Setup of the variables
@@ -706,7 +698,6 @@ class EndofRoadTest(Criterion):
             when using the output argument
         terminate_on_failure (bool): If True, the atomic will fail when the duration condition has been met.
     """
-
     def __init__(self, actor, duration=0, optional=False, terminate_on_failure=False, name="EndofRoadTest"):
         """
         Setup of the variables
@@ -775,7 +766,6 @@ class OnSidewalkTest(Criterion):
             when using the output argument
         terminate_on_failure (bool): If True, the atomic will fail when the duration condition has been met.
     """
-
     def __init__(self, actor, duration=0, optional=False, terminate_on_failure=False, name="OnSidewalkTest"):
         """
         Construction with sensor setup
@@ -1404,7 +1394,6 @@ class InRadiusRegionTest(Criterion):
     - actor: CARLA actor to be used for this test
     - x, y, radius: Position (x,y) and radius (in meters) used to get the checked region
     """
-
     def __init__(self, actor, x, y, radius, name="InRadiusRegionTest"):
         """
         """
@@ -1426,7 +1415,7 @@ class InRadiusRegionTest(Criterion):
             return new_status
 
         if self.test_status != "SUCCESS":
-            in_radius = math.sqrt(((location.x - self._x) ** 2) + ((location.y - self._y) ** 2)) < self._radius
+            in_radius = math.sqrt(((location.x - self._x)**2) + ((location.y - self._y)**2)) < self._radius
             if in_radius:
                 route_completion_event = TrafficEvent(event_type=TrafficEventType.ROUTE_COMPLETED)
                 route_completion_event.set_message("Destination was successfully reached")
@@ -1519,7 +1508,7 @@ class InRouteTest(Criterion):
             for index in range(self._current_index, min(self._current_index + self.WINDOWS_SIZE + 1,
                                                         self._route_length)):
                 ref_waypoint = self._waypoints[index]
-                distance = math.sqrt(((location.x - ref_waypoint.x) ** 2) + ((location.y - ref_waypoint.y) ** 2))
+                distance = math.sqrt(((location.x - ref_waypoint.x)**2) + ((location.y - ref_waypoint.y)**2))
                 if distance <= shortest_distance:
                     closest_index = index
                     shortest_distance = distance

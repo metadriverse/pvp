@@ -6,9 +6,9 @@ from typing import Any, Dict
 import numpy as np
 from gym import spaces
 
-from pvp_iclr_release.utils.carla.core.simulators import CarlaScenarioSimulator
-from pvp_iclr_release.utils.carla.core.utils.others.visualizer import Visualizer
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.utils.carla.core.simulators import CarlaScenarioSimulator
+from pvp.utils.carla.core.utils.others.visualizer import Visualizer
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from .base_carla_env import BaseCarlaEnv
 
 
@@ -57,16 +57,15 @@ class ScenarioCarlaEnv(BaseCarlaEnv):
         success_reward=10,
         stuck_len=300,
         max_speed=5,
-
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            host: str = 'localhost',
-            port: int = None,
-            tm_port: int = None,
-            **kwargs,
+        self,
+        cfg: Dict,
+        host: str = 'localhost',
+        port: int = None,
+        tm_port: int = None,
+        **kwargs,
     ) -> None:
         """
         Initialize environment with config and Carla TCP host & port.
@@ -115,7 +114,7 @@ class ScenarioCarlaEnv(BaseCarlaEnv):
         self._last_steer = 0
         self._last_distance = None
 
-        from pvp_iclr_release.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
+        from pvp.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
         self._stuck_detector = StuckDetector(self._cfg.stuck_len)
 
         self._tick = 0
@@ -334,8 +333,9 @@ class ScenarioCarlaEnv(BaseCarlaEnv):
         # TODO(xxx): We hardcode the system frwequency here!
         if self._tick / 10 > self._timeout:
             print(
-                "The episode is terminated because of timeout. (Timeout: {}, current tick: {})"
-                    .format(self._timeout, self._tick)
+                "The episode is terminated because of timeout. (Timeout: {}, current tick: {})".format(
+                    self._timeout, self._tick
+                )
             )
             return True
 

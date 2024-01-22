@@ -3,7 +3,7 @@ from typing import Dict, Union
 import gym
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymStepReturn
+from pvp.stable_baseline3.common.type_aliases import GymStepReturn
 
 
 class SimpleMultiObsEnv(gym.Env):
@@ -33,7 +33,6 @@ class SimpleMultiObsEnv(gym.Env):
     :param random_start: If true, agent starts in random position
     :param channel_last: If true, the image will be channel last, else it will be channel first
     """
-
     def __init__(
         self,
         num_col: int = 4,
@@ -55,11 +54,11 @@ class SimpleMultiObsEnv(gym.Env):
         if discrete_actions:
             self.action_space = gym.spaces.Discrete(4)
         else:
-            self.action_space = gym.spaces.Box(0, 1, (4,))
+            self.action_space = gym.spaces.Box(0, 1, (4, ))
 
         self.observation_space = gym.spaces.Dict(
             spaces={
-                "vec": gym.spaces.Box(0, 1, (self.vector_size,), dtype=np.float64),
+                "vec": gym.spaces.Box(0, 1, (self.vector_size, ), dtype=np.float64),
                 "img": gym.spaces.Box(0, 255, self.img_size, dtype=np.uint8),
             }
         )

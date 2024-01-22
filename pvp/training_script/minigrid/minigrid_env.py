@@ -163,9 +163,6 @@ class MinigridWrapper(Wrapper):
         self.redraw()
 
 
-
-
-
 import gym
 # import torch
 from collections import deque, defaultdict
@@ -174,6 +171,7 @@ import numpy as np
 from gym_minigrid.minigrid import OBJECT_TO_IDX, COLOR_TO_IDX
 
 # Copied from: https://github.com/facebookresearch/impact-driven-exploration/blob/877c4ea530cc0ca3902211dba4e922bf8c3ce276/src/env_utils.py#L38
+
 
 class FullyObsCustomWrapper(gym.Wrapper):
     def __init__(self, env, fix_seed=False, env_seed=1):
@@ -199,7 +197,9 @@ class FullyObsCustomWrapper(gym.Wrapper):
         partial_obs = _format_observation(self.get_partial_obs())
 
         if self.gym_env.env.env.carrying:
-            carried_col, carried_obj = torch.LongTensor([[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
+            carried_col, carried_obj = torch.LongTensor(
+                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]
+            ), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
         else:
             carried_col, carried_obj = torch.LongTensor([[5]]), torch.LongTensor([[1]])
 
@@ -210,8 +210,8 @@ class FullyObsCustomWrapper(gym.Wrapper):
             # episode_return=self.episode_return,
             # episode_step=self.episode_step,
             # episode_win=self.episode_win,
-            carried_col = carried_col,
-            carried_obj = carried_obj,
+            carried_col=carried_col,
+            carried_obj=carried_obj,
             partial_obs=partial_obs
         )
 
@@ -244,36 +244,33 @@ class FullyObsCustomWrapper(gym.Wrapper):
         partial_obs = _format_observation(self.get_partial_obs())
 
         if self.gym_env.env.env.carrying:
-            carried_col, carried_obj = torch.LongTensor([[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
+            carried_col, carried_obj = torch.LongTensor(
+                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]
+            ), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
         else:
             carried_col, carried_obj = torch.LongTensor([[5]]), torch.LongTensor([[1]])
-
 
         return dict(
             frame=frame,
             reward=reward,
             done=done,
             episode_return=episode_return,
-            episode_step = episode_step,
-            episode_win = episode_win,
-            carried_col = carried_col,
-            carried_obj = carried_obj,
+            episode_step=episode_step,
+            episode_win=episode_win,
+            carried_col=carried_col,
+            carried_obj=carried_obj,
             partial_obs=partial_obs
         )
 
     def get_full_obs(self):
         env = self.gym_env.unwrapped
         full_grid = env.grid.encode()
-        full_grid[env.agent_pos[0]][env.agent_pos[1]] = np.array([
-            OBJECT_TO_IDX['agent'],
-            COLOR_TO_IDX['red'],
-            env.agent_dir
-        ])
+        full_grid[env.agent_pos[0]][env.agent_pos[1]
+                                    ] = np.array([OBJECT_TO_IDX['agent'], COLOR_TO_IDX['red'], env.agent_dir])
         return full_grid
 
     def close(self):
         self.gym_env.close()
-
 
 
 if __name__ == '__main__':

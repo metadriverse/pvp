@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.print_dict_utils import pretty_print
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.training_script.minigrid.minigrid_env import MinigridWrapper
-from pvp_iclr_release.training_script.minigrid.minigrid_model import MinigridCNN
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.utils.print_dict_utils import pretty_print
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.training_script.minigrid.minigrid_env import MinigridWrapper
+from pvp.training_script.minigrid.minigrid_model import MinigridCNN
 
 EVAL_ENV_START = 0
 
@@ -21,16 +21,13 @@ class AtariPolicyFunction:
     def __init__(self, ckpt_path, ckpt_index, env):
         self.algo = oldDQN(
             policy=CnnPolicy,
-            policy_kwargs=dict(
-                features_extractor_class=MinigridCNN,
-                activation_fn=torch.nn.Tanh,
-                net_arch=[64, ]
-            ),
+            policy_kwargs=dict(features_extractor_class=MinigridCNN, activation_fn=torch.nn.Tanh, net_arch=[
+                64,
+            ]),
             env=env,
             learning_rate=1e-4,
             optimize_memory_usage=True,
             buffer_size=100000,
-
             batch_size=2,  # Reduce the batch size for real-time copilot
             train_freq=4,
             gradient_steps=1,
@@ -40,7 +37,6 @@ class AtariPolicyFunction:
             # verbose=2,
             # seed=0,
             device="auto",
-
             learning_starts=0,
             exploration_fraction=0.0,
             exploration_final_eps=0.0,
@@ -50,29 +46,28 @@ class AtariPolicyFunction:
 
     def __call__(self, o, deterministic=False):
         assert deterministic
-        action, state =  self.algo.predict(o, deterministic=deterministic)
+        action, state = self.algo.predict(o, deterministic=deterministic)
         return action
 
 
 def evaluate_atari_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        env_name="BreakoutNoFrameskip-v4",
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    env_name="BreakoutNoFrameskip-v4",
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-
-
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.stable_baseline3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
 
     eval_log_dir = osp.join(ckpt_path, "evaluations")
+
     def _make_eval_env():
         env = gym.make(env_name)
         env = MinigridWrapper(env, enable_render=False, enable_human=False)
@@ -143,6 +138,8 @@ def evaluate_atari_once(
                 print("Episode finished!")
                 need_break = True
     return True
+
+
 if __name__ == '__main__':
     index_x = []
     success_y = []
@@ -153,7 +150,9 @@ if __name__ == '__main__':
         # ckpt_path=os.path.expanduser("/home/xxx/nvme/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed0_2022-06-14_00-20-14/models/"),
         # ckpt_index=600,
         # folder_name="/home/xxx/nvme/iclr-visual/minigrid-emptyroom-pvp",
-        ckpt_path=os.path.expanduser("/home/xxx/nvme/model/old_minigrid/runs/minigrid_old_2room/minigrid_old_2room_MiniGrid-MultiRoom-N2-S4-v0_lr0.0001_seed2_2022-06-08_23-20-31/models/"),
+        ckpt_path=os.path.expanduser(
+            "/home/xxx/nvme/model/old_minigrid/runs/minigrid_old_2room/minigrid_old_2room_MiniGrid-MultiRoom-N2-S4-v0_lr0.0001_seed2_2022-06-08_23-20-31/models/"
+        ),
         ckpt_index=2000,
         folder_name="/home/xxx/nvme/iclr-visual/minigrid-2room-pvpnew1",
         use_render=True,

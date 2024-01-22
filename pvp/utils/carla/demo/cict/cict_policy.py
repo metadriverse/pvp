@@ -5,10 +5,10 @@ import PIL.Image as Image
 import numpy as np
 import torch
 import torchvision.transforms as transforms
-from pvp_iclr_release.utils.carla.core.models import VehicleCapacController
-from pvp_iclr_release.utils.carla.core.policy.base_carla_policy import BaseCarlaPolicy
-from pvp_iclr_release.utils.carla.demo.cict_demo.cict_model import CICTModel
-from pvp_iclr_release.utils.carla.demo.cict_demo.post import get_map, get_nav, draw_destination, CollectPerspectiveImage, \
+from pvp.utils.carla.core.models import VehicleCapacController
+from pvp.utils.carla.core.policy.base_carla_policy import BaseCarlaPolicy
+from pvp.utils.carla.demo.cict_demo.cict_model import CICTModel
+from pvp.utils.carla.demo.cict_demo.post import get_map, get_nav, draw_destination, CollectPerspectiveImage, \
     params, Sensor, \
     find_dest_with_fix_length
 
@@ -17,8 +17,8 @@ class CICTPolicy(BaseCarlaPolicy):
     config = dict(debug=False, cuda=True)
 
     def __init__(
-            self,
-            cfg: Dict,
+        self,
+        cfg: Dict,
     ) -> None:
         super().__init__(cfg)
         self._enable_field = set(['collect', 'eval'])

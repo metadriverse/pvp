@@ -3,9 +3,8 @@ import torch as th
 from torch import nn
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.torch_layers import BaseFeaturesExtractor
-from pvp_iclr_release.utils.older_utils import same_padding
-
+from pvp.stable_baseline3.common.torch_layers import BaseFeaturesExtractor
+from pvp.utils.older_utils import same_padding
 
 predefined_filters = {
     (240, 320): [
@@ -13,7 +12,6 @@ predefined_filters = {
         [32, [6, 6], 4],
         [256, [9, 9], 1],
     ],
-
     (180, 320): [
         [16, [9, 16], [5, 9]],  # output: 36, 36
         [32, [3, 3], 2],  # output: 18, 18
@@ -21,7 +19,6 @@ predefined_filters = {
         [128, [3, 3], 3],  # output: 3, 3
         [256, [3, 3], 3],  # output: 1, 1
     ],
-
     (84, 84): [
         [16, [4, 4], 3],  # output: 28, 28
         [32, [3, 3], 2],  # output: 14, 14

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from ding.torch_utils import to_device
 from ding.utils.data import default_collate, default_decollate
 
-from pvp_iclr_release.utils.carla.core.models import CILRSModel
+from pvp.utils.carla.core.models import CILRSModel
 from .base_carla_policy import BaseCarlaPolicy
 
 
@@ -40,8 +40,8 @@ class CILRSPolicy(BaseCarlaPolicy):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
+        self,
+        cfg: Dict,
     ) -> None:
         super().__init__(cfg, enable_field=[])
         self._enable_field = ['eval', 'learn']

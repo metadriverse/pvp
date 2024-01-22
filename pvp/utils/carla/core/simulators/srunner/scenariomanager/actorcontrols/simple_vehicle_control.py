@@ -20,9 +20,9 @@ import carla
 import cv2
 import numpy as np
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
 
 
 class SimpleVehicleControl(BasicControl):
@@ -71,7 +71,6 @@ class SimpleVehicleControl(BasicControl):
         _obstacle_actor (carla.Actor): Closest obstacle returned by the obstacle sensor
             Defaults to None.
     """
-
     def __init__(self, actor, args=None):
         super(SimpleVehicleControl, self).__init__(actor)
         self._generated_waypoint_list = []
@@ -234,12 +233,12 @@ class SimpleVehicleControl(BasicControl):
             if self._obstacle_distance < self._proximity_threshold:
                 distance = max(self._obstacle_distance, 0)
                 if distance > 0:
-                    current_speed = math.sqrt(self._actor.get_velocity().x ** 2 + self._actor.get_velocity().y ** 2)
+                    current_speed = math.sqrt(self._actor.get_velocity().x**2 + self._actor.get_velocity().y**2)
                     current_speed_other = math.sqrt(
-                        self._obstacle_actor.get_velocity().x ** 2 + self._obstacle_actor.get_velocity().y ** 2
+                        self._obstacle_actor.get_velocity().x**2 + self._obstacle_actor.get_velocity().y**2
                     )
                     if current_speed_other < current_speed:
-                        acceleration = -0.5 * (current_speed - current_speed_other) ** 2 / distance
+                        acceleration = -0.5 * (current_speed - current_speed_other)**2 / distance
                         target_speed = max(acceleration * (current_time - self._last_update) + current_speed, 0)
                 else:
                     target_speed = 0
@@ -247,7 +246,7 @@ class SimpleVehicleControl(BasicControl):
         # set new linear velocity
         velocity = carla.Vector3D(0, 0, 0)
         direction = next_location - CarlaDataProvider.get_location(self._actor)
-        direction_norm = math.sqrt(direction.x ** 2 + direction.y ** 2)
+        direction_norm = math.sqrt(direction.x**2 + direction.y**2)
         velocity.x = direction.x / direction_norm * target_speed
         velocity.y = direction.y / direction_norm * target_speed
 

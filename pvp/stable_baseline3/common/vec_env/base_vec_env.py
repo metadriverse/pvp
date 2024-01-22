@@ -244,7 +244,6 @@ class VecEnvWrapper(VecEnv):
     :param observation_space: the observation space (can be None to load from venv)
     :param action_space: the action space (can be None to load from venv)
     """
-
     def __init__(
         self,
         venv: VecEnv,
@@ -363,7 +362,6 @@ class CloudpickleWrapper:
 
     :param var: the variable you wish to wrap for pickling with cloudpickle
     """
-
     def __init__(self, var: Any):
         self.var = var
 

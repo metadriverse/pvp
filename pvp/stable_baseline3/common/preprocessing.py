@@ -73,7 +73,7 @@ def maybe_transpose(observation: np.ndarray, observation_space: spaces.Space) ->
     :return: channel first observation if observation is an image
     """
     # Avoid circular import
-    from pvp_iclr_release.stable_baseline3.common.vec_env import VecTransposeImage
+    from pvp.stable_baseline3.common.vec_env import VecTransposeImage
 
     if is_image_space(observation_space):
         if not (observation.shape == observation_space.shape or observation.shape[1:] == observation_space.shape):
@@ -133,9 +133,7 @@ def preprocess_obs(
         raise NotImplementedError(f"Preprocessing not implemented for {observation_space}")
 
 
-def get_obs_shape(
-    observation_space: spaces.Space,
-) -> Union[Tuple[int, ...], Dict[str, Tuple[int, ...]]]:
+def get_obs_shape(observation_space: spaces.Space, ) -> Union[Tuple[int, ...], Dict[str, Tuple[int, ...]]]:
     """
     Get the shape of the observation (useful for the buffers).
 
@@ -146,13 +144,13 @@ def get_obs_shape(
         return observation_space.shape
     elif isinstance(observation_space, spaces.Discrete):
         # Observation is an int
-        return (1,)
+        return (1, )
     elif isinstance(observation_space, spaces.MultiDiscrete):
         # Number of discrete features
-        return (int(len(observation_space.nvec)),)
+        return (int(len(observation_space.nvec)), )
     elif isinstance(observation_space, spaces.MultiBinary):
         # Number of binary features
-        return (int(observation_space.n),)
+        return (int(observation_space.n), )
     elif isinstance(observation_space, spaces.Dict):
         return {key: get_obs_shape(subspace) for (key, subspace) in observation_space.spaces.items()}
 

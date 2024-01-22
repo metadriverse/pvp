@@ -15,22 +15,21 @@ import operator
 import carla
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics import \
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics import \
     atomic_trigger_conditions as conditions
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
     UpdateAllActorControls
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.weather_sim import WeatherBehavior
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.weather_sim import WeatherBehavior
 
 
 class BasicScenario(object):
     """
     Base class for user-defined scenario
     """
-
     def __init__(
-            self, name, ego_vehicles, config, world, debug_mode=False, terminate_on_failure=False, criteria_enable=False
+        self, name, ego_vehicles, config, world, debug_mode=False, terminate_on_failure=False, criteria_enable=False
     ):
         """
         Setup all relevant parameters and create scenario
@@ -219,7 +218,6 @@ class Scenario(object):
     - timeout (default = 60s): Timeout of the scenario in seconds
     - terminate_on_failure: Terminate scenario on first failure
     """
-
     def __init__(self, behavior, criteria, name, timeout=60, terminate_on_failure=False):
         self.behavior = behavior
         self.test_criteria = criteria

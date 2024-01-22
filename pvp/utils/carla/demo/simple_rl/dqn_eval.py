@@ -1,17 +1,17 @@
 from functools import partial
 
 import torch
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import AsyncSubprocessEnvManager
 from ding.policy import DQNPolicy
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.demo.simple_rl.env_wrapper import DiscreteEnvWrapper
-from pvp_iclr_release.utils.carla.demo.simple_rl.model import DQNRLModel
+from pvp.utils.carla.demo.simple_rl.env_wrapper import DiscreteEnvWrapper
+from pvp.utils.carla.demo.simple_rl.model import DQNRLModel
 
 eval_config = dict(
     env=dict(
@@ -26,15 +26,13 @@ eval_config = dict(
                 type='behavior',
                 resolution=1,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[32, 32],
-                    pixels_per_meter=1,
-                    pixels_ahead_vehicle=14,
-                ),
-            )
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[32, 32],
+                pixels_per_meter=1,
+                pixels_ahead_vehicle=14,
+            ), )
         ),
         col_is_failure=True,
         stuck_is_failure=True,
@@ -64,10 +62,7 @@ eval_config = dict(
         ),
     ),
     # Need to change to you own carla server
-    server=[dict(
-        carla_host='localhost',
-        carla_ports=[9000, 9010, 2]
-    )],
+    server=[dict(carla_host='localhost', carla_ports=[9000, 9010, 2])],
 )
 
 main_config = EasyDict(eval_config)

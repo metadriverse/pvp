@@ -1,16 +1,16 @@
 from functools import partial
 
 import torch
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv
-from pvp_iclr_release.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp_iclr_release.utils.carla.core.policy import LBCBirdviewPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv
+from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
+from pvp.utils.carla.core.policy import LBCBirdviewPolicy
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import AsyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
+from pvp.utils.carla.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
 
 lbc_config = dict(
     env=dict(
@@ -27,15 +27,13 @@ lbc_config = dict(
                 threshold_before=9.0,
                 threshold_after=1.5,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[320, 320],
-                    pixels_per_meter=5,
-                    pixels_ahead_vehicle=100,
-                ),
-            ),
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[320, 320],
+                pixels_per_meter=5,
+                pixels_ahead_vehicle=100,
+            ), ),
         ),
         manager=dict(
             shared_memory=False,
@@ -48,13 +46,11 @@ lbc_config = dict(
     server=[dict(carla_host='localhost', carla_ports=[9000, 9002, 2])],
     policy=dict(
         ckpt_path='model-256.th',
-        eval=dict(
-            evaluator=dict(
-                suite='FullTown01-v3',
-                episodes_per_suite=25,
-                weathers=[1],
-            )
-        ),
+        eval=dict(evaluator=dict(
+            suite='FullTown01-v3',
+            episodes_per_suite=25,
+            weathers=[1],
+        )),
     ),
 )
 

@@ -19,48 +19,48 @@ import numpy.random as random
 import py_trees
 
 # pylint: enable=line-too-long
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
 # # pylint: disable=line-too-long
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ScenarioConfiguration, ActorConfigurationData
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import Idle, \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import Idle, \
     ScenarioTriggerer
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     (CollisionTest,
      InRouteTest,
      RouteCompletionTest,
      OutsideRouteLanesTest,
      RunningRedLightTest,
      ActorSpeedAboveThresholdTest)
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.change_lane import ChangeLane
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.control_loss import ControlLoss
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.control_loss_new import ControlLossNew
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.cut_in import CutIn
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle import FollowLeadingVehicle
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle_new import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.utils.carla.core.simulators.srunner.scenarios.change_lane import ChangeLane
+from pvp.utils.carla.core.simulators.srunner.scenarios.control_loss import ControlLoss
+from pvp.utils.carla.core.simulators.srunner.scenarios.control_loss_new import ControlLossNew
+from pvp.utils.carla.core.simulators.srunner.scenarios.cut_in import CutIn
+from pvp.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle import FollowLeadingVehicle
+from pvp.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle_new import \
     FollowLeadingVehicleNew
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.junction_crossing_route import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.junction_crossing_route import \
     NoSignalJunctionCrossingRoute
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.maneuver_opposite_direction import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.maneuver_opposite_direction import \
     ManeuverOppositeDirection
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.object_crash_intersection import VehicleTurningRoute
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.opposite_direction import OppositeDirection
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.signalized_junction_left_turn import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.object_crash_intersection import VehicleTurningRoute
+from pvp.utils.carla.core.simulators.srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
+from pvp.utils.carla.core.simulators.srunner.scenarios.opposite_direction import OppositeDirection
+from pvp.utils.carla.core.simulators.srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
+from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_left_turn import \
     SignalizedJunctionLeftTurn
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.signalized_junction_right_turn import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_right_turn import \
     SignalizedJunctionRightTurn
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.signalized_junction_straight import \
+from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_straight import \
     SignalizedJunctionStraight
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.route_manipulation import interpolate_trajectory, \
+from pvp.utils.carla.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
+from pvp.utils.carla.core.simulators.srunner.tools.route_manipulation import interpolate_trajectory, \
     downsample_route
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser, TRIGGER_THRESHOLD, \
+from pvp.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser, TRIGGER_THRESHOLD, \
     TRIGGER_ANGLE_THRESHOLD
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import convert_waypoint_to_transform
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import convert_waypoint_to_transform
 
 SECONDS_GIVEN_PER_METERS = 0.5
 
@@ -134,7 +134,6 @@ def compare_scenarios(scenario_choice, existent_scenario):
     """
     Compare function for scenarios based on distance of the scenario start position
     """
-
     def transform_to_pos_vec(scenario):
         """
         Convert left/right/front to a meaningful CARLA position
@@ -174,7 +173,6 @@ class RouteScenario(BasicScenario):
     Implementation of a RouteScenario, i.e. a scenario that consists of driving along a pre-defined route,
     along which several smaller scenarios are triggered
     """
-
     def __init__(self, world, config, debug_mode=False, criteria_enable=True, resolution=1.0):
         """
         Setup all relevant parameters and create scenarios along route
@@ -306,12 +304,7 @@ class RouteScenario(BasicScenario):
             else:  # LANEFOLLOW
                 color = carla.Color(0, 255, 0)  # Green
 
-            world.debug.draw_point(
-                carla.Location(wp),
-                size=size,
-                color=color,
-                life_time=float(life_time)
-            )
+            world.debug.draw_point(carla.Location(wp), size=size, color=color, life_time=float(life_time))
 
         # world.debug.draw_point(
         #     waypoints[0][0].location + carla.Location(z=vertical_shift),
@@ -373,7 +366,7 @@ class RouteScenario(BasicScenario):
             definition['name'] = NUMBER_CLASS_DICT[definition['name']]
 
     def _build_scenario_instances(
-            self, world, ego_vehicle, scenario_definitions, scenarios_per_tick=5, timeout=300, debug_mode=False
+        self, world, ego_vehicle, scenario_definitions, scenarios_per_tick=5, timeout=300, debug_mode=False
     ):
         """
         Based on the parsed route and possible scenarios, build all the scenario classes.
@@ -449,7 +442,6 @@ class RouteScenario(BasicScenario):
         """
         Get the full list of actor instances.
         """
-
         def get_actors_from_list(list_of_actor_def):
             """
                 Receives a list of actor definitions and creates an actual list of ActorConfigurationObjects

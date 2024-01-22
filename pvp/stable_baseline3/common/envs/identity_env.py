@@ -4,7 +4,7 @@ import numpy as np
 from gym import Env, Space
 from gym.spaces import Box, Discrete, MultiBinary, MultiDiscrete
 
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymObs, GymStepReturn
+from pvp.stable_baseline3.common.type_aliases import GymObs, GymStepReturn
 
 
 class IdentityEnv(Env):
@@ -65,7 +65,7 @@ class IdentityEnvBox(IdentityEnv):
         :param eps: the epsilon bound for correct value
         :param ep_length: the length of each episode in timesteps
         """
-        space = Box(low=low, high=high, shape=(1,), dtype=np.float32)
+        space = Box(low=low, high=high, shape=(1, ), dtype=np.float32)
         super().__init__(ep_length=ep_length, space=space)
         self.eps = eps
 
@@ -115,7 +115,6 @@ class FakeImageEnv(Env):
     :param discrete: Create discrete action space instead of continuous
     :param channel_first: Put channels on first axis instead of last
     """
-
     def __init__(
         self,
         action_dim: int = 6,
@@ -132,7 +131,7 @@ class FakeImageEnv(Env):
         if discrete:
             self.action_space = Discrete(action_dim)
         else:
-            self.action_space = Box(low=-1, high=1, shape=(5,), dtype=np.float32)
+            self.action_space = Box(low=-1, high=1, shape=(5, ), dtype=np.float32)
         self.ep_length = 10
         self.current_step = 0
 

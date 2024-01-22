@@ -6,10 +6,11 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import gym
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common import base_class  # pytype: disable=pyi-error
-from pvp_iclr_release.stable_baseline3.common.evaluation import evaluate_policy
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
+from pvp.stable_baseline3.common import base_class  # pytype: disable=pyi-error
+from pvp.stable_baseline3.common.evaluation import evaluate_policy
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_normalization
 from collections import defaultdict
+
 
 class BaseCallback(ABC):
     """
@@ -17,7 +18,6 @@ class BaseCallback(ABC):
 
     :param verbose:
     """
-
     def __init__(self, verbose: int = 0):
         super(BaseCallback, self).__init__()
         # The RL model
@@ -125,7 +125,6 @@ class EventCallback(BaseCallback):
         when an event is triggered.
     :param verbose:
     """
-
     def __init__(self, callback: Optional[BaseCallback] = None, verbose: int = 0):
         super(EventCallback, self).__init__(verbose=verbose)
         self.callback = callback
@@ -167,7 +166,6 @@ class CallbackList(BaseCallback):
     :param callbacks: A list of callbacks that will be called
         sequentially.
     """
-
     def __init__(self, callbacks: List[BaseCallback]):
         super(CallbackList, self).__init__()
         assert isinstance(callbacks, list)
@@ -226,7 +224,6 @@ class CheckpointCallback(BaseCallback):
     :param name_prefix: Common prefix to the saved models
     :param verbose:
     """
-
     def __init__(self, save_freq: int, save_path: str, name_prefix: str = "rl_model", verbose: int = 0):
         super(CheckpointCallback, self).__init__(verbose)
         self.save_freq = save_freq
@@ -254,7 +251,6 @@ class ConvertCallback(BaseCallback):
     :param callback:
     :param verbose:
     """
-
     def __init__(self, callback: Callable[[Dict[str, Any], Dict[str, Any]], bool], verbose: int = 0):
         super(ConvertCallback, self).__init__(verbose)
         self.callback = callback
@@ -291,7 +287,6 @@ class EvalCallback(EventCallback):
     :param warn: Passed to ``evaluate_policy`` (warns if ``eval_env`` has not been
         wrapped with a Monitor wrapper)
     """
-
     def __init__(
         self,
         eval_env: Union[gym.Env, VecEnv],
@@ -419,7 +414,10 @@ class EvalCallback(EventCallback):
             self.last_mean_reward = mean_reward
 
             if self.verbose > 0:
-                print(f"Eval num_timesteps={self.num_timesteps}, " f"episode_reward={mean_reward:.2f} +/- {std_reward:.2f}")
+                print(
+                    f"Eval num_timesteps={self.num_timesteps}, "
+                    f"episode_reward={mean_reward:.2f} +/- {std_reward:.2f}"
+                )
                 print(f"Episode length: {mean_ep_length:.2f} +/- {std_ep_length:.2f}")
             # Add to current Logger
             self.logger.record("eval/mean_reward", float(mean_reward))
@@ -471,7 +469,6 @@ class StopTrainingOnRewardThreshold(BaseCallback):
         to stop training.
     :param verbose:
     """
-
     def __init__(self, reward_threshold: float, verbose: int = 0):
         super(StopTrainingOnRewardThreshold, self).__init__(verbose=verbose)
         self.reward_threshold = reward_threshold
@@ -496,7 +493,6 @@ class EveryNTimesteps(EventCallback):
     :param callback: Callback that will be called
         when the event is triggered.
     """
-
     def __init__(self, n_steps: int, callback: BaseCallback):
         super(EveryNTimesteps, self).__init__(callback)
         self.n_steps = n_steps
@@ -519,7 +515,6 @@ class StopTrainingOnMaxEpisodes(BaseCallback):
     :param max_episodes: Maximum number of episodes to stop training.
     :param verbose: Select whether to print information about when training ended by reaching ``max_episodes``
     """
-
     def __init__(self, max_episodes: int, verbose: int = 0):
         super(StopTrainingOnMaxEpisodes, self).__init__(verbose=verbose)
         self.max_episodes = max_episodes
@@ -540,7 +535,8 @@ class StopTrainingOnMaxEpisodes(BaseCallback):
         if self.verbose > 0 and not continue_training:
             mean_episodes_per_env = self.n_episodes / self.training_env.num_envs
             mean_ep_str = (
-                f"with an average of {mean_episodes_per_env:.2f} episodes per env" if self.training_env.num_envs > 1 else ""
+                f"with an average of {mean_episodes_per_env:.2f} episodes per env"
+                if self.training_env.num_envs > 1 else ""
             )
 
             print(

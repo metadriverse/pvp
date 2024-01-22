@@ -4,12 +4,12 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 import gym
 import torch as th
 from torch import nn
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_action_dim, is_image_space, maybe_transpose, preprocess_obs
-from pvp_iclr_release.stable_baseline3.common.distributions import SquashedDiagGaussianDistribution, \
+from pvp.stable_baseline3.common.preprocessing import get_action_dim, is_image_space, maybe_transpose, preprocess_obs
+from pvp.stable_baseline3.common.distributions import SquashedDiagGaussianDistribution, \
     StateDependentNoiseDistribution
-from pvp_iclr_release.stable_baseline3.common.policies import BasePolicy, ContinuousCritic, register_policy
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_action_dim
-from pvp_iclr_release.stable_baseline3.common.torch_layers import (
+from pvp.stable_baseline3.common.policies import BasePolicy, ContinuousCritic, register_policy
+from pvp.stable_baseline3.common.preprocessing import get_action_dim
+from pvp.stable_baseline3.common.torch_layers import (
     BaseFeaturesExtractor,
     CombinedExtractor,
     FlattenExtractor,
@@ -17,7 +17,7 @@ from pvp_iclr_release.stable_baseline3.common.torch_layers import (
     create_mlp,
     get_actor_critic_arch,
 )
-from pvp_iclr_release.stable_baseline3.common.type_aliases import Schedule
+from pvp.stable_baseline3.common.type_aliases import Schedule
 
 # CAP the standard deviation of the actor
 LOG_STD_MAX = 2
@@ -49,22 +49,21 @@ class Actor(BasePolicy):
     :param normalize_images: Whether to normalize images or not,
          dividing by 255.0 (True by default)
     """
-
     def __init__(
-            self,
-            observation_space: gym.spaces.Space,
-            action_space: gym.spaces.Space,
-            net_arch: List[int],
-            features_extractor: nn.Module,
-            features_dim: int,
-            activation_fn: Type[nn.Module] = nn.ReLU,
-            use_sde: bool = False,
-            log_std_init: float = -3,
-            full_std: bool = True,
-            sde_net_arch: Optional[List[int]] = None,
-            use_expln: bool = False,
-            clip_mean: float = 2.0,
-            normalize_images: bool = True,
+        self,
+        observation_space: gym.spaces.Space,
+        action_space: gym.spaces.Space,
+        net_arch: List[int],
+        features_extractor: nn.Module,
+        features_dim: int,
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        use_sde: bool = False,
+        log_std_init: float = -3,
+        full_std: bool = True,
+        sde_net_arch: Optional[List[int]] = None,
+        use_expln: bool = False,
+        clip_mean: float = 2.0,
+        normalize_images: bool = True,
     ):
         super(Actor, self).__init__(
             observation_space,
@@ -198,6 +197,7 @@ class Actor(BasePolicy):
         preprocessed_obs = preprocess_obs(obs, self.observation_space, normalize_images=self.normalize_images)
         return self.features_extractor(preprocessed_obs)
 
+
 class SACPolicy(BasePolicy):
     """
     Policy class (with both actor and critic) for SAC.
@@ -229,26 +229,25 @@ class SACPolicy(BasePolicy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
-            self,
-            observation_space: gym.spaces.Space,
-            action_space: gym.spaces.Space,
-            lr_schedule: Schedule,
-            net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
-            activation_fn: Type[nn.Module] = nn.ReLU,
-            use_sde: bool = False,
-            log_std_init: float = -3,
-            sde_net_arch: Optional[List[int]] = None,
-            use_expln: bool = False,
-            clip_mean: float = 2.0,
-            features_extractor_class: Type[BaseFeaturesExtractor] = FlattenExtractor,
-            features_extractor_kwargs: Optional[Dict[str, Any]] = None,
-            normalize_images: bool = True,
-            optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
-            optimizer_kwargs: Optional[Dict[str, Any]] = None,
-            n_critics: int = 2,
-            share_features_extractor: bool = False,  # xxx: We set it to False by default.
+        self,
+        observation_space: gym.spaces.Space,
+        action_space: gym.spaces.Space,
+        lr_schedule: Schedule,
+        net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        use_sde: bool = False,
+        log_std_init: float = -3,
+        sde_net_arch: Optional[List[int]] = None,
+        use_expln: bool = False,
+        clip_mean: float = 2.0,
+        features_extractor_class: Type[BaseFeaturesExtractor] = FlattenExtractor,
+        features_extractor_kwargs: Optional[Dict[str, Any]] = None,
+        normalize_images: bool = True,
+        optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
+        optimizer_kwargs: Optional[Dict[str, Any]] = None,
+        n_critics: int = 2,
+        share_features_extractor: bool = False,  # xxx: We set it to False by default.
     ):
         super(SACPolicy, self).__init__(
             observation_space,
@@ -307,9 +306,7 @@ class SACPolicy(BasePolicy):
     def _build(self, lr_schedule: Schedule) -> None:
         self.actor = self.make_actor()
         self.actor.optimizer = self.optimizer_class(
-            self.actor.parameters(),
-            lr=lr_schedule["actor"](1),
-            **self.optimizer_kwargs
+            self.actor.parameters(), lr=lr_schedule["actor"](1), **self.optimizer_kwargs
         )
 
         if self.share_features_extractor:
@@ -330,9 +327,7 @@ class SACPolicy(BasePolicy):
         self.critic_target.load_state_dict(self.critic.state_dict())
 
         self.critic.optimizer = self.optimizer_class(
-            critic_parameters,
-            lr=lr_schedule["critic"](1),
-            **self.optimizer_kwargs
+            critic_parameters, lr=lr_schedule["critic"](1), **self.optimizer_kwargs
         )
 
         # Target networks should always be in eval mode
@@ -426,26 +421,25 @@ class CnnPolicy(SACPolicy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
-            self,
-            observation_space: gym.spaces.Space,
-            action_space: gym.spaces.Space,
-            lr_schedule: Schedule,
-            net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
-            activation_fn: Type[nn.Module] = nn.ReLU,
-            use_sde: bool = False,
-            log_std_init: float = -3,
-            sde_net_arch: Optional[List[int]] = None,
-            use_expln: bool = False,
-            clip_mean: float = 2.0,
-            features_extractor_class: Type[BaseFeaturesExtractor] = NatureCNN,
-            features_extractor_kwargs: Optional[Dict[str, Any]] = None,
-            normalize_images: bool = True,
-            optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
-            optimizer_kwargs: Optional[Dict[str, Any]] = None,
-            n_critics: int = 2,
-            share_features_extractor: bool = True,
+        self,
+        observation_space: gym.spaces.Space,
+        action_space: gym.spaces.Space,
+        lr_schedule: Schedule,
+        net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        use_sde: bool = False,
+        log_std_init: float = -3,
+        sde_net_arch: Optional[List[int]] = None,
+        use_expln: bool = False,
+        clip_mean: float = 2.0,
+        features_extractor_class: Type[BaseFeaturesExtractor] = NatureCNN,
+        features_extractor_kwargs: Optional[Dict[str, Any]] = None,
+        normalize_images: bool = True,
+        optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
+        optimizer_kwargs: Optional[Dict[str, Any]] = None,
+        n_critics: int = 2,
+        share_features_extractor: bool = True,
     ):
         super(CnnPolicy, self).__init__(
             observation_space,
@@ -497,26 +491,25 @@ class MultiInputPolicy(SACPolicy):
     :param share_features_extractor: Whether to share or not the features extractor
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
-            self,
-            observation_space: gym.spaces.Space,
-            action_space: gym.spaces.Space,
-            lr_schedule: Schedule,
-            net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
-            activation_fn: Type[nn.Module] = nn.ReLU,
-            use_sde: bool = False,
-            log_std_init: float = -3,
-            sde_net_arch: Optional[List[int]] = None,
-            use_expln: bool = False,
-            clip_mean: float = 2.0,
-            features_extractor_class: Type[BaseFeaturesExtractor] = CombinedExtractor,
-            features_extractor_kwargs: Optional[Dict[str, Any]] = None,
-            normalize_images: bool = True,
-            optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
-            optimizer_kwargs: Optional[Dict[str, Any]] = None,
-            n_critics: int = 2,
-            share_features_extractor: bool = True,
+        self,
+        observation_space: gym.spaces.Space,
+        action_space: gym.spaces.Space,
+        lr_schedule: Schedule,
+        net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        use_sde: bool = False,
+        log_std_init: float = -3,
+        sde_net_arch: Optional[List[int]] = None,
+        use_expln: bool = False,
+        clip_mean: float = 2.0,
+        features_extractor_class: Type[BaseFeaturesExtractor] = CombinedExtractor,
+        features_extractor_kwargs: Optional[Dict[str, Any]] = None,
+        normalize_images: bool = True,
+        optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
+        optimizer_kwargs: Optional[Dict[str, Any]] = None,
+        n_critics: int = 2,
+        share_features_extractor: bool = True,
     ):
         super(MultiInputPolicy, self).__init__(
             observation_space,

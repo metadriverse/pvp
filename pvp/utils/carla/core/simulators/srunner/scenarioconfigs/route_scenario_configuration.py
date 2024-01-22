@@ -10,7 +10,7 @@ This module provides the key configuration parameters for a route-based scenario
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ScenarioConfiguration
 
 
@@ -18,7 +18,6 @@ class RouteConfiguration(object):
     """
     This class provides the basic  configuration for a route
     """
-
     def __init__(self, route=None):
         self.data = route
 

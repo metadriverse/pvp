@@ -6,8 +6,8 @@ from enum import Enum
 import carla
 import numpy as np
 import torch
-from pvp_iclr_release.utils.carla.core.envs.base_carla_env import BaseCarlaEnv
-from pvp_iclr_release.utils.carla.core.simulators import CarlaSimulator
+from pvp.utils.carla.core.envs.base_carla_env import BaseCarlaEnv
+from pvp.utils.carla.core.simulators import CarlaSimulator
 from ding.envs import BaseEnvTimestep
 from ding.torch_utils import to_ndarray, to_tensor
 
@@ -21,7 +21,6 @@ class ImplicitCarlaEnv(BaseCarlaEnv):
     '''
     The Carla environment for RL training
     '''
-
     def __init__(self, args):
         self.args = args
         self.port = args.port
@@ -91,9 +90,7 @@ class ImplicitCarlaEnv(BaseCarlaEnv):
 
     def _init_carla_simulator(self):
         print(self.host, self.port)
-        self._simulator = CarlaSimulator(
-            cfg=self._simulator_cfg, client=None, host=self.host, port=self.port
-        )
+        self._simulator = CarlaSimulator(cfg=self._simulator_cfg, client=None, host=self.host, port=self.port)
         self._launched_simulator = True
 
     def seed(self, seed=None):
@@ -213,8 +210,8 @@ class ImplicitCarlaEnv(BaseCarlaEnv):
         next_forward = observations['target_forward']
 
         targets = []
-        targets.append(np.sqrt((location.x - node[0]) ** 2 + (location.y - node[1]) ** 2))
-        targets.append(np.sqrt((location.x - next[0]) ** 2 + (location.y - next[1]) ** 2))
+        targets.append(np.sqrt((location.x - node[0])**2 + (location.y - node[1])**2))
+        targets.append(np.sqrt((location.x - next[0])**2 + (location.y - next[1])**2))
 
         node_sign = np.sign(node_forward[0] * right_vec[0] + node_forward[1] * right_vec[1])
         next_sign = np.sign(next_forward[0] * right_vec[0] + next_forward[1] * right_vec[1])
@@ -381,7 +378,7 @@ class ImplicitCarlaEnv(BaseCarlaEnv):
                 hero_lane_distance = location.distance(waypoint_location)
             else:
                 if circle_flag:
-                    hero_lane_distance = abs(np.sqrt((cx - location.x) ** 2 + (cy - location.y) ** 2) - r)
+                    hero_lane_distance = abs(np.sqrt((cx - location.x)**2 + (cy - location.y)**2) - r)
                 elif changelane_flag:
                     if command == 5:
                         target_loc = self.get_changelane_target_waypoint(next, next_forward)

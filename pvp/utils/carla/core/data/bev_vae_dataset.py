@@ -11,17 +11,16 @@ PIXEL_OFFSET = 10
 
 
 class BeVVAEDataset(Dataset):
-
     def __init__(
-            self,
-            root_dir,
-            img_size=320,
-            crop_size=192,
-            crop_x_jitter=5,
-            crop_y_jitter=5,
-            angle_jitter=5,
-            down_ratio=4,
-            max_frames=None
+        self,
+        root_dir,
+        img_size=320,
+        crop_size=192,
+        crop_x_jitter=5,
+        crop_y_jitter=5,
+        angle_jitter=5,
+        down_ratio=4,
+        max_frames=None
     ) -> None:
         self._root_dir = root_dir
         self._img_size = img_size
@@ -72,7 +71,7 @@ class BeVVAEDataset(Dataset):
         # random cropping
         center_x, center_y = 160, 260 - self._crop_size // 2
         birdview = birdview[dy + center_y - self._crop_size // 2:dy + center_y + self._crop_size // 2,
-                   dx + center_x - self._crop_size // 2:dx + center_x + self._crop_size // 2]
+                            dx + center_x - self._crop_size // 2:dx + center_x + self._crop_size // 2]
 
         birdview = self.bird_view_transform(birdview)
 

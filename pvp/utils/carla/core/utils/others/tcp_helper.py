@@ -8,7 +8,6 @@ from ding.utils.system_helper import find_free_port
 
 
 class TCPManager(object):
-
     def __init__(self, cfg):
         self._cfg = cfg
         self._tcp_list = []

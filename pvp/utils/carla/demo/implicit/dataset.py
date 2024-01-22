@@ -29,7 +29,6 @@ def prase_segmentation(img):
 
 
 class ImplicitDataset(Dataset):
-
     def __init__(self, dataset_path, folders, max_frames=None, crop_sky=True):
         '''
         Dataset for implicit affordances
@@ -159,11 +158,11 @@ def _dataloader(data, batch_size, num_workers, shuffle=True):
 
 
 def get_dataloader(
-        dataset_dir,
-        crop_sky=True,
-        batch_size=32,
-        num_workers=32,
-        shuffle=True,
+    dataset_dir,
+    crop_sky=True,
+    batch_size=32,
+    num_workers=32,
+    shuffle=True,
 ):
     '''
     Prepare the dataloader

@@ -5,8 +5,8 @@ from typing import Any, Callable, List, Optional, Sequence, Type, Union
 import gym
 import numpy as np
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvIndices, VecEnvObs, VecEnvStepReturn
-from pvp_iclr_release.stable_baseline3.common.vec_env.util import copy_obs_dict, dict_to_obs, obs_space_info
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvIndices, VecEnvObs, VecEnvStepReturn
+from pvp.stable_baseline3.common.vec_env.util import copy_obs_dict, dict_to_obs, obs_space_info
 
 
 class DummyVecEnv(VecEnv):
@@ -20,7 +20,6 @@ class DummyVecEnv(VecEnv):
     :param env_fns: a list of functions
         that return environments to vectorize
     """
-
     def __init__(self, env_fns: List[Callable[[], gym.Env]]):
         self.envs = [fn() for fn in env_fns]
         env = self.envs[0]
@@ -28,9 +27,11 @@ class DummyVecEnv(VecEnv):
         obs_space = env.observation_space
         self.keys, shapes, dtypes = obs_space_info(obs_space)
 
-        self.buf_obs = OrderedDict([(k, np.zeros((self.num_envs,) + tuple(shapes[k]), dtype=dtypes[k])) for k in self.keys])
-        self.buf_dones = np.zeros((self.num_envs,), dtype=bool)
-        self.buf_rews = np.zeros((self.num_envs,), dtype=np.float32)
+        self.buf_obs = OrderedDict(
+            [(k, np.zeros((self.num_envs, ) + tuple(shapes[k]), dtype=dtypes[k])) for k in self.keys]
+        )
+        self.buf_dones = np.zeros((self.num_envs, ), dtype=bool)
+        self.buf_rews = np.zeros((self.num_envs, ), dtype=np.float32)
         self.buf_infos = [{} for _ in range(self.num_envs)]
         self.actions = None
         self.metadata = env.metadata
@@ -116,7 +117,7 @@ class DummyVecEnv(VecEnv):
         """Check if worker environments are wrapped with a given wrapper"""
         target_envs = self._get_target_envs(indices)
         # Import here to avoid a circular import
-        from pvp_iclr_release.stable_baseline3.common import env_util
+        from pvp.stable_baseline3.common import env_util
 
         return [env_util.is_wrapped(env_i, wrapper_class) for env_i in target_envs]
 

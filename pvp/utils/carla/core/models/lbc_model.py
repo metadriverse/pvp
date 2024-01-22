@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from pvp_iclr_release.utils.carla.core.utils.model_utils import common
+from pvp.utils.carla.core.utils.model_utils import common
 
 STEPS = 5
 COMMANDS = 4
@@ -27,7 +27,6 @@ class LBCBirdviewModel(common.ResnetBase):
     :Interfaces:
         forward
     """
-
     def __init__(self, backbone='resnet18', input_channel=7, all_branch=False, **kwargs):
         super().__init__(backbone=backbone, input_channel=input_channel, bias_first=False)
 
@@ -75,7 +74,6 @@ class LBCImageModel(common.ResnetBase):
     :Interfaces:
         forward
     """
-
     def __init__(self, backbone, warp=False, pretrained=False, all_branch=False, **kwargs):
         super().__init__(backbone, pretrained=pretrained, input_channel=3, bias_first=False)
 

@@ -2,22 +2,21 @@ from typing import List, Tuple, Union, Dict, Optional
 
 import torch
 import torch.nn as nn
-from pvp_iclr_release.utils.carla.core.models import BEVSpeedConvEncoder
+from pvp.utils.carla.core.models import BEVSpeedConvEncoder
 from ding.model.common.head import DuelingHead, RegressionHead, ReparameterizationHead, MultiHead, DiscreteHead
 
 
 class DQNRLModel(nn.Module):
-
     def __init__(
-            self,
-            obs_shape: Tuple = [5, 32, 32],
-            action_shape: Union[int, Tuple] = 21,
-            encoder_hidden_size_list: Tuple = [64, 128, 256],
-            dueling: bool = True,
-            head_hidden_size: Optional[int] = 512,
-            head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None
+        self,
+        obs_shape: Tuple = [5, 32, 32],
+        action_shape: Union[int, Tuple] = 21,
+        encoder_hidden_size_list: Tuple = [64, 128, 256],
+        dueling: bool = True,
+        head_hidden_size: Optional[int] = 512,
+        head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None
     ) -> None:
         super().__init__()
         self._encoder = BEVSpeedConvEncoder(obs_shape, encoder_hidden_size_list, head_hidden_size, [3, 3, 3], [2, 2, 2])
@@ -47,21 +46,20 @@ class DQNRLModel(nn.Module):
 
 
 class DDPGRLModel(nn.Module):
-
     def __init__(
-            self,
-            obs_shape: Tuple = [5, 32, 32],
-            action_shape: Union[int, tuple] = 2,
-            share_encoder: bool = False,
-            encoder_hidden_size_list: List = [64, 128, 256],
-            encoder_embedding_size: int = 512,
-            twin_critic: bool = False,
-            actor_head_hidden_size: int = 512,
-            actor_head_layer_num: int = 1,
-            critic_head_hidden_size: int = 512,
-            critic_head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None,
+        self,
+        obs_shape: Tuple = [5, 32, 32],
+        action_shape: Union[int, tuple] = 2,
+        share_encoder: bool = False,
+        encoder_hidden_size_list: List = [64, 128, 256],
+        encoder_embedding_size: int = 512,
+        twin_critic: bool = False,
+        actor_head_hidden_size: int = 512,
+        actor_head_layer_num: int = 1,
+        critic_head_hidden_size: int = 512,
+        critic_head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None,
     ) -> None:
         super().__init__()
         self._obs_shape = obs_shape
@@ -94,8 +92,9 @@ class DDPGRLModel(nn.Module):
         self.twin_critic = twin_critic
         if self.twin_critic:
             if not self.share_encoder:
-                self._twin_encoder = BEVSpeedConvEncoder(self._obs_shape, encoder_hidden_size_list,
-                                                         encoder_embedding_size, [3, 3, 3], [2, 2, 2])
+                self._twin_encoder = BEVSpeedConvEncoder(
+                    self._obs_shape, encoder_hidden_size_list, encoder_embedding_size, [3, 3, 3], [2, 2, 2]
+                )
             else:
                 self._twin_encoder = self.actor_encoder
             self.critic_head = [
@@ -154,46 +153,45 @@ class DDPGRLModel(nn.Module):
 
 
 class TD3RLModel(DDPGRLModel):
-
     def __init__(
-            self,
-            obs_shape: Tuple = [5, 32, 32],
-            action_shape: Union[int, tuple] = 2,
-            share_encoder: bool = False,
-            encoder_hidden_size_list: List = [64, 128, 256],
-            encoder_embedding_size: int = 512,
-            twin_critic: bool = True,
-            actor_head_hidden_size: int = 512,
-            actor_head_layer_num: int = 1,
-            critic_head_hidden_size: int = 512,
-            critic_head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None,
+        self,
+        obs_shape: Tuple = [5, 32, 32],
+        action_shape: Union[int, tuple] = 2,
+        share_encoder: bool = False,
+        encoder_hidden_size_list: List = [64, 128, 256],
+        encoder_embedding_size: int = 512,
+        twin_critic: bool = True,
+        actor_head_hidden_size: int = 512,
+        actor_head_layer_num: int = 1,
+        critic_head_hidden_size: int = 512,
+        critic_head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None,
     ) -> None:
         super().__init__(
-            obs_shape, action_shape, share_encoder, encoder_hidden_size_list, encoder_embedding_size,
-            twin_critic, actor_head_hidden_size, actor_head_layer_num, critic_head_hidden_size,
-            critic_head_layer_num, activation, norm_type)
+            obs_shape, action_shape, share_encoder, encoder_hidden_size_list, encoder_embedding_size, twin_critic,
+            actor_head_hidden_size, actor_head_layer_num, critic_head_hidden_size, critic_head_layer_num, activation,
+            norm_type
+        )
         assert twin_critic
 
 
 class SACRLModel(nn.Module):
-
     def __init__(
-            self,
-            obs_shape: Tuple = [5, 32, 32],
-            action_shape: Union[int, tuple] = 2,
-            share_encoder: bool = False,
-            encoder_hidden_size_list: List = [64, 128, 256],
-            encoder_embedding_size: int = 512,
-            twin_critic: bool = False,
-            actor_head_hidden_size: int = 512,
-            actor_head_layer_num: int = 1,
-            critic_head_hidden_size: int = 512,
-            critic_head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None,
-            **kwargs,
+        self,
+        obs_shape: Tuple = [5, 32, 32],
+        action_shape: Union[int, tuple] = 2,
+        share_encoder: bool = False,
+        encoder_hidden_size_list: List = [64, 128, 256],
+        encoder_embedding_size: int = 512,
+        twin_critic: bool = False,
+        actor_head_hidden_size: int = 512,
+        actor_head_layer_num: int = 1,
+        critic_head_hidden_size: int = 512,
+        critic_head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None,
+        **kwargs,
     ) -> None:
         super().__init__()
 
@@ -230,8 +228,9 @@ class SACRLModel(nn.Module):
             if self.share_encoder:
                 self._twin_encoder = self.actor_encoder
             else:
-                self._twin_encoder = BEVSpeedConvEncoder(self._obs_shape, encoder_hidden_size_list,
-                                                         encoder_embedding_size, [3, 3, 3], [2, 2, 2])
+                self._twin_encoder = BEVSpeedConvEncoder(
+                    self._obs_shape, encoder_hidden_size_list, encoder_embedding_size, [3, 3, 3], [2, 2, 2]
+                )
             self.critic = nn.ModuleList()
             for _ in range(2):
                 self.critic.append(
@@ -284,21 +283,21 @@ class SACRLModel(nn.Module):
 
 class PPORLModel(nn.Module):
     def __init__(
-            self,
-            obs_shape: Tuple = [5, 32, 32],
-            action_shape: Union[int, Tuple] = 2,
-            share_encoder: bool = True,
-            continuous: bool = True,
-            encoder_embedding_size: int = 512,
-            encoder_hidden_size_list: List = [64, 128, 256],
-            actor_head_hidden_size: int = 512,
-            actor_head_layer_num: int = 1,
-            critic_head_hidden_size: int = 512,
-            critic_head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None,
-            sigma_type: Optional[str] = 'independent',
-            bound_type: Optional[str] = None,
+        self,
+        obs_shape: Tuple = [5, 32, 32],
+        action_shape: Union[int, Tuple] = 2,
+        share_encoder: bool = True,
+        continuous: bool = True,
+        encoder_embedding_size: int = 512,
+        encoder_hidden_size_list: List = [64, 128, 256],
+        actor_head_hidden_size: int = 512,
+        actor_head_layer_num: int = 1,
+        critic_head_hidden_size: int = 512,
+        critic_head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None,
+        sigma_type: Optional[str] = 'independent',
+        bound_type: Optional[str] = None,
     ) -> None:
         super().__init__()
         self._obs_shape = obs_shape

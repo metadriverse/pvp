@@ -9,9 +9,9 @@ import torch
 import pandas as pd
 import json
 import numpy as np
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
+from pvp.utils.carla.pvp_carla_env import PVPEnv
 # class DummyEnv(gym.Env):
 #     def __init__(self):
 #         self.action_space = spaces.Box(np.array[-1,-1], np.array[1,1], dtype=np.float32)

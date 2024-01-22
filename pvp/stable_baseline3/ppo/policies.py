@@ -1,6 +1,6 @@
 # This file is here just to define MlpPolicy/CnnPolicy
 # that work for PPO
-from pvp_iclr_release.stable_baseline3.common.policies import (
+from pvp.stable_baseline3.common.policies import (
     ActorCriticCnnPolicy,
     ActorCriticPolicy,
     MultiInputActorCriticPolicy,

@@ -26,13 +26,13 @@ import operator
 import carla
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators import srunner
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import get_distance_along_route
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.utils.carla.core.simulators import srunner
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_distance_along_route
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
 from .atomic_behaviors import calculate_distance
 
@@ -48,7 +48,6 @@ class AtomicCondition(py_trees.behaviour.Behaviour):
     Important parameters:
     - name: Name of the atomic condition
     """
-
     def __init__(self, name):
         """
         Default init. Has to be called via super from derived class
@@ -90,15 +89,14 @@ class InTriggerDistanceToOSCPosition(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor reached the target distance to the openSCENARIO position
     """
-
     def __init__(
-            self,
-            actor,
-            osc_position,
-            distance,
-            along_route=False,
-            comparison_operator=operator.lt,
-            name="InTriggerDistanceToOSCPosition"
+        self,
+        actor,
+        osc_position,
+        distance,
+        along_route=False,
+        comparison_operator=operator.lt,
+        name="InTriggerDistanceToOSCPosition"
     ):
         """
         Setup parameters
@@ -165,15 +163,14 @@ class InTimeToArrivalToOSCPosition(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor can reach the position within the given time
     """
-
     def __init__(
-            self,
-            actor,
-            osc_position,
-            time,
-            along_route=False,
-            comparison_operator=operator.lt,
-            name="InTimeToArrivalToOSCPosition"
+        self,
+        actor,
+        osc_position,
+        time,
+        along_route=False,
+        comparison_operator=operator.lt,
+        name="InTimeToArrivalToOSCPosition"
     ):
         """
         Setup parameters
@@ -251,7 +248,6 @@ class StandStill(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor does not move
     """
-
     def __init__(self, actor, name, duration=float("inf")):
         """
         Setup actor
@@ -302,7 +298,6 @@ class RelativeVelocityToOtherActor(AtomicCondition):
         name (string): Name of the condition
         comparison_operator: Type "operator", used to compare the two velocities
     """
-
     def __init__(self, actor, other_actor, speed, comparison_operator=operator.gt, name="RelativeVelocityToOtherActor"):
         """
         Setup the parameters
@@ -349,7 +344,6 @@ class TriggerVelocity(AtomicCondition):
         target_velocity (float): velcoity to be compared with the actor's one
         comparison_operator: Type "operator", used to compare the two velocities
     """
-
     def __init__(self, actor, target_velocity, comparison_operator=operator.gt, name="TriggerVelocity"):
         """
         Setup the atomic parameters
@@ -392,7 +386,6 @@ class TriggerAcceleration(AtomicCondition):
         target_acceleration (float): Acceleration reference (in m/s^2) on which the success is dependent
         comparison_operator (operator): Type "operator", used to compare the two acceleration
     """
-
     def __init__(self, actor, target_acceleration, comparison_operator=operator.gt, name="TriggerAcceleration"):
         """
         Setup trigger acceleration
@@ -438,7 +431,6 @@ class TimeOfDayComparison(AtomicCondition):
         target_acceleration (float): Acceleration reference (in m/s^2) on which the success is dependent
         comparison_operator (operator): Type "operator", used to compare the two acceleration
     """
-
     def __init__(self, dattime, comparison_operator=operator.gt, name="TimeOfDayComparison"):
         """
         """
@@ -482,7 +474,6 @@ class OSCStartEndCondition(AtomicCondition):
 
     The condition terminates with SUCCESS, when the named story element starts
     """
-
     def __init__(self, element_type, element_name, rule, name="OSCStartEndCondition"):
         """
         Setup element details
@@ -530,7 +521,6 @@ class InTriggerRegion(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor reached the target region
     """
-
     def __init__(self, actor, min_x, max_x, min_y, max_y, name="TriggerRegion"):
         """
         Setup trigger region (rectangle provided by
@@ -579,9 +569,8 @@ class InTriggerDistanceToVehicle(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor reached the target distance to the other actor
     """
-
     def __init__(
-            self, reference_actor, actor, distance, comparison_operator=operator.lt, name="TriggerDistanceToVehicle"
+        self, reference_actor, actor, distance, comparison_operator=operator.lt, name="TriggerDistanceToVehicle"
     ):
         """
         Setup trigger distance
@@ -626,9 +615,8 @@ class InTriggerDistanceToLocation(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor reached the target distance to the given location
     """
-
     def __init__(
-            self, actor, target_location, distance, comparison_operator=operator.lt, name="InTriggerDistanceToLocation"
+        self, actor, target_location, distance, comparison_operator=operator.lt, name="InTriggerDistanceToLocation"
     ):
         """
         Setup trigger distance
@@ -672,7 +660,6 @@ class InTriggerDistanceToNextIntersection(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor reached the target distance to the next intersection
     """
-
     def __init__(self, actor, distance, name="InTriggerDistanceToNextIntersection"):
         """
         Setup trigger distance
@@ -721,7 +708,6 @@ class InTriggerDistanceToLocationAlongRoute(AtomicCondition):
     The condition terminates with SUCCESS, when the actor reached the target distance
     along its route to the given location
     """
-
     def __init__(self, actor, route, location, distance, name="InTriggerDistanceToLocationAlongRoute"):
         """
         Setup class members
@@ -827,7 +813,7 @@ class InTimeToArrivalToVehicle(AtomicCondition):
     _max_time_to_arrival = float('inf')  # time to arrival in seconds
 
     def __init__(
-            self, actor, other_actor, time, along_route=False, comparison_operator=operator.lt, name="TimeToArrival"
+        self, actor, other_actor, time, along_route=False, comparison_operator=operator.lt, name="TimeToArrival"
     ):
         """
         Setup parameters
@@ -904,13 +890,13 @@ class InTimeToArrivalToVehicleSideLane(InTimeToArrivalToLocation):
     _max_time_to_arrival = float('inf')  # time to arrival in seconds
 
     def __init__(
-            self,
-            actor,
-            other_actor,
-            time,
-            side_lane,
-            comparison_operator=operator.lt,
-            name="InTimeToArrivalToVehicleSideLane"
+        self,
+        actor,
+        other_actor,
+        time,
+        side_lane,
+        comparison_operator=operator.lt,
+        name="InTimeToArrivalToVehicleSideLane"
     ):
         """
         Setup parameters
@@ -976,7 +962,6 @@ class WaitUntilInFront(AtomicCondition):
         0: They are right next to each other
         1: The front of the other_actor and the back of the actor are right next to each other
     """
-
     def __init__(self, actor, other_actor, factor=1, check_distance=True, name="WaitUntilInFront"):
         """
         Init
@@ -1051,7 +1036,6 @@ class DriveDistance(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor drove at least the given distance
     """
-
     def __init__(self, actor, distance, name="DriveDistance"):
         """
         Setup parameters
@@ -1093,7 +1077,6 @@ class AtRightmostLane(AtomicCondition):
 
     The condition terminates with SUCCESS, when the actor enters the rightest lane
     """
-
     def __init__(self, actor, name="AtRightmostLane"):
         """
         Setup parameters
@@ -1136,7 +1119,6 @@ class WaitForTrafficLightState(AtomicCondition):
 
     The condition terminates with SUCCESS, when the traffic light switches to the desired state
     """
-
     def __init__(self, actor, state, name="WaitForTrafficLightState"):
         """
         Setup traffic_light
@@ -1168,7 +1150,6 @@ class WaitEndIntersection(AtomicCondition):
     Atomic behavior that waits until the vehicles has gone outside the junction.
     If currently inside no intersection, it will wait until one is found
     """
-
     def __init__(self, actor, debug=False, name="WaitEndIntersection"):
         super(WaitEndIntersection, self).__init__(name)
         self.actor = actor
@@ -1203,9 +1184,8 @@ class WaitForBlackboardVariable(AtomicCondition):
 
     It also initially sets the variable to a given value, if given
     """
-
     def __init__(
-            self, variable_name, variable_value, var_init_value=None, debug=False, name="WaitForBlackboardVariable"
+        self, variable_name, variable_value, var_init_value=None, debug=False, name="WaitForBlackboardVariable"
     ):
         super(WaitForBlackboardVariable, self).__init__(name)
         self._debug = debug

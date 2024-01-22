@@ -1,15 +1,17 @@
-from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 import io
 import pathlib
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Optional, Union
+
 import numpy as np
 import torch as th
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.dqn.dqn import DQN, compute_entropy
-from pvp_iclr_release.stable_baseline3.old.old_buffer import oldReplayBuffer, concat_samples
-from pvp_iclr_release.stable_baseline3.common.save_util import load_from_zip_file, recursive_getattr, recursive_setattr, save_to_zip_file
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.save_util import recursive_getattr, save_to_zip_file
+from pvp.stable_baseline3.dqn.dqn import DQN, compute_entropy
+from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer, concat_samples
+
 
 class pvpDQN(DQN):
     def __init__(self, q_value_bound=1., *args, **kwargs):
@@ -136,13 +138,15 @@ class pvpDQN(DQN):
 
     def _setup_model(self) -> None:
         super(pvpDQN, self)._setup_model()
-        self.human_data_buffer = oldReplayBuffer(self.buffer_size,
-                                                  self.observation_space,
-                                                  self.action_space,
-                                                  self.device,
-                                                  n_envs=self.n_envs,
-                                                  optimize_memory_usage=self.optimize_memory_usage,
-                                                  **self.replay_buffer_kwargs)
+        self.human_data_buffer = oldReplayBuffer(
+            self.buffer_size,
+            self.observation_space,
+            self.action_space,
+            self.device,
+            n_envs=self.n_envs,
+            optimize_memory_usage=self.optimize_memory_usage,
+            **self.replay_buffer_kwargs
+        )
         # self.human_data_buffer = self.replay_buffer
 
     def _store_transition(
@@ -157,11 +161,12 @@ class pvpDQN(DQN):
         if infos[0]["takeover"] or infos[0]["takeover_start"]:
             replay_buffer = self.human_data_buffer
         super(pvpDQN, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
+
     def save(
-        self,
-        path: Union[str, pathlib.Path, io.BufferedIOBase],
-        exclude: Optional[Iterable[str]] = None,
-        include: Optional[Iterable[str]] = None,
+            self,
+            path: Union[str, pathlib.Path, io.BufferedIOBase],
+            exclude: Optional[Iterable[str]] = None,
+            include: Optional[Iterable[str]] = None,
     ) -> None:
         """
         Save all the attributes of the object and the model parameters in a zip-file.
@@ -208,4 +213,3 @@ class pvpDQN(DQN):
         params_to_save = self.get_parameters()
 
         save_to_zip_file(path, data=data, params=params_to_save, pytorch_variables=pytorch_variables)
-

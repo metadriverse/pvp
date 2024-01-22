@@ -2,7 +2,7 @@
 
 <h3>***NeurIPS 2023 Spotlight***</h3>
 
-Official release for paper: *Learning from Active Human Involvement through Proxy Value Propagation*
+Official release for the code used in paper: *Learning from Active Human Involvement through Proxy Value Propagation*
 
 [**Webpage**](https://metadriverse.github.io/pvp/) | 
 [**Code**](https://github.com/metadriverse/pvp) |
@@ -13,26 +13,23 @@ Official release for paper: *Learning from Active Human Involvement through Prox
 **TODO: A teaser figure here.**
 
 
-## Quick start
+## Installation
 
 ```bash
 # Clone the code to local machine
-git clone https://github.com/metadriverse/PVP
-cd PVP
+git clone https://github.com/metadriverse/pvp
+cd pvp
 
 # Create Conda environment
 conda create -n pvp python=3.7
 conda activate pvp
 
 # Install dependencies
+pip install -r requirements.txt
 pip install -e .
-pip install -r requirements.txt 
 
 # Install evdev package (Linux only)
 pip install evdev
-[**Webpage**](https://metadriverse.github.io/pvp/) | 
-[**Code**](https://github.com/metadriverse/pvp) |
-[**Paper**](https://openreview.net/pdf?id=q8SukwaEBy)
 
 # Install dependencies for CARLA experiment (recommended to create another conda environment)
 pip install di-engine==0.2.0 markupsafe==2.0.1
@@ -42,12 +39,17 @@ pip install di-engine==0.2.0 markupsafe==2.0.1
 
 
 
-## Examples
+## Launch Experiments
+
 ### Metadrive
-For [Metadrive](https://github.com/metadriverse/metadrive) we provide three control options for generalizability. During experiments human subject can always press *E* to pause the experiment and press *esc* to exit the experiment. The main experiment will run for 40K steps and takes about one hour.
-#### Steering Wheel (Logitech G29)
+[Metadrive](https://github.com/metadriverse/metadrive) provides options for three control devices: steering wheel, gamepad and keyboard.
+
+During experiments human subject can always press `E` to pause the experiment and press `Esc` to exit the experiment. The main experiment will run for 40K steps and takes about one hour.
+
+**Steering Wheel (Logitech G29)**
 ```bash
-python -m training_script.metadrive.train_pvp_td3_metadrive.py --control joystick
+cd ~/pvp  # Go to the repo root.
+python pvp/training_script/metadrive/train_pvp_td3_metadrive.py --control joystick
 ```
 | Action             | Control                 |
 |--------------------|-------------------------|

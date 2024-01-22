@@ -4,19 +4,17 @@ import time
 
 import numpy as np
 import pandas as pd
-from pvp_iclr_release.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
-from pvp_iclr_release.utils.train_eval_config import baseline_eval_config
-from pvp_iclr_release.utils.print_dict_utils import pretty_print, RecorderEnv
+from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
+from pvp.utils.train_eval_config import baseline_eval_config
+from pvp.utils.print_dict_utils import pretty_print, RecorderEnv
 
 EVAL_ENV_START = baseline_eval_config["start_seed"]
 
 
 class PolicyFunction:
     def __init__(self, ckpt_path, ckpt_index, env):
-        self.algo = old(policy=oldPolicy, env=env, policy_kwargs=dict(
-                share_features_extractor=False,
-            ))
+        self.algo = old(policy=oldPolicy, env=env, policy_kwargs=dict(share_features_extractor=False, ))
         self.algo.set_parameters(load_path_or_dict=ckpt_path + "/rl_model_{}_steps.zip".format(ckpt_index))
 
     def __call__(self, o, deterministic=False):
@@ -24,12 +22,12 @@ class PolicyFunction:
 
 
 def evaluate_metadrive_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        total_env_num=50,
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    total_env_num=50,
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
@@ -55,7 +53,6 @@ def evaluate_metadrive_once(
         step_count = 0
         ep_times = []
 
-
         env_index = 0
         o = env.reset(force_seed=EVAL_ENV_START + env_index)
 
@@ -79,8 +76,8 @@ def evaluate_metadrive_once(
                 print(
                     "Env {}, Num episodes: {} ({}), Num steps in this episode: {} (Ep time {:.2f}, "
                     "Total time {:.2f}). Ckpt: {}".format(
-                        env_index, num_ep_in, ep_count, step_count,
-                        np.mean(ep_times), time.time() - start, ckpt_path
+                        env_index, num_ep_in, ep_count, step_count, np.mean(ep_times),
+                        time.time() - start, ckpt_path
                     )
                 )
                 step_count = 0
@@ -138,8 +135,6 @@ def make_metadrive_env(use_render=False):
 
     env = HumanInTheLoopEnv(config)
     return RecorderEnv(env)
-
-
 
 
 if __name__ == '__main__':

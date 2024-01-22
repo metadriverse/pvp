@@ -7,9 +7,9 @@ import numpy as np
 import torch as th
 from gym import spaces
 
-from pvp_iclr_release.stable_baseline3.common.buffers import ReplayBuffer
-from pvp_iclr_release.stable_baseline3.common.type_aliases import TensorDict
-from pvp_iclr_release.stable_baseline3.common.vec_env import VecNormalize
+from pvp.stable_baseline3.common.buffers import ReplayBuffer
+from pvp.stable_baseline3.common.type_aliases import TensorDict
+from pvp.stable_baseline3.common.vec_env import VecNormalize
 
 try:
     # Check memory used by replay buffer when possible
@@ -36,33 +36,39 @@ class oldDictReplayBufferSamples(NamedTuple):
 def concat_samples(self, other):
     if isinstance(self.observations, dict):
         cat_obs = {k: th.concat([self.observations[k], other.observations[k]], dim=0) for k in self.observations.keys()}
-        next_cat_obs = {k: th.concat([self.next_observations[k], other.next_observations[k]], dim=0) for k in self.next_observations.keys()}
+        next_cat_obs = {
+            k: th.concat([self.next_observations[k], other.next_observations[k]], dim=0)
+            for k in self.next_observations.keys()
+        }
     else:
         cat_obs = th.cat([self.observations, other.observations], dim=0)
         next_cat_obs = th.cat([self.next_observations, other.next_observations], dim=0)
-    return oldDictReplayBufferSamples(cat_obs,
-                                       next_cat_obs,
-                                       dones=th.cat([self.dones, other.dones], dim=0),
-                                       rewards=th.cat([self.rewards, other.rewards], dim=0),
-                                       interventions=th.cat([self.interventions, other.interventions], dim=0),
-                                       stop_td=th.cat([self.stop_td, other.stop_td], dim=0),
-                                       intervention_costs=th.cat([self.intervention_costs, other.interventions], dim=0),
-                                       actions_behavior=th.cat([self.actions_behavior, other.actions_behavior], dim=0),
-                                       actions_novice=th.cat([self.actions_novice, other.actions_novice], dim=0))
+    return oldDictReplayBufferSamples(
+        cat_obs,
+        next_cat_obs,
+        dones=th.cat([self.dones, other.dones], dim=0),
+        rewards=th.cat([self.rewards, other.rewards], dim=0),
+        interventions=th.cat([self.interventions, other.interventions], dim=0),
+        stop_td=th.cat([self.stop_td, other.stop_td], dim=0),
+        intervention_costs=th.cat([self.intervention_costs, other.interventions], dim=0),
+        actions_behavior=th.cat([self.actions_behavior, other.actions_behavior], dim=0),
+        actions_novice=th.cat([self.actions_novice, other.actions_novice], dim=0)
+    )
+
 
 class oldReplayBuffer(ReplayBuffer):
     def __init__(
-            self,
-            buffer_size: int,
-            observation_space: spaces.Space,
-            action_space: spaces.Space,
-            device: Union[th.device, str] = "cpu",
-            n_envs: int = 1,
-            optimize_memory_usage: bool = True,
-            handle_timeout_termination: bool = True,
-            discard_reward=False,
-            discard_takeover_start=False,
-            takeover_stop_td=False
+        self,
+        buffer_size: int,
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        device: Union[th.device, str] = "cpu",
+        n_envs: int = 1,
+        optimize_memory_usage: bool = True,
+        handle_timeout_termination: bool = True,
+        discard_reward=False,
+        discard_takeover_start=False,
+        takeover_stop_td=False
     ):
 
         # Skip the init of ReplayBuffer and only run the BaseBuffer.__init__
@@ -143,13 +149,13 @@ class oldReplayBuffer(ReplayBuffer):
                 )
 
     def add(
-            self,
-            obs: Dict[str, np.ndarray],
-            next_obs: Dict[str, np.ndarray],
-            action: np.ndarray,
-            reward: np.ndarray,
-            done: np.ndarray,
-            infos: List[Dict[str, Any]],
+        self,
+        obs: Dict[str, np.ndarray],
+        next_obs: Dict[str, np.ndarray],
+        action: np.ndarray,
+        reward: np.ndarray,
+        done: np.ndarray,
+        infos: List[Dict[str, Any]],
     ) -> None:
 
         if infos[0]["takeover_start"] and self.discard_takeover_start:
@@ -164,12 +170,12 @@ class oldReplayBuffer(ReplayBuffer):
             # Reshape needed when using multiple envs with discrete observations
             # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
             if isinstance(self.observation_space.spaces[key], spaces.Discrete):
-                obs[key] = obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                obs[key] = obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             self.observations[key][self.pos] = np.array(obs[key])
 
         for key in self.observations.keys():
             if isinstance(self.observation_space.spaces[key], spaces.Discrete):
-                next_obs[key] = next_obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                next_obs[key] = next_obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             if self.optimize_memory_usage:
                 self.observations[key][(self.pos + 1) % self.buffer_size] = np.array(next_obs[key]).copy()
             else:
@@ -178,12 +184,12 @@ class oldReplayBuffer(ReplayBuffer):
         self.dones[self.pos] = np.array(done).copy()
 
         # xxx: Add useful data into buffers
-        self.interventions[self.pos] = np.array([step["takeover"] for step in infos]).reshape(
-            self.interventions[self.pos].shape)
-        self.intervention_starts[self.pos] = np.array([step["takeover_start"] for step in infos]).reshape(
-            self.intervention_starts[self.pos].shape)
-        self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]).reshape(
-            self.intervention_costs[self.pos].shape)
+        self.interventions[self.pos] = np.array([step["takeover"]
+                                                 for step in infos]).reshape(self.interventions[self.pos].shape)
+        self.intervention_starts[self.pos] = np.array([step["takeover_start"] for step in infos]
+                                                      ).reshape(self.intervention_starts[self.pos].shape)
+        self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]
+                                                     ).reshape(self.intervention_costs[self.pos].shape)
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
         if isinstance(self.action_space, spaces.Discrete):
             action = action.reshape((self.n_envs, self.action_dim))
@@ -224,17 +230,18 @@ class oldReplayBuffer(ReplayBuffer):
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> oldDictReplayBufferSamples:
         # Sample randomly the env idx
-        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
+        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds), ))
 
         # Normalize if needed and remove extra dimension (we are using only one env for now)
         obs_ = self._normalize_obs(
-            {key: obs[batch_inds, env_indices, :] for key, obs in self.observations.items()}, env
+            {key: obs[batch_inds, env_indices, :]
+             for key, obs in self.observations.items()}, env
         )
 
         if not self.optimize_memory_usage:
             next_obs_ = self._normalize_obs(
-                {key: obs[batch_inds, env_indices, :] for key, obs in self.next_observations.items()},
-                env
+                {key: obs[batch_inds, env_indices, :]
+                 for key, obs in self.next_observations.items()}, env
             )
         else:
             next_obs_ = {}
@@ -260,10 +267,8 @@ class oldReplayBuffer(ReplayBuffer):
             next_observations=next_observations,
             # Only use dones that are not due to timeouts
             # deactivated by default (timeouts is initialized as an array of False)
-            dones=self.to_torch(
-                self.dones[batch_inds, env_indices] * (1 - self.timeouts[batch_inds, env_indices])).reshape(
-                -1, 1
-            ),
+            dones=self.to_torch(self.dones[batch_inds, env_indices] * (1 - self.timeouts[batch_inds, env_indices])
+                                ).reshape(-1, 1),
             rewards=self.to_torch(self._normalize_reward(self.rewards[batch_inds, env_indices].reshape(-1, 1), env)),
 
             # xxx: Our useful data

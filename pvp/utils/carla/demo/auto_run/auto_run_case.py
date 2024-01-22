@@ -1,10 +1,10 @@
 import argparse
 from argparse import RawTextHelpFormatter
 
-from pvp_iclr_release.utils.carla.core.envs import CarlaEnvWrapper, ScenarioCarlaEnv
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_parser import ScenarioConfigurationParser
+from pvp.utils.carla.core.envs import CarlaEnvWrapper, ScenarioCarlaEnv
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_parser import ScenarioConfigurationParser
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
@@ -34,10 +34,7 @@ casezoo_config = dict(
             # debug=True,
         ),
         # no_rendering=True,
-        visualize=dict(
-            type='rgb',
-            outputs=['show']
-        ),
+        visualize=dict(type='rgb', outputs=['show']),
     ),
     policy=dict(target_speed=40, ),
 )
@@ -88,17 +85,14 @@ def main(args, cfg, seed=0):
 if __name__ == "__main__":
     description = ("DI-drive CaseZoo Environment")
 
-    parser = argparse.ArgumentParser(description=description,
-                                     formatter_class=RawTextHelpFormatter)
-    parser.add_argument('--route', help='Run a route as a scenario (input:(route_file,scenario_file,[route id]))',
-                        nargs='+', type=str)
+    parser = argparse.ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
+    parser.add_argument(
+        '--route', help='Run a route as a scenario (input:(route_file,scenario_file,[route id]))', nargs='+', type=str
+    )
     parser.add_argument('--scenario', help='Run a single scenario (input: scenario name)', type=str)
-    parser.add_argument('--host', default='localhost',
-                        help='IP of the host server (default: localhost)')
-    parser.add_argument('--port', default=9000,
-                        help='TCP port to listen to (default: 9000)', type=int)
-    parser.add_argument('--tm-port', default=None,
-                        help='Port to use for the TrafficManager (default: None)', type=int)
+    parser.add_argument('--host', default='localhost', help='IP of the host server (default: localhost)')
+    parser.add_argument('--port', default=9000, help='TCP port to listen to (default: 9000)', type=int)
+    parser.add_argument('--tm-port', default=None, help='Port to use for the TrafficManager (default: None)', type=int)
 
     args = parser.parse_args()
 

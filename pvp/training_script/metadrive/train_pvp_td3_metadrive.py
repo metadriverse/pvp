@@ -2,14 +2,14 @@ import argparse
 import os
 import os.path as osp
 
-from pvp_iclr_release.utils.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp_iclr_release.pvp.pvp_td3.pvp_td3 import pvpTD3
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
-from pvp_iclr_release.stable_baseline3.old.old_buffer import oldReplayBuffer
-from pvp_iclr_release.utils.older_utils import get_time_str
+from pvp.utils.human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.wandb_callback import WandbCallback
+from pvp.pvp.pvp_td3.pvp_td3 import pvpTD3
+from pvp.stable_baseline3.td3.policies import TD3Policy
+from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer
+from pvp.utils.older_utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,8 +17,14 @@ if __name__ == '__main__':
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--start-seed", default=100, type=int, help="The environment map random seed.")
-    parser.add_argument("--control", default="joystick",choices=['joystick', 'xboxController', 'keyboard'] type=str, help="The experiment name.")
-    
+    parser.add_argument(
+        "--control",
+        default="joystick",
+        choices=['joystick', 'xboxController', 'keyboard'],
+        type=str,
+        help="The experiment name."
+    )
+
     args = parser.parse_args()
 
     # ===== Setup some meta information =====
@@ -44,7 +50,7 @@ if __name__ == '__main__':
         env_config={
             "manual_control": True,
             "use_render": True,
-            "controller": args.control, # or joystick
+            "controller": args.control,  # or joystick
             "window_size": (1600, 1100),
             "start_seed": start_seed,
             # "map": "COT",
@@ -67,9 +73,7 @@ if __name__ == '__main__':
             learning_rate=1e-4,
             q_value_bound=1,
             optimize_memory_usage=True,
-
             buffer_size=50_000,  # We only conduct experiment less than 50K steps
-
             learning_starts=100,  ###
             batch_size=100,  # Reduce the batch size for real-time copilot
             tau=0.005,
@@ -77,11 +81,9 @@ if __name__ == '__main__':
             # train_freq=1,
             # target_policy_noise=0,
             # policy_delay=1,
-
             action_noise=None,
             tensorboard_log=log_dir,
             create_eval_env=False,
-
             verbose=2,
             seed=seed,
             device="auto",
@@ -105,21 +107,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=100,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=100, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 
@@ -144,13 +136,13 @@ if __name__ == '__main__':
         log_interval=1,
 
         # save buffer
-        buffer_save_timesteps = 5000,
-        save_path_human = "./",
-        save_path_replay = "./",
-        save_buffer = True,
+        buffer_save_timesteps=5000,
+        save_path_human="./",
+        save_path_replay="./",
+        save_buffer=True,
 
         # load buffer
-        load_buffer = False,
+        load_buffer=False,
         # load_path_human = "./human_buffer_100.pkl",
         # load_path_replay = "./replay_buffer_100.pkl",
 

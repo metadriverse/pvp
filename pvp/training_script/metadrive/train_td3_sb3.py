@@ -2,16 +2,16 @@ import argparse
 import os
 import os.path as osp
 
-from pvp_iclr_release.utils.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp_iclr_release.stable_baseline3.td3.td3 import TD3, ReplayBuffer
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
-from pvp_iclr_release.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
-from pvp_iclr_release.utils.train_eval_config import baseline_eval_config
+from pvp.utils.human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.stable_baseline3.common.wandb_callback import WandbCallback
+from pvp.stable_baseline3.td3.td3 import TD3, ReplayBuffer
+from pvp.stable_baseline3.td3.policies import TD3Policy
+from pvp.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
+from pvp.utils.train_eval_config import baseline_eval_config
 
-from pvp_iclr_release.utils.older_utils import get_time_str
+from pvp.utils.older_utils import get_time_str
 
 
 def make_eval_env(log_dir):
@@ -48,7 +48,10 @@ if __name__ == '__main__':
     # ===== Setup the config =====
     config = dict(
         # Environment config
-        env_config={"main_exp": False, "horizon": 1500},
+        env_config={
+            "main_exp": False,
+            "horizon": 1500
+        },
 
         # Algorithm config
         algo=dict(
@@ -59,7 +62,6 @@ if __name__ == '__main__':
             env=None,
             learning_rate=1e-4,
             optimize_memory_usage=True,
-
             learning_starts=10000,  ###
             batch_size=100,  # Reduce the batch size for real-time copilot
             tau=0.005,
@@ -67,11 +69,9 @@ if __name__ == '__main__':
             # train_freq=1,
             # target_policy_noise=0,
             # policy_delay=1,
-
             action_noise=None,
             tensorboard_log=log_dir,
             create_eval_env=False,
-
             verbose=2,
             seed=seed,
             device="auto",
@@ -96,21 +96,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=10000,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=10000, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 

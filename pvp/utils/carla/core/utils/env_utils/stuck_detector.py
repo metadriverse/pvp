@@ -14,7 +14,6 @@ class StuckDetector(object):
     :Interfaces:
         - tick, clear
     """
-
     def __init__(self, len_thresh: int = 200, speed_thresh: float = 0.1) -> None:
         self._speed_queue = deque(maxlen=len_thresh)
         self._len_thresh = len_thresh

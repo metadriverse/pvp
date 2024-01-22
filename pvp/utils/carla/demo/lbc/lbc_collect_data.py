@@ -1,10 +1,10 @@
 import os
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
@@ -53,8 +53,17 @@ config = dict(
     ],
     policy=dict(
         target_speed=25,
-        lateral_dict={'K_P': 0.75, 'K_D': 0., 'K_I': 0.05, 'dt': 0.1},
-        longitudinal_dict={'K_P': 0.5, 'K_D': 0.1, 'K_I': 0.025},
+        lateral_dict={
+            'K_P': 0.75,
+            'K_D': 0.,
+            'K_I': 0.05,
+            'dt': 0.1
+        },
+        longitudinal_dict={
+            'K_P': 0.5,
+            'K_D': 0.1,
+            'K_I': 0.025
+        },
         noise=True,
         noise_kwargs=dict(),
         collect=dict(

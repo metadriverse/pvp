@@ -12,7 +12,7 @@ import numpy as np
 import torch as th
 from torch import nn
 
-from pvp_iclr_release.stable_baseline3.common.distributions import (
+from pvp.stable_baseline3.common.distributions import (
     BernoulliDistribution,
     CategoricalDistribution,
     DiagGaussianDistribution,
@@ -21,8 +21,8 @@ from pvp_iclr_release.stable_baseline3.common.distributions import (
     StateDependentNoiseDistribution,
     make_proba_distribution,
 )
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_action_dim, is_image_space, maybe_transpose, preprocess_obs
-from pvp_iclr_release.stable_baseline3.common.torch_layers import (
+from pvp.stable_baseline3.common.preprocessing import get_action_dim, is_image_space, maybe_transpose, preprocess_obs
+from pvp.stable_baseline3.common.torch_layers import (
     BaseFeaturesExtractor,
     CombinedExtractor,
     FlattenExtractor,
@@ -30,8 +30,8 @@ from pvp_iclr_release.stable_baseline3.common.torch_layers import (
     NatureCNN,
     create_mlp,
 )
-from pvp_iclr_release.stable_baseline3.common.type_aliases import Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import get_device, is_vectorized_observation, obs_as_tensor
+from pvp.stable_baseline3.common.type_aliases import Schedule
+from pvp.stable_baseline3.common.utils import get_device, is_vectorized_observation, obs_as_tensor
 
 
 class BaseModel(nn.Module, ABC):
@@ -55,7 +55,6 @@ class BaseModel(nn.Module, ABC):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -235,7 +234,7 @@ class BaseModel(nn.Module, ABC):
                     obs_ = np.array(obs)
                 vectorized_env = vectorized_env or is_vectorized_observation(obs_, obs_space)
                 # Add batch dimension if needed
-                observation[key] = obs_.reshape((-1,) + self.observation_space[key].shape)
+                observation[key] = obs_.reshape((-1, ) + self.observation_space[key].shape)
 
         elif is_image_space(self.observation_space):
             # Handle the different cases for images
@@ -249,7 +248,7 @@ class BaseModel(nn.Module, ABC):
             # Dict obs need to be handled separately
             vectorized_env = is_vectorized_observation(observation, self.observation_space)
             # Add batch dimension if needed
-            observation = observation.reshape((-1,) + self.observation_space.shape)
+            observation = observation.reshape((-1, ) + self.observation_space.shape)
 
         observation = obs_as_tensor(observation, self.device)
         return observation, vectorized_env
@@ -265,7 +264,6 @@ class BasePolicy(BaseModel):
     :param squash_output: For continuous actions, whether the output is squashed
         or not using a ``tanh()`` function.
     """
-
     def __init__(self, *args, squash_output: bool = False, **kwargs):
         super(BasePolicy, self).__init__(*args, **kwargs)
         self._squash_output = squash_output
@@ -409,7 +407,6 @@ class ActorCriticPolicy(BasePolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -514,7 +511,9 @@ class ActorCriticPolicy(BasePolicy):
 
         :param n_envs:
         """
-        assert isinstance(self.action_dist, StateDependentNoiseDistribution), "reset_noise() is only available when using gSDE"
+        assert isinstance(
+            self.action_dist, StateDependentNoiseDistribution
+        ), "reset_noise() is only available when using gSDE"
         self.action_dist.sample_weights(self.log_std, batch_size=n_envs)
 
     def _build_mlp_extractor(self) -> None:
@@ -551,7 +550,8 @@ class ActorCriticPolicy(BasePolicy):
             self.action_net, self.log_std = self.action_dist.proba_distribution_net(
                 latent_dim=latent_dim_pi, latent_sde_dim=latent_dim_pi, log_std_init=self.log_std_init
             )
-        elif isinstance(self.action_dist, (CategoricalDistribution, MultiCategoricalDistribution, BernoulliDistribution)):
+        elif isinstance(self.action_dist,
+                        (CategoricalDistribution, MultiCategoricalDistribution, BernoulliDistribution)):
             self.action_net = self.action_dist.proba_distribution_net(latent_dim=latent_dim_pi)
         else:
             raise NotImplementedError(f"Unsupported distribution '{self.action_dist}'.")
@@ -703,7 +703,6 @@ class ActorCriticCnnPolicy(ActorCriticPolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,
@@ -778,7 +777,6 @@ class MultiInputActorCriticPolicy(ActorCriticPolicy):
     :param optimizer_kwargs: Additional keyword arguments,
         excluding the learning rate, to pass to the optimizer
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Dict,
@@ -846,7 +844,6 @@ class ContinuousCritic(BaseModel):
     :param share_features_extractor: Whether the features extractor is shared or not
         between the actor and the critic (this saves computation time)
     """
-
     def __init__(
         self,
         observation_space: gym.spaces.Space,

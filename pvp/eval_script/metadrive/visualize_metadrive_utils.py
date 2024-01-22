@@ -5,11 +5,11 @@ import time
 
 import numpy as np
 import pandas as pd
-from pvp_iclr_release.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
-from pvp_iclr_release.utils.train_eval_config import baseline_eval_config
-from pvp_iclr_release.utils.print_dict_utils import pretty_print, RecorderEnv
-from pvp_iclr_release.pvp.pvp_td3.pvp_td3 import pvpTD3
+from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.stable_baseline3.td3.policies import TD3Policy
+from pvp.utils.train_eval_config import baseline_eval_config
+from pvp.utils.print_dict_utils import pretty_print, RecorderEnv
+from pvp.pvp.pvp_td3.pvp_td3 import pvpTD3
 from panda3d.core import PNMImage
 EVAL_ENV_START = baseline_eval_config["start_seed"]
 
@@ -24,13 +24,13 @@ class PolicyFunction:
 
 
 def evaluate_metadrive_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        total_env_num=50,
-        seed=3000,
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    total_env_num=50,
+    seed=3000,
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
@@ -56,7 +56,6 @@ def evaluate_metadrive_once(
         step_count = 0
         ep_times = []
 
-
         env_index = 0
         o = env.reset(force_seed=seed + env_index)
 
@@ -80,7 +79,7 @@ def evaluate_metadrive_once(
                 step_count = 0
                 ep_count += 1
                 num_ep_in += 1
-                if info['cost']==0 and info['arrive_dest']:
+                if info['cost'] == 0 and info['arrive_dest']:
                     print("Seed: " + str(seed) + "Success!!!!")
                     curr_success = True
                 break
@@ -92,7 +91,7 @@ def evaluate_metadrive_once(
     return curr_success
 
 
-def make_metadrive_env(use_render=False, seed = 3000):
+def make_metadrive_env(use_render=False, seed=3000):
     config = copy.deepcopy(baseline_eval_config)
 
     if use_render:
@@ -101,8 +100,6 @@ def make_metadrive_env(use_render=False, seed = 3000):
     config["start_seed"] = seed
     env = HumanInTheLoopEnv(config)
     return RecorderEnv(env)
-
-
 
 
 if __name__ == '__main__':
@@ -122,4 +119,3 @@ if __name__ == '__main__':
         if ret:
             successseed.append(currseed)
     print(successseed)
-

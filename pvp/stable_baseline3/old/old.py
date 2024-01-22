@@ -5,48 +5,49 @@ import numpy as np
 import torch as th
 from torch.nn import functional as F
 
-from pvp_iclr_release.stable_baseline3.common.noise import ActionNoise
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, Schedule
-from pvp_iclr_release.stable_baseline3.common.utils import polyak_update
-from pvp_iclr_release.stable_baseline3.old.old_buffer import oldReplayBuffer
-from pvp_iclr_release.stable_baseline3.old.policies import oldPolicy
-from pvp_iclr_release.stable_baseline3.sac import SAC
+from pvp.stable_baseline3.common.noise import ActionNoise
+from pvp.stable_baseline3.common.type_aliases import GymEnv, Schedule
+from pvp.stable_baseline3.common.utils import polyak_update
+from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer
+from pvp.stable_baseline3.old.policies import oldPolicy
+from pvp.stable_baseline3.sac import SAC
 from collections import defaultdict
+
 
 class old(SAC):
     def __init__(
-            self,
-            policy: Union[str, Type[oldPolicy]],
-            env: Union[GymEnv, str],
-            learning_rate: dict = dict(actor=0.0, critic=0.0, entropy=0.0),
-            buffer_size: int = 100,  # Shrink the size to reduce memory consumption when testing
-            learning_starts: int = 100,
-            batch_size: int = 256,
-            tau: float = 0.005,
-            gamma: float = 0.99,
-            train_freq: Union[int, Tuple[int, str]] = 1,
-            gradient_steps: int = 1,
-            action_noise: Optional[ActionNoise] = None,
-            replay_buffer_class: Optional[oldReplayBuffer] = oldReplayBuffer,  # xxx: !! Use old Replay Buffer
-            replay_buffer_kwargs: Optional[Dict[str, Any]] = None,
-            optimize_memory_usage: bool = True,
-            ent_coef: Union[str, float] = "auto",
-            target_update_interval: int = 1,
-            target_entropy: Union[str, float] = "auto",
-            use_sde: bool = False,
-            sde_sample_freq: int = -1,
-            use_sde_at_warmup: bool = False,
-            tensorboard_log: Optional[str] = None,
-            create_eval_env: bool = False,
-            policy_kwargs: Optional[Dict[str, Any]] = None,
-            verbose: int = 0,
-            seed: Optional[int] = None,
-            device: Union[th.device, str] = "auto",
-            _init_setup_model: bool = True,
+        self,
+        policy: Union[str, Type[oldPolicy]],
+        env: Union[GymEnv, str],
+        learning_rate: dict = dict(actor=0.0, critic=0.0, entropy=0.0),
+        buffer_size: int = 100,  # Shrink the size to reduce memory consumption when testing
+        learning_starts: int = 100,
+        batch_size: int = 256,
+        tau: float = 0.005,
+        gamma: float = 0.99,
+        train_freq: Union[int, Tuple[int, str]] = 1,
+        gradient_steps: int = 1,
+        action_noise: Optional[ActionNoise] = None,
+        replay_buffer_class: Optional[oldReplayBuffer] = oldReplayBuffer,  # xxx: !! Use old Replay Buffer
+        replay_buffer_kwargs: Optional[Dict[str, Any]] = None,
+        optimize_memory_usage: bool = True,
+        ent_coef: Union[str, float] = "auto",
+        target_update_interval: int = 1,
+        target_entropy: Union[str, float] = "auto",
+        use_sde: bool = False,
+        sde_sample_freq: int = -1,
+        use_sde_at_warmup: bool = False,
+        tensorboard_log: Optional[str] = None,
+        create_eval_env: bool = False,
+        policy_kwargs: Optional[Dict[str, Any]] = None,
+        verbose: int = 0,
+        seed: Optional[int] = None,
+        device: Union[th.device, str] = "auto",
+        _init_setup_model: bool = True,
 
-            # xxx: Our new introduce hyper-parameters
-            cql_coefficient=1,
-            monitor_wrapper=False
+        # xxx: Our new introduce hyper-parameters
+        cql_coefficient=1,
+        monitor_wrapper=False
     ):
 
         assert replay_buffer_class == oldReplayBuffer
@@ -157,8 +158,7 @@ class old(SAC):
                 next_cost_q_values = next_cost_q_values  # - ent_coef * next_log_prob.reshape(-1, 1)
                 # xxx: Note that we use
                 target_cost_q_values = (
-                        replay_data.intervention_costs +
-                        (1 - replay_data.dones) * self.gamma * next_cost_q_values
+                    replay_data.intervention_costs + (1 - replay_data.dones) * self.gamma * next_cost_q_values
                 )
 
             # === Optimizing the critic ===
@@ -184,9 +184,9 @@ class old(SAC):
             # FIXME(xxx): We use "behavior actions" in old impl. We used "novice actions" at it fails.
             #  Does this point the critical point?????? Should we use "behavior actions"????
             current_cost_q_values = self.cost_critic(replay_data.observations, replay_data.actions_behavior)
-            cost_critic_loss = 0.5 * sum([
-                F.mse_loss(current_cost_q, target_cost_q_values) for current_cost_q in current_cost_q_values
-            ])
+            cost_critic_loss = 0.5 * sum(
+                [F.mse_loss(current_cost_q, target_cost_q_values) for current_cost_q in current_cost_q_values]
+            )
             for i, v in enumerate(current_cost_q_values):
                 stat_recorder["cost_q_value_{}".format(i)].append(v.mean().item())
             stat_recorder["cost_critic_loss"].append(cost_critic_loss.item())
@@ -260,5 +260,3 @@ class old(SAC):
         else:
             saved_pytorch_variables = ["ent_coef_tensor"]
         return state_dicts, saved_pytorch_variables
-
-

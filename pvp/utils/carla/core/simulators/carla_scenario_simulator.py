@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.carla_simulator import CarlaSimulator
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.carla_simulator import CarlaSimulator
 from .srunner.scenariomanager.scenario_manager import ScenarioManager
 from .srunner.scenarios.route_scenario import RouteScenario, SCENARIO_CLASS_DICT
 
@@ -64,14 +64,14 @@ class CarlaScenarioSimulator(CarlaSimulator):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            client: Optional[carla.Client] = None,
-            host: str = 'localhost',
-            port: int = 9000,
-            tm_port: int = 9050,
-            timeout: float = 10.0,
-            **kwargs
+        self,
+        cfg: Dict,
+        client: Optional[carla.Client] = None,
+        host: str = 'localhost',
+        port: int = 9000,
+        tm_port: int = 9050,
+        timeout: float = 10.0,
+        **kwargs
     ) -> None:
         """
         Init Carla scenario simulator.

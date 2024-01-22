@@ -5,7 +5,6 @@
 
 from imgaug import augmenters as iaa
 
-
 # def custom(image_iteration, batch_size=32):
 
 #     iteration = image_iteration / (batch_size * 1.5)
@@ -15,7 +14,7 @@ def medium(image_iteration):
     iteration = image_iteration / (32 * 1.5)
     frequency_factor = 0.05 + float(iteration) / 1000000.0
     color_factor = float(iteration) / 1000000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 100000.0)
 
@@ -69,7 +68,7 @@ def soft(image_iteration):
     iteration = image_iteration / (32 * 1.5)
     frequency_factor = 0.05 + float(iteration) / 1200000.0
     color_factor = float(iteration) / 1200000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 120000.0)
 
@@ -123,7 +122,7 @@ def high(image_iteration):
     iteration = image_iteration / (32 * 1.5)
     frequency_factor = 0.05 + float(iteration) / 800000.0
     color_factor = float(iteration) / 800000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 80000.0)
 
@@ -177,7 +176,7 @@ def medium_harder(image_iteration):
     iteration = image_iteration / (32)
     frequency_factor = 0.05 + float(iteration) / 1000000.0
     color_factor = float(iteration) / 1000000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 100000.0)
 
@@ -235,7 +234,7 @@ def super_hard(image_iteration):
     iteration = image_iteration / (32)
     frequency_factor = min(0.05 + float(iteration) / 50000.0, 1.0)
     color_factor = float(iteration) / 100000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 100000.0)
 
@@ -293,7 +292,7 @@ def custom(image_iteration):
     iteration = image_iteration / (32)
     frequency_factor = min(0.05 + float(iteration) / 50000.0, 1.0)
     color_factor = float(iteration) / 100000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 20000.0)
 
@@ -343,7 +342,7 @@ def soft_harder(image_iteration):
     iteration = image_iteration / (32)
     frequency_factor = 0.05 + float(iteration) / 1200000.0
     color_factor = float(iteration) / 1200000.0
-    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6) ** 1.863486)
+    dropout_factor = 0.198667 + (0.03856658 - 0.198667) / (1 + (iteration / 196416.6)**1.863486)
 
     blur_factor = 0.5 + (0.5 * iteration / 120000.0)
 

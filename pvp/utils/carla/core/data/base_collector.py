@@ -5,17 +5,17 @@ from typing import Any, Dict
 from ding.utils import EasyTimer
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
 
 
 class BaseCollector(object):
     config = dict()
 
     def __init__(
-            self,
-            cfg: Dict,
-            env: Any = None,
-            policy: Any = None,
+        self,
+        cfg: Dict,
+        env: Any = None,
+        policy: Any = None,
     ) -> None:
         if 'cfg_type' not in cfg:
             self._cfg = self.__class__.default_config()

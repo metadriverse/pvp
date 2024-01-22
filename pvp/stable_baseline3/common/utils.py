@@ -17,9 +17,9 @@ try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
     SummaryWriter = None
-import  stable_baselines3 as sb3
-from pvp_iclr_release.stable_baseline3.common.logger import Logger, configure
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv, Schedule, TensorDict, TrainFreq, TrainFrequencyUnit
+import stable_baselines3 as sb3
+from pvp.stable_baseline3.common.logger import Logger, configure
+from pvp.stable_baseline3.common.type_aliases import GymEnv, Schedule, TensorDict, TrainFreq, TrainFrequencyUnit
 
 
 def set_random_seed(seed: int, using_cuda: bool = False) -> None:
@@ -106,7 +106,6 @@ def get_linear_fn(start: float, end: float, end_fraction: float) -> Schedule:
         of the complete training process.
     :return:
     """
-
     def func(progress_remaining: float) -> float:
         if (1 - progress_remaining) > end_fraction:
             return end
@@ -124,7 +123,6 @@ def constant_fn(val: float) -> Schedule:
     :param val:
     :return:
     """
-
     def func(_):
         return val
 
@@ -171,10 +169,10 @@ def get_latest_run_id(log_path: Optional[str] = None, log_name: str = "") -> int
 
 
 def configure_logger(
-        verbose: int = 0,
-        tensorboard_log: Optional[str] = None,
-        tb_log_name: str = "",
-        reset_num_timesteps: bool = True,
+    verbose: int = 0,
+    tensorboard_log: Optional[str] = None,
+    tb_log_name: str = "",
+    reset_num_timesteps: bool = True,
 ) -> Logger:
     """
     Configure the logger's outputs.
@@ -240,14 +238,15 @@ def is_vectorized_box_observation(observation: np.ndarray, observation_space: gy
         return True
     else:
         raise ValueError(
-            f"Error: Unexpected observation shape {observation.shape} for "
-            + f"Box environment, please use {observation_space.shape} "
-            + "or (n_env, {}) for the observation shape.".format(", ".join(map(str, observation_space.shape)))
+            f"Error: Unexpected observation shape {observation.shape} for " +
+            f"Box environment, please use {observation_space.shape} " +
+            "or (n_env, {}) for the observation shape.".format(", ".join(map(str, observation_space.shape)))
         )
 
 
-def is_vectorized_discrete_observation(observation: Union[int, np.ndarray],
-                                       observation_space: gym.spaces.Discrete) -> bool:
+def is_vectorized_discrete_observation(
+    observation: Union[int, np.ndarray], observation_space: gym.spaces.Discrete
+) -> bool:
     """
     For discrete observation type, detects and validates the shape,
     then returns whether or not the observation is vectorized.
@@ -262,13 +261,14 @@ def is_vectorized_discrete_observation(observation: Union[int, np.ndarray],
         return True
     else:
         raise ValueError(
-            f"Error: Unexpected observation shape {observation.shape} for "
-            + "Discrete environment, please use () or (n_env,) for the observation shape."
+            f"Error: Unexpected observation shape {observation.shape} for " +
+            "Discrete environment, please use () or (n_env,) for the observation shape."
         )
 
 
-def is_vectorized_multidiscrete_observation(observation: np.ndarray,
-                                            observation_space: gym.spaces.MultiDiscrete) -> bool:
+def is_vectorized_multidiscrete_observation(
+    observation: np.ndarray, observation_space: gym.spaces.MultiDiscrete
+) -> bool:
     """
     For multidiscrete observation type, detects and validates the shape,
     then returns whether or not the observation is vectorized.
@@ -277,15 +277,15 @@ def is_vectorized_multidiscrete_observation(observation: np.ndarray,
     :param observation_space: the observation space
     :return: whether the given observation is vectorized or not
     """
-    if observation.shape == (len(observation_space.nvec),):
+    if observation.shape == (len(observation_space.nvec), ):
         return False
     elif len(observation.shape) == 2 and observation.shape[1] == len(observation_space.nvec):
         return True
     else:
         raise ValueError(
-            f"Error: Unexpected observation shape {observation.shape} for MultiDiscrete "
-            + f"environment, please use ({len(observation_space.nvec)},) or "
-            + f"(n_env, {len(observation_space.nvec)}) for the observation shape."
+            f"Error: Unexpected observation shape {observation.shape} for MultiDiscrete " +
+            f"environment, please use ({len(observation_space.nvec)},) or " +
+            f"(n_env, {len(observation_space.nvec)}) for the observation shape."
         )
 
 
@@ -298,15 +298,15 @@ def is_vectorized_multibinary_observation(observation: np.ndarray, observation_s
     :param observation_space: the observation space
     :return: whether the given observation is vectorized or not
     """
-    if observation.shape == (observation_space.n,):
+    if observation.shape == (observation_space.n, ):
         return False
     elif len(observation.shape) == 2 and observation.shape[1] == observation_space.n:
         return True
     else:
         raise ValueError(
-            f"Error: Unexpected observation shape {observation.shape} for MultiBinary "
-            + f"environment, please use ({observation_space.n},) or "
-            + f"(n_env, {observation_space.n}) for the observation shape."
+            f"Error: Unexpected observation shape {observation.shape} for MultiBinary " +
+            f"environment, please use ({observation_space.n},) or " +
+            f"(n_env, {observation_space.n}) for the observation shape."
         )
 
 
@@ -378,7 +378,8 @@ def is_vectorized_observation(observation: Union[int, np.ndarray], observation_s
     else:
         # for-else happens if no break is called
         raise ValueError(
-            f"Error: Cannot determine if the observation is vectorized with the space type {observation_space}.")
+            f"Error: Cannot determine if the observation is vectorized with the space type {observation_space}."
+        )
 
 
 def safe_mean(arr: Union[np.ndarray, list, deque]) -> np.ndarray:
@@ -411,9 +412,9 @@ def zip_strict(*iterables: Iterable) -> Iterable:
 
 
 def polyak_update(
-        params: Iterable[th.nn.Parameter],
-        target_params: Iterable[th.nn.Parameter],
-        tau: float,
+    params: Iterable[th.nn.Parameter],
+    target_params: Iterable[th.nn.Parameter],
+    tau: float,
 ) -> None:
     """
     Perform a Polyak average update on ``target_params`` using ``params``:
@@ -437,9 +438,8 @@ def polyak_update(
             th.add(target_param.data, param.data, alpha=tau, out=target_param.data)
 
 
-def obs_as_tensor(
-        obs: Union[np.ndarray, Dict[Union[str, int], np.ndarray]], device: th.device
-) -> Union[th.Tensor, TensorDict]:
+def obs_as_tensor(obs: Union[np.ndarray, Dict[Union[str, int], np.ndarray]],
+                  device: th.device) -> Union[th.Tensor, TensorDict]:
     """
     Moves the observation to the given device.
 
@@ -456,9 +456,9 @@ def obs_as_tensor(
 
 
 def should_collect_more_steps(
-        train_freq: TrainFreq,
-        num_collected_steps: int,
-        num_collected_episodes: int,
+    train_freq: TrainFreq,
+    num_collected_steps: int,
+    num_collected_episodes: int,
 ) -> bool:
     """
     Helper used in ``collect_rollouts()`` of off-policy algorithms

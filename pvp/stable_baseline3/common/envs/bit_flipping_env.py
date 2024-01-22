@@ -5,7 +5,7 @@ import numpy as np
 from gym import GoalEnv, spaces
 from gym.envs.registration import EnvSpec
 
-from pvp_iclr_release.stable_baseline3.common.type_aliases import GymStepReturn
+from pvp.stable_baseline3.common.type_aliases import GymStepReturn
 
 
 class BitFlippingEnv(GoalEnv):
@@ -46,9 +46,9 @@ class BitFlippingEnv(GoalEnv):
             # representation of the observation
             self.observation_space = spaces.Dict(
                 {
-                    "observation": spaces.Discrete(2 ** n_bits),
-                    "achieved_goal": spaces.Discrete(2 ** n_bits),
-                    "desired_goal": spaces.Discrete(2 ** n_bits),
+                    "observation": spaces.Discrete(2**n_bits),
+                    "achieved_goal": spaces.Discrete(2**n_bits),
+                    "desired_goal": spaces.Discrete(2**n_bits),
                 }
             )
         elif image_obs_space:
@@ -89,14 +89,14 @@ class BitFlippingEnv(GoalEnv):
         self.obs_space = spaces.MultiBinary(n_bits)
 
         if continuous:
-            self.action_space = spaces.Box(-1, 1, shape=(n_bits,), dtype=np.float32)
+            self.action_space = spaces.Box(-1, 1, shape=(n_bits, ), dtype=np.float32)
         else:
             self.action_space = spaces.Discrete(n_bits)
         self.continuous = continuous
         self.discrete_obs_space = discrete_obs_space
         self.image_obs_space = image_obs_space
         self.state = None
-        self.desired_goal = np.ones((n_bits,))
+        self.desired_goal = np.ones((n_bits, ))
         if max_steps is None:
             max_steps = n_bits
         self.max_steps = max_steps
@@ -115,7 +115,7 @@ class BitFlippingEnv(GoalEnv):
         if self.discrete_obs_space:
             # The internal state is the binary representation of the
             # observed one
-            return int(sum([state[i] * 2 ** i for i in range(len(state))]))
+            return int(sum([state[i] * 2**i for i in range(len(state))]))
 
         if self.image_obs_space:
             size = np.prod(self.image_shape)
@@ -137,7 +137,7 @@ class BitFlippingEnv(GoalEnv):
             # Convert to binary representation
             state = (((state[:, :] & (1 << np.arange(len(self.state))))) > 0).astype(int)
         elif self.image_obs_space:
-            state = state.reshape(batch_size, -1)[:, : len(self.state)] / 255
+            state = state.reshape(batch_size, -1)[:, :len(self.state)] / 255
         else:
             state = np.array(state).reshape(batch_size, -1)
 
@@ -177,7 +177,8 @@ class BitFlippingEnv(GoalEnv):
         return obs, reward, done, info
 
     def compute_reward(
-        self, achieved_goal: Union[int, np.ndarray], desired_goal: Union[int, np.ndarray], _info: Optional[Dict[str, Any]]
+        self, achieved_goal: Union[int, np.ndarray], desired_goal: Union[int, np.ndarray], _info: Optional[Dict[str,
+                                                                                                                Any]]
     ) -> np.float32:
         # As we are using a vectorized version, we need to keep track of the `batch_size`
         if isinstance(achieved_goal, int):

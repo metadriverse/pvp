@@ -5,9 +5,9 @@ import gym
 import torch as th
 from torch import nn
 
-from pvp_iclr_release.stable_baseline3.common.preprocessing import get_flattened_obs_dim, is_image_space
-from pvp_iclr_release.stable_baseline3.common.type_aliases import TensorDict
-from pvp_iclr_release.stable_baseline3.common.utils import get_device
+from pvp.stable_baseline3.common.preprocessing import get_flattened_obs_dim, is_image_space
+from pvp.stable_baseline3.common.type_aliases import TensorDict
+from pvp.stable_baseline3.common.utils import get_device
 
 
 class BaseFeaturesExtractor(nn.Module):
@@ -17,7 +17,6 @@ class BaseFeaturesExtractor(nn.Module):
     :param observation_space:
     :param features_dim: Number of features extracted.
     """
-
     def __init__(self, observation_space: gym.Space, features_dim: int = 0):
         super(BaseFeaturesExtractor, self).__init__()
         assert features_dim > 0
@@ -39,7 +38,6 @@ class FlattenExtractor(BaseFeaturesExtractor):
 
     :param observation_space:
     """
-
     def __init__(self, observation_space: gym.Space):
         super(FlattenExtractor, self).__init__(observation_space, get_flattened_obs_dim(observation_space))
         self.flatten = nn.Flatten()
@@ -59,12 +57,13 @@ class NatureCNN(BaseFeaturesExtractor):
     :param features_dim: Number of features extracted.
         This corresponds to the number of unit for the last layer.
     """
-
     def __init__(self, observation_space: gym.spaces.Box, features_dim: int = 512):
         super(NatureCNN, self).__init__(observation_space, features_dim)
         # We assume CxHxW images (channels first)
         # Re-ordering will be done by pre-preprocessing or wrapper
-        assert is_image_space(observation_space, check_channels=False), (
+        assert is_image_space(
+            observation_space, check_channels=False
+        ), (
             "You should use NatureCNN "
             f"only with images not with {observation_space}\n"
             "(you are probably using `CnnPolicy` instead of `MlpPolicy` or `MultiInputPolicy`)\n"
@@ -159,7 +158,6 @@ class MlpExtractor(nn.Module):
     :param activation_fn: The activation function to use for the networks.
     :param device:
     """
-
     def __init__(
         self,
         feature_dim: int,
@@ -245,7 +243,6 @@ class CombinedExtractor(BaseFeaturesExtractor):
     :param cnn_output_dim: Number of features to output from each CNN submodule(s). Defaults to
         256 to avoid exploding network sizes.
     """
-
     def __init__(self, observation_space: gym.spaces.Dict, cnn_output_dim: int = 256):
         # TODO we do not know features-dim here before going over all the items, so put something there. This is dirty!
         super(CombinedExtractor, self).__init__(observation_space, features_dim=1)

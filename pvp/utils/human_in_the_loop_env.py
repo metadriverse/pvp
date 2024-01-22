@@ -14,7 +14,6 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
     """
     This Env depends on the new version of MetaDrive
     """
-
     def default_config(self):
         config = super(HumanInTheLoopEnv, self).default_config()
         config.update(
@@ -44,8 +43,9 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         self.input_action = None
         ret = super(HumanInTheLoopEnv, self).reset(*args, **kwargs)
         if self.config["random_spawn"]:
-            self.config["vehicle_config"]["spawn_lane_index"] = (FirstPGBlock.NODE_1, FirstPGBlock.NODE_2,
-                                                                 self.engine.np_random.randint(3))
+            self.config["vehicle_config"]["spawn_lane_index"] = (
+                FirstPGBlock.NODE_1, FirstPGBlock.NODE_2, self.engine.np_random.randint(3)
+            )
         self.vehicle.update_config({"max_speed": 40})
         return ret
 
@@ -85,13 +85,15 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         while self.in_stop:
             self.engine.taskMgr.step()
         if self.config["use_render"] and self.config["main_exp"] and not self.config["in_replay"]:
-            super(HumanInTheLoopEnv, self).render(text={
-                "Total Cost": self.episode_cost,
-                "Takeover Cost": self.total_takeover_cost,
-                "Takeover": self.t_o,
-                "COST": ret[-1]["takeover_cost"],
-                "Stop (Press E)": ""
-            })
+            super(HumanInTheLoopEnv, self).render(
+                text={
+                    "Total Cost": self.episode_cost,
+                    "Takeover Cost": self.total_takeover_cost,
+                    "Takeover": self.t_o,
+                    "COST": ret[-1]["takeover_cost"],
+                    "Stop (Press E)": ""
+                }
+            )
         return ret
 
     def stop(self):
@@ -121,9 +123,15 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
 
 if __name__ == "__main__":
     env = HumanInTheLoopEnv(
-        {"manual_control": True, "disable_model_compression": True, "use_render": True, "main_exp": True})
+        {
+            "manual_control": True,
+            "disable_model_compression": True,
+            "use_render": True,
+            "main_exp": True
+        }
+    )
     env.reset()
     while True:
-        o,r,d,i=env.step([0, 0])
+        o, r, d, i = env.step([0, 0])
         if d:
             env.reset()

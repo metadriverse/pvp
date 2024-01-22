@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.print_dict_utils import pretty_print
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.training_script.minigrid.minigrid_env import MinigridWrapper
-from pvp_iclr_release.training_script.minigrid.minigrid_model import MinigridCNN
+from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.utils.print_dict_utils import pretty_print
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.training_script.minigrid.minigrid_env import MinigridWrapper
+from pvp.training_script.minigrid.minigrid_model import MinigridCNN
 
 EVAL_ENV_START = 0
 
@@ -21,16 +21,13 @@ class AtariPolicyFunction:
     def __init__(self, ckpt_path, ckpt_index, env):
         self.algo = oldDQN(
             policy=CnnPolicy,
-            policy_kwargs=dict(
-                features_extractor_class=MinigridCNN,
-                activation_fn=torch.nn.Tanh,
-                net_arch=[64, ]
-            ),
+            policy_kwargs=dict(features_extractor_class=MinigridCNN, activation_fn=torch.nn.Tanh, net_arch=[
+                64,
+            ]),
             env=env,
             learning_rate=1e-4,
             optimize_memory_usage=True,
             buffer_size=100000,
-
             batch_size=2,  # Reduce the batch size for real-time copilot
             train_freq=4,
             gradient_steps=1,
@@ -40,7 +37,6 @@ class AtariPolicyFunction:
             # verbose=2,
             # seed=0,
             device="auto",
-
             learning_starts=0,
             exploration_fraction=0.0,
             exploration_final_eps=0.0,
@@ -50,29 +46,28 @@ class AtariPolicyFunction:
 
     def __call__(self, o, deterministic=False):
         assert deterministic
-        action, state =  self.algo.predict(o, deterministic=deterministic)
+        action, state = self.algo.predict(o, deterministic=deterministic)
         return action
 
 
 def evaluate_atari_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        env_name="BreakoutNoFrameskip-v4",
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    env_name="BreakoutNoFrameskip-v4",
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-
-
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.stable_baseline3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
 
     eval_log_dir = osp.join(ckpt_path, "evaluations")
+
     def _make_eval_env():
         env = gym.make(env_name)
         env = MinigridWrapper(env, enable_render=False, enable_human=False)
@@ -148,7 +143,6 @@ def evaluate_atari_once(
 
                     res = dict(episode_success=episode_success)
 
-
                     step_count[env_id] = 0
                     # rewards = 0
                     ep_count += 1
@@ -169,7 +163,6 @@ def evaluate_atari_once(
                     if ep_count >= num_ep_in_one_env:
                         need_break = True
 
-
     except Exception as e:
         raise e
     finally:
@@ -177,19 +170,28 @@ def evaluate_atari_once(
     df = pd.DataFrame(saved_results)
     # print(df)
     print("===== Result =====")
-    print("Checkpoint {} results (Total {} episodes): \n{}".format(ckpt_name, len(df), {k: np.round(df[k].mean(), 3) for k in df}))
+    print(
+        "Checkpoint {} results (Total {} episodes): \n{}".format(
+            ckpt_name, len(df), {k: np.round(df[k].mean(), 3)
+                                 for k in df}
+        )
+    )
     num_success = 0
     sucess_false_dict = df['episode_success'].value_counts().to_dict()
     if True in sucess_false_dict.keys():
         num_success = sucess_false_dict[True]
 
-    print("Episodes count: {}, Num success: {}, Success rate: {}".format(num_ep_in_one_env, num_success, num_success/num_ep_in_one_env))
+    print(
+        "Episodes count: {}, Num success: {}, Success rate: {}".format(
+            num_ep_in_one_env, num_success, num_success / num_ep_in_one_env
+        )
+    )
     print("===== Result =====")
     path = "{}/{}.csv".format(folder_name, ckpt_name)
     print("Final data is saved at: ", path)
     df.to_csv(path)
     df["model_name"] = ckpt_name
-    return num_success/num_ep_in_one_env
+    return num_success / num_ep_in_one_env
 
 
 if __name__ == '__main__':
@@ -198,9 +200,12 @@ if __name__ == '__main__':
     for ckpt_index in range(10, 1010, 10):
         success_rate = evaluate_atari_once(
             # ckpt_path=os.path.expanduser("/home/xxx/model/old_minigrid/runs/minigrid_old_2room/minigrid_old_2room_MiniGrid-MultiRoom-N2-S4-v0_lr0.0001_seed2_2022-06-08_23-20-31/models/"),
-            ckpt_path=os.path.expanduser("/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/models/"),
+            ckpt_path=os.path.expanduser(
+                "/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/models/"
+            ),
             ckpt_index=ckpt_index,
-            folder_name="/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/test_eval",
+            folder_name=
+            "/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/test_eval",
             use_render=False,
             num_ep_in_one_env=50,
             # env_name="MiniGrid-MultiRoom-N2-S4-v0",
@@ -211,10 +216,11 @@ if __name__ == '__main__':
         success_y.append(success_rate)
     final_result = {'ckpt_index': index_x, "success_rate": success_y}
     resultdf = pd.DataFrame(final_result)
-    resultdf.to_csv("/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/final_eval.csv")
+    resultdf.to_csv(
+        "/home/xxx/model/old_minigrid/runs/minigrid_emptyroom/minigrid-emptyroom_MiniGrid-Empty-Random-6x6-v0_lr0.0001_seed2_2022-06-14_02-29-53/final_eval.csv"
+    )
     import matplotlib.pyplot as plt
-    plt.plot(index_x,success_y,'o-', color='g')
+    plt.plot(index_x, success_y, 'o-', color='g')
     plt.xlabel("ckpt_index")
     plt.ylabel("success_rate")
     plt.show()
-

@@ -8,12 +8,12 @@ The agent also responds to traffic lights. """
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
 
 
 class BasicAgent(Agent):
@@ -21,7 +21,6 @@ class BasicAgent(Agent):
     BasicAgent implements a basic agent that navigates scenes to reach a given
     target destination. This agent respects traffic lights and other vehicles.
     """
-
     def __init__(self, vehicle, target_speed=20):
         """
 

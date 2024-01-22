@@ -3,9 +3,9 @@ from typing import Callable
 
 from gym.wrappers.monitoring import video_recorder
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env.dummy_vec_env import DummyVecEnv
-from pvp_iclr_release.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvObs, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.dummy_vec_env import DummyVecEnv
+from pvp.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
 
 
 class VecVideoRecorder(VecEnvWrapper):
@@ -21,7 +21,6 @@ class VecVideoRecorder(VecEnvWrapper):
     :param video_length:  Length of recorded videos
     :param name_prefix: Prefix to the video name
     """
-
     def __init__(
         self,
         venv: VecEnv,

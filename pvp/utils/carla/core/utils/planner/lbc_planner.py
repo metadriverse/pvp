@@ -3,9 +3,9 @@ from typing import Dict
 import carla
 import numpy as np
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
 from .basic_planner import AgentState, BasicPlanner
 
 
@@ -55,7 +55,7 @@ class LBCPlannerNew(BasicPlanner):
         for i, (node, command) in enumerate(self._waypoints_buffer):
 
             v = node.transform.location
-            distance = np.sqrt((u.x - v.x) ** 2 + (u.y - v.y) ** 2)
+            distance = np.sqrt((u.x - v.x)**2 + (u.y - v.y)**2)
 
             if self.node_road_option.value == 4 and command.value != 4:
                 threshold = self._threshold_before

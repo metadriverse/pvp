@@ -3,21 +3,21 @@ import typing
 from copy import deepcopy
 from typing import Optional, Type, Union
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import CloudpickleWrapper, VecEnv, VecEnvWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env.dummy_vec_env import DummyVecEnv
-from pvp_iclr_release.stable_baseline3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
-from pvp_iclr_release.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_check_nan import VecCheckNan
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_extract_dict_obs import VecExtractDictObs
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_frame_stack import VecFrameStack
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_monitor import VecMonitor
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_normalize import VecNormalize
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_transpose import VecTransposeImage
-from pvp_iclr_release.stable_baseline3.common.vec_env.vec_video_recorder import VecVideoRecorder
+from pvp.stable_baseline3.common.vec_env.base_vec_env import CloudpickleWrapper, VecEnv, VecEnvWrapper
+from pvp.stable_baseline3.common.vec_env.dummy_vec_env import DummyVecEnv
+from pvp.stable_baseline3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
+from pvp.stable_baseline3.common.vec_env.subproc_vec_env import SubprocVecEnv
+from pvp.stable_baseline3.common.vec_env.vec_check_nan import VecCheckNan
+from pvp.stable_baseline3.common.vec_env.vec_extract_dict_obs import VecExtractDictObs
+from pvp.stable_baseline3.common.vec_env.vec_frame_stack import VecFrameStack
+from pvp.stable_baseline3.common.vec_env.vec_monitor import VecMonitor
+from pvp.stable_baseline3.common.vec_env.vec_normalize import VecNormalize
+from pvp.stable_baseline3.common.vec_env.vec_transpose import VecTransposeImage
+from pvp.stable_baseline3.common.vec_env.vec_video_recorder import VecVideoRecorder
 
 # Avoid circular import
 if typing.TYPE_CHECKING:
-    from pvp_iclr_release.stable_baseline3.common.type_aliases import GymEnv
+    from pvp.stable_baseline3.common.type_aliases import GymEnv
 
 
 def unwrap_vec_wrapper(env: Union["GymEnv", VecEnv], vec_wrapper_class: Type[VecEnvWrapper]) -> Optional[VecEnvWrapper]:

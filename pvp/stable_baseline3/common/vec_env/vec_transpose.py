@@ -4,8 +4,8 @@ from typing import Dict, Union
 import numpy as np
 from gym import spaces
 
-from pvp_iclr_release.stable_baseline3.common.preprocessing import is_image_space, is_image_space_channels_first
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
+from pvp.stable_baseline3.common.preprocessing import is_image_space, is_image_space_channels_first
+from pvp.stable_baseline3.common.vec_env.base_vec_env import VecEnv, VecEnvStepReturn, VecEnvWrapper
 
 
 class VecTransposeImage(VecEnvWrapper):
@@ -15,7 +15,6 @@ class VecTransposeImage(VecEnvWrapper):
 
     :param venv:
     """
-
     def __init__(self, venv: VecEnv):
         assert is_image_space(venv.observation_space) or isinstance(
             venv.observation_space, spaces.dict.Dict
