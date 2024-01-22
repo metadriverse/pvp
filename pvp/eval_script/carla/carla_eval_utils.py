@@ -1,19 +1,17 @@
 import argparse
 import os
 import os.path as osp
-import time
 from collections import defaultdict
 
 import pandas as pd
 
-from pvp.pvp.pvp_td3.pvp_td3 import pvpTD3
+from pvp.pvp_td3 import pvpTD3
 from pvp.utils.carla.pvp_carla_env import PVPEnv
-from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer
-from pvp.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
-from pvp.stable_baseline3.td3.policies import TD3Policy
-from pvp.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
-from pvp.stable_baseline3 import TD3
-from pvp.stable_baseline3.td3.policies import MultiInputPolicy
+from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.sb3.td3.policies import TD3Policy
+from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
+from pvp.sb3 import TD3
+from pvp.sb3.td3.policies import MultiInputPolicy
 
 
 def set_up_env(port, obs_mode, debug_vis=False, disable_vis=False, disable_takeover=True, force_fps=10):

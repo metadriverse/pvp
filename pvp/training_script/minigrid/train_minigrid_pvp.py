@@ -6,11 +6,11 @@ import gym
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper
 
-from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp.stable_baseline3.common.monitor import Monitor
-from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.sb3.common.wandb_callback import WandbCallback
+from pvp.sb3.dqn.policies import CnnPolicy
 from pvp.utils.older_utils import get_time_str
 from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
 from pvp.training_script.minigrid.minigrid_env import MinigridWrapper

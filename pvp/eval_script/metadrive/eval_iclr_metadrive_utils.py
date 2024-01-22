@@ -5,7 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
+from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
 from pvp.utils.train_eval_config import baseline_eval_config
 from pvp.utils.print_dict_utils import pretty_print, RecorderEnv
 

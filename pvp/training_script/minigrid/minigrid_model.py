@@ -2,8 +2,8 @@ import gym
 import torch as th
 import torch.nn as nn
 
-from pvp.stable_baseline3.common.preprocessing import is_image_space
-from pvp.stable_baseline3.common.torch_layers import BaseFeaturesExtractor
+from pvp.sb3.common.preprocessing import is_image_space
+from pvp.sb3.common.torch_layers import BaseFeaturesExtractor
 
 # Model from: https://github.com/lcswillems/rl-starter-files/blob/e604b36915a13e25ac8a8a912f9a9a15e2d4a170/model.py
 

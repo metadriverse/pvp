@@ -4,15 +4,12 @@ import os
 import os.path as osp
 
 from pvp.utils.carla.pvp_carla_env import PVPEnv
-from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp.stable_baseline3.common.monitor import Monitor
-from pvp.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp.pvp.pvp_td3.pvp_td3 import pvpTD3
-from pvp.stable_baseline3.td3.policies import TD3Policy
-from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer
-from pvp.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.wandb_callback import WandbCallback
+from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
 from pvp.utils.older_utils import get_time_str
-from pvp.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
+from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp-name", default="CARLA-OLDold", type=str, help="The experiment name.")

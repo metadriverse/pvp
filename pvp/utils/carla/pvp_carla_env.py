@@ -346,7 +346,7 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
 
 
 if __name__ == "__main__":
-    # from pvp.stable_baseline3.common.env_checker import check_env
+    # from pvp.sb3.common.env_checker import check_env
     # env = PVPEnv({"obs_mode": "birdview", "disable_vis": False})
     # check_env(env)
     # env.close()

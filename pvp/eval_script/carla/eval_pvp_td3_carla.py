@@ -7,7 +7,7 @@ from collections import defaultdict
 import pandas as pd
 import json
 import numpy as np
-from pvp.stable_baseline3.common.monitor import Monitor
+from pvp.sb3.common.monitor import Monitor
 from pvp.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
 from pvp.utils.carla.pvp_carla_env import PVPEnv
 def load_human_data(path, data_usage=5000):

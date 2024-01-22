@@ -3,12 +3,12 @@ import os
 import os.path as osp
 
 from pvp.utils.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp.stable_baseline3.common.monitor import Monitor
-from pvp.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp.pvp.pvp_td3.pvp_td3 import pvpTD3
-from pvp.stable_baseline3.td3.policies import TD3Policy
-from pvp.stable_baseline3.old.old_buffer import oldReplayBuffer
+from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.wandb_callback import WandbCallback
+from pvp.pvp_td3 import pvpTD3
+from pvp.sb3.td3.policies import TD3Policy
+from pvp.sb3.old.old_buffer import oldReplayBuffer
 from pvp.utils.older_utils import get_time_str
 
 if __name__ == '__main__':

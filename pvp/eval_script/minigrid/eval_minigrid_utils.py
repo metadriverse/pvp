@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper
-from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.sb3.dqn.policies import CnnPolicy
 from pvp.utils.print_dict_utils import pretty_print
 from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
 from pvp.training_script.minigrid.minigrid_env import MinigridWrapper
@@ -63,7 +63,7 @@ def evaluate_atari_once(
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-    from pvp.stable_baseline3.common.monitor import Monitor
+    from pvp.sb3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
 
     eval_log_dir = osp.join(ckpt_path, "evaluations")

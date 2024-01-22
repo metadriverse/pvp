@@ -4,13 +4,13 @@ import os.path as osp
 
 import gym
 
-from pvp.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp.stable_baseline3.common.callbacks import CallbackList, CheckpointCallback
-from pvp.stable_baseline3.common.monitor import Monitor
-from pvp.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack
-from pvp.stable_baseline3.common.wandb_callback import WandbCallback
-from pvp.stable_baseline3.dqn.dqn import DQN
-from pvp.stable_baseline3.dqn.policies import CnnPolicy
+from pvp.sb3.common.atari_wrappers import AtariWrapper
+from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
+from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
+from pvp.sb3.common.wandb_callback import WandbCallback
+from pvp.sb3.dqn.dqn import DQN
+from pvp.sb3.dqn.policies import CnnPolicy
 from pvp.utils.older_utils import get_time_str
 
 if __name__ == '__main__':
