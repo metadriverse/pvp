@@ -7,7 +7,7 @@ from collections import defaultdict
 import pandas as pd
 
 from pvp.sb3.common.monitor import Monitor
-from pvp.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_td3
+from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_td3
 from pvp.utils.carla.pvp_carla_env import PVPEnv
 
 
@@ -28,7 +28,7 @@ def eval_one_checkpoint(model_path, model, eval_env, log_dir, num_episodes):
             obs, reward, done, info = eval_env.step(action)
             a = 1
             if done:
-                print("Model ckpt: "+str(model_path) + "Finish episode: " + str(count))
+                print("Model ckpt: " + str(model_path) + "Finish episode: " + str(count))
                 for k, v in info.items():
                     recorder[k].append(v)
                 print("The environment is terminated. Final info: ", info)
@@ -49,16 +49,20 @@ if __name__ == '__main__':
     obs_mode = "birdview"
 
     # ===== Setup the training environment =====
-    train_env = PVPEnv(config=dict(
-        obs_mode=obs_mode,
-        force_fps=0,
-        disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
-        debug_vis=False,
-        port=port,
-        disable_takeover=True,
-        controller="keyboard",
-        env={"visualize": {"location": "lower right"}}
-    ))
+    train_env = PVPEnv(
+        config=dict(
+            obs_mode=obs_mode,
+            force_fps=0,
+            disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
+            debug_vis=False,
+            port=port,
+            disable_takeover=True,
+            controller="keyboard",
+            env={"visualize": {
+                "location": "lower right"
+            }}
+        )
+    )
     eval_env = Monitor(env=train_env, filename=None)
     eval_env.seed(0)
     model = setup_model(eval_env=eval_env, seed=seed, obs_mode=obs_mode)

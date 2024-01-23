@@ -4,6 +4,7 @@ from typing import Dict, Tuple, Union
 import numpy as np
 import torch as th
 from gym import spaces
+from gymnasium import spaces as new_spaces
 from torch.nn import functional as F
 
 
@@ -100,16 +101,16 @@ def preprocess_obs(
         (True by default)
     :return:
     """
-    if isinstance(observation_space, spaces.Box):
+    if isinstance(observation_space, (spaces.Box, new_spaces.Box)):
         if is_image_space(observation_space) and normalize_images:
             return obs.float() / 255.0
         return obs.float()
 
-    elif isinstance(observation_space, spaces.Discrete):
+    elif isinstance(observation_space, (spaces.Discrete, new_spaces.Discrete)):
         # One hot encoding and convert to float to avoid errors
         return F.one_hot(obs.long(), num_classes=observation_space.n).float()
 
-    elif isinstance(observation_space, spaces.MultiDiscrete):
+    elif isinstance(observation_space, (spaces.MultiDiscrete, new_spaces.MultiDiscrete)):
         # Tensor concatenation of one hot encodings of each Categorical sub-space
         return th.cat(
             [
@@ -119,10 +120,10 @@ def preprocess_obs(
             dim=-1,
         ).view(obs.shape[0], sum(observation_space.nvec))
 
-    elif isinstance(observation_space, spaces.MultiBinary):
+    elif isinstance(observation_space, (spaces.MultiBinary, new_spaces.MultiBinary)):
         return obs.float()
 
-    elif isinstance(observation_space, spaces.Dict):
+    elif isinstance(observation_space, (spaces.Dict, new_spaces.Dict)):
         # Do not modify by reference the original observation
         preprocessed_obs = {}
         for key, _obs in obs.items():
@@ -153,8 +154,24 @@ def get_obs_shape(observation_space: spaces.Space, ) -> Union[Tuple[int, ...], D
         return (int(observation_space.n), )
     elif isinstance(observation_space, spaces.Dict):
         return {key: get_obs_shape(subspace) for (key, subspace) in observation_space.spaces.items()}
-
     else:
+
+        # PZH: It's possible that we are using gymnasium. To cover that, ...
+        from gymnasium import spaces as new_spaces
+        if isinstance(observation_space, new_spaces.Box):
+            return observation_space.shape
+        elif isinstance(observation_space, new_spaces.Discrete):
+            # Observation is an int
+            return (1, )
+        elif isinstance(observation_space, new_spaces.MultiDiscrete):
+            # Number of discrete features
+            return (int(len(observation_space.nvec)), )
+        elif isinstance(observation_space, new_spaces.MultiBinary):
+            # Number of binary features
+            return (int(observation_space.n), )
+        elif isinstance(observation_space, new_spaces.Dict):
+            return {key: get_obs_shape(subspace) for (key, subspace) in observation_space.spaces.items()}
+
         raise NotImplementedError(f"{observation_space} observation space is not supported")
 
 
@@ -170,11 +187,20 @@ def get_flattened_obs_dim(observation_space: spaces.Space) -> int:
     """
     # See issue https://github.com/openai/gym/issues/1915
     # it may be a problem for Dict/Tuple spaces too...
-    if isinstance(observation_space, spaces.MultiDiscrete):
-        return sum(observation_space.nvec)
+
+    if isinstance(observation_space, spaces.Space):
+        if isinstance(observation_space, spaces.MultiDiscrete):
+            return sum(observation_space.nvec)
+        else:
+            # Use Gym internal method
+            return spaces.utils.flatdim(observation_space)
+
     else:
-        # Use Gym internal method
-        return spaces.utils.flatdim(observation_space)
+        if isinstance(observation_space, new_spaces.MultiDiscrete):
+            return sum(observation_space.nvec)
+        else:
+            # Use Gym internal method
+            return new_spaces.utils.flatdim(observation_space)
 
 
 def get_action_dim(action_space: spaces.Space) -> int:
@@ -196,6 +222,21 @@ def get_action_dim(action_space: spaces.Space) -> int:
         # Number of binary actions
         return int(action_space.n)
     else:
+
+        # PZH: It's possible that we are using gymnasium. To cover that, ...
+        from gymnasium import spaces as new_spaces
+        if isinstance(action_space, new_spaces.Box):
+            return int(np.prod(action_space.shape))
+        elif isinstance(action_space, new_spaces.Discrete):
+            # Action is an int
+            return 1
+        elif isinstance(action_space, new_spaces.MultiDiscrete):
+            # Number of discrete actions
+            return int(len(action_space.nvec))
+        elif isinstance(action_space, new_spaces.MultiBinary):
+            # Number of binary actions
+            return int(action_space.n)
+
         raise NotImplementedError(f"{action_space} action space is not supported")
 
 

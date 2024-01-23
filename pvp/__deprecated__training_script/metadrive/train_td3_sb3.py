@@ -11,7 +11,7 @@ from pvp.sb3.td3.policies import TD3Policy
 from pvp.sb3.common.vec_env.subproc_vec_env import SubprocVecEnv
 from pvp.utils.train_eval_config import baseline_eval_config
 
-from pvp.utils.older_utils import get_time_str
+from pvp.utils.utils import get_time_str
 
 
 def make_eval_env(log_dir):

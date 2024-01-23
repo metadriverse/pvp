@@ -8,8 +8,10 @@ import pandas as pd
 import json
 import numpy as np
 from pvp.sb3.common.monitor import Monitor
-from pvp.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
+from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
 from pvp.utils.carla.pvp_carla_env import PVPEnv
+
+
 def load_human_data(path, data_usage=5000):
     """
    This method reads the states and actions recorded by human expert in the form of episode
@@ -18,11 +20,7 @@ def load_human_data(path, data_usage=5000):
         episode_data = json.load(f)["data"]
     np.random.shuffle(episode_data)
     assert data_usage < len(episode_data), "Data is not enough"
-    data = {"state": [],
-            "action": [],
-            "next_state": [],
-            "reward": [],
-            "terminal": []}
+    data = {"state": [], "action": [], "next_state": [], "reward": [], "terminal": []}
     for cnt, step_data in enumerate(episode_data):
         if cnt >= data_usage:
             break
@@ -32,6 +30,7 @@ def load_human_data(path, data_usage=5000):
         data["terminal"].append(step_data["dones"])
     # get images as features and actions as targets
     return data
+
 
 def eval_one_checkpoint_random(model, eval_env, log_dir, num_episodes):
     model.set_parameters(model_path)
@@ -58,6 +57,7 @@ def eval_one_checkpoint_random(model, eval_env, log_dir, num_episodes):
 
     print("=====\nFinish evaluating agent with checkpoint: ", model_path)
     print("=====\n")
+
 
 def eval_one_checkpoint(model_path, model, eval_env, log_dir, num_episodes):
     model.set_parameters(model_path)
@@ -100,16 +100,20 @@ if __name__ == '__main__':
     obs_mode = "birdview"
 
     # ===== Setup the training environment =====
-    train_env = PVPEnv(config=dict(
-        obs_mode=obs_mode,
-        force_fps=0,
-        disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
-        debug_vis=False,
-        port=port,
-        disable_takeover=True,
-        controller="keyboard",
-        env={"visualize": {"location": "lower right"}}
-    ))
+    train_env = PVPEnv(
+        config=dict(
+            obs_mode=obs_mode,
+            force_fps=0,
+            disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
+            debug_vis=False,
+            port=port,
+            disable_takeover=True,
+            controller="keyboard",
+            env={"visualize": {
+                "location": "lower right"
+            }}
+        )
+    )
     eval_env = Monitor(env=train_env, filename=None)
     model = setup_model(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
     #setuo_model_old for old old, setup_modeltd3 for td3 baselines

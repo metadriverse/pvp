@@ -2,12 +2,28 @@ import copy
 import datetime
 import json
 import numbers
+import os
 import time
 from collections import deque
 from collections.abc import Iterable
 from typing import Optional
 
 import numpy as np
+
+root = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))  # pvp repo root
+
+
+def get_api_key_file(wandb_key_file):
+    if wandb_key_file is not None:
+        default_path = os.path.expanduser(wandb_key_file)
+    else:
+        default_path = os.path.expanduser("~/wandb_api_key_file.txt")
+    if os.path.exists(default_path):
+        print("We are using this wandb key file: ", default_path)
+        return default_path
+    path = os.path.join(root, "wandb", "wandb_api_key_file.txt")
+    print("We are using this wandb key file: ", path)
+    return path
 
 
 class ForceFPS:

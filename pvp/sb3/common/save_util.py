@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 import cloudpickle
 import torch as th
 
-from drivingforce.haco_2022 import sb3
+from pvp import sb3
 from pvp.sb3.common.type_aliases import TensorDict
 from pvp.sb3.common.utils import get_device, get_system_info
 

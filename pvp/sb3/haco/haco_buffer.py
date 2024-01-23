@@ -2,10 +2,10 @@ import warnings
 from typing import Any, Dict, List, Optional, Union
 from typing import NamedTuple
 
-import gym
 import numpy as np
 import torch as th
 from gym import spaces
+from gymnasium import spaces as new_spaces
 
 from pvp.sb3.common.buffers import ReplayBuffer
 from pvp.sb3.common.type_aliases import TensorDict
@@ -80,7 +80,12 @@ class HACOReplayBuffer(ReplayBuffer):
         self._fake_dict_obs = False
         if not isinstance(self.obs_shape, dict):
             self.obs_shape = {"default": self.obs_shape}
-            self.observation_space = gym.spaces.Dict({'default': self.observation_space})
+            if isinstance(self.observation_space, spaces.Space):
+                self.observation_space = spaces.Dict({'default': self.observation_space})
+            elif isinstance(self.observation_space, new_spaces.Space):
+                self.observation_space = new_spaces.Dict({'default': self.observation_space})
+            else:
+                raise ValueError("Unknown observation space {}".format(type(self.observation_space)))
             self._fake_dict_obs = True
 
         self.buffer_size = max(buffer_size // n_envs, 1)
@@ -169,12 +174,12 @@ class HACOReplayBuffer(ReplayBuffer):
         for key in self.observations.keys():
             # Reshape needed when using multiple envs with discrete observations
             # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
-            if isinstance(self.observation_space.spaces[key], spaces.Discrete):
+            if isinstance(self.observation_space.spaces[key], (spaces.Discrete, new_spaces.Discrete)):
                 obs[key] = obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             self.observations[key][self.pos] = np.array(obs[key])
 
         for key in self.observations.keys():
-            if isinstance(self.observation_space.spaces[key], spaces.Discrete):
+            if isinstance(self.observation_space.spaces[key], (spaces.Discrete, new_spaces.Discrete)):
                 next_obs[key] = next_obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             if self.optimize_memory_usage:
                 self.observations[key][(self.pos + 1) % self.buffer_size] = np.array(next_obs[key]).copy()
@@ -191,7 +196,7 @@ class HACOReplayBuffer(ReplayBuffer):
         self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]
                                                      ).reshape(self.intervention_costs[self.pos].shape)
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
-        if isinstance(self.action_space, spaces.Discrete):
+        if isinstance(self.action_space, (spaces.Discrete, new_spaces.Discrete)):
             action = action.reshape((self.n_envs, self.action_dim))
             behavior_actions = behavior_actions.reshape((self.n_envs, self.action_dim))
         self.actions_novice[self.pos] = np.array(action).copy().reshape(self.actions_novice[self.pos].shape)

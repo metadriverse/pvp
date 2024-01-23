@@ -7,10 +7,11 @@ from itertools import zip_longest
 from typing import Dict, Iterable, Optional, Tuple, Union
 
 import gym
+from gymnasium import spaces as new_spaces
 import numpy as np
 import torch as th
 
-from drivingforce.haco_2022 import sb3
+from pvp import sb3
 
 # Check if tensorboard is available for pytorch
 try:
@@ -370,6 +371,13 @@ def is_vectorized_observation(observation: Union[int, np.ndarray], observation_s
         gym.spaces.MultiDiscrete: is_vectorized_multidiscrete_observation,
         gym.spaces.MultiBinary: is_vectorized_multibinary_observation,
         gym.spaces.Dict: is_vectorized_dict_observation,
+
+        # PZH: For compatibility with newer gym:
+        new_spaces.Box: is_vectorized_box_observation,
+        new_spaces.Discrete: is_vectorized_discrete_observation,
+        new_spaces.MultiDiscrete: is_vectorized_multidiscrete_observation,
+        new_spaces.MultiBinary: is_vectorized_multibinary_observation,
+        new_spaces.Dict: is_vectorized_dict_observation,
     }
 
     for space_type, is_vec_obs_func in is_vec_obs_func_dict.items():

@@ -10,7 +10,7 @@ from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.dqn.policies import CnnPolicy
-from pvp.utils.older_utils import get_time_str
+from pvp.utils.utils import get_time_str
 from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
 from pvp.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
 from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor

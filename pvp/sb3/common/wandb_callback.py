@@ -57,7 +57,7 @@ import wandb
 from wandb.sdk.lib import telemetry as wb_telemetry
 
 from pvp.sb3.common.callbacks import BaseCallback
-from drivingforce.train.train import get_api_key_file
+from pvp.utils.utils import get_api_key_file
 
 logger = logging.getLogger(__name__)
 

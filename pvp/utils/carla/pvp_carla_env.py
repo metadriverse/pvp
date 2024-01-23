@@ -13,7 +13,7 @@ from pvp.utils.carla.core.envs.simple_carla_env import SimpleCarlaEnv
 from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
 from pvp.utils.carla.demo.simple_rl.sac_train import compile_config
 from pvp.utils.human_interface import SteeringWheelController
-from pvp.utils.older_utils import ForceFPS, merge_dicts
+from pvp.utils.utils import ForceFPS, merge_dicts
 
 is_windows = "Win" in platform.system()
 

@@ -24,6 +24,7 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         config = super(HumanInTheLoopEnv, self).default_config()
         config.update(
             {
+                # TODO: add more docs for the config here.
                 "num_scenarios": 50,
                 "start_seed": 100,
 
@@ -33,11 +34,10 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
 
                 # Reward and cost setting:
                 "cost_to_reward": True,
-
                 "traffic_density": 0.06,
                 "manual_control": False,
                 "out_of_route_done": True,
-                "controller": "keyboard",
+                "controller": "keyboard",  # Selected from [keyboard, xbox, steering_wheel].
                 "agent_policy": TakeoverPolicy,
                 "only_takeover_start_cost": True,
                 "main_exp": True,
@@ -61,12 +61,14 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         self.t_o = False
         self.total_takeover_cost = 0
         self.input_action = None
-        ret = super(HumanInTheLoopEnv, self).reset(*args, **kwargs)
+        obs, info = super(HumanInTheLoopEnv, self).reset(*args, **kwargs)
         if self.config["random_spawn"]:
-            self.config["vehicle_config"]["spawn_lane_index"] = (FirstPGBlock.NODE_1, FirstPGBlock.NODE_2,
-                                                                 self.engine.np_random.randint(3))
-        # self.vehicle.update_config({"max_speed": 40})
-        return ret
+            self.config["vehicle_config"]["spawn_lane_index"] = (
+                FirstPGBlock.NODE_1, FirstPGBlock.NODE_2, self.engine.np_random.randint(3)
+            )
+
+        # The training code is for older version of gym, so we discard the additional info from the reset.
+        return obs
 
     def _get_step_return(self, actions, engine_info):
         o, r, tm, tc, engine_info = super(HumanInTheLoopEnv, self)._get_step_return(actions, engine_info)
@@ -111,15 +113,17 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
 
         self._takeover_recorder.append(self.t_o)
         if self.config["use_render"] and self.config["main_exp"] and not self.config["in_replay"]:
-            super(HumanInTheLoopEnv, self).render(text={
-                "Total Cost": round(self.episode_cost, 3),
-                "Takeover Cost": round(self.total_takeover_cost, 3),
-                "Takeover": self.t_o,
-                "COST": ret[-1]["takeover_cost"],
-                "Total Step": self.total_steps,
-                "Takeover Rate": "{:.3f}%".format(np.mean(np.array(self._takeover_recorder) * 100)),
-                "Pause (Press E)": "",
-            })
+            super(HumanInTheLoopEnv, self).render(
+                text={
+                    "Total Cost": round(self.episode_cost, 3),
+                    "Takeover Cost": round(self.total_takeover_cost, 3),
+                    "Takeover": self.t_o,
+                    "COST": ret[-1]["takeover_cost"],
+                    "Total Step": self.total_steps,
+                    "Takeover Rate": "{:.3f}%".format(np.mean(np.array(self._takeover_recorder) * 100)),
+                    "Pause (Press E)": "",
+                }
+            )
 
         self.total_steps += 1
 
@@ -151,7 +155,13 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
 
 if __name__ == "__main__":
     env = HumanInTheLoopEnv(
-        {"manual_control": True, "disable_model_compression": True, "use_render": True, "main_exp": True})
+        {
+            "manual_control": True,
+            "disable_model_compression": True,
+            "use_render": True,
+            "main_exp": True
+        }
+    )
     env.reset()
     while True:
         _, _, done, _ = env.step([0, 0])

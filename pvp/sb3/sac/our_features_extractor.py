@@ -3,7 +3,7 @@ import torch as th
 from torch import nn
 
 from pvp.sb3.common.torch_layers import BaseFeaturesExtractor
-from drivingforce.haco_2022.utils import same_padding
+from pvp.utils.utils import same_padding
 
 predefined_filters = {
     (240, 320): [
