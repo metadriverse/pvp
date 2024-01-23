@@ -13,10 +13,8 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp-name", default="pvp_metadrive", type=str, help="The name for this batch of experiments.")
-    parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
+    parser.add_argument("--exp_name", default="pvp_metadrive", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    # parser.add_argument("--start-seed", default=100, type=int, help="The environment map random seed.")
     parser.add_argument(
         "--device",
         default="keyboard",
@@ -24,23 +22,24 @@ if __name__ == '__main__':
         type=str,
         help="The control device, selected from [wheel, gamepad, keyboard]."
     )
+    parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
+    parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
+    parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
 
-    # TODO: Add a flag to control whether should record data.
-
+    # TODO: Add a flag to control whether should record data. See how to record this.
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
     control_device = args.device
     experiment_batch_name = args.exp_name
-    seed = args.seed  # TODO: Should we set the random seed for env too?
+    seed = args.seed
     trial_name = "{}_{}_{}".format(experiment_batch_name, control_device, get_time_str())
+
     use_wandb = args.wandb
+    project_name = args.wandb_project
+    team_name = args.wandb_team
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
-
-    # TODO: What is this for?
-    # project_name = "haco_2022"
-    # team_name = "drivingforce"
 
     experiment_dir = Path("runs") / experiment_batch_name
     trial_dir = experiment_dir / trial_name
@@ -49,23 +48,15 @@ if __name__ == '__main__':
     print(f"We start logging training data into {trial_dir}")
 
     # ===== Setup the config =====
-    if control_device == "wheel":
-        control_device_internal_name = "steering_wheel"
-    elif control_device == "keyboard":
-        control_device_internal_name = "keyboard"
-    elif control_device == "gamepad":
-        control_device_internal_name = "xbox"
-    else:
-        raise ValueError("Unknown control device {}".format(control_device))
     config = dict(
+
         # Environment config
-        env_config={
-            "manual_control": True,
-            "use_render": True,
-            "controller": control_device_internal_name,
-            "window_size": (1600, 1100),
-            "start_seed": 100,  # TODO: Check this config, add doc.
-        },
+        env_config=dict(
+            use_render=True,  # Open the interface
+            manual_control=True,  # Allow receiving control signal from external device
+            controller=control_device,
+            window_size=(1600, 1100),
+        ),
 
         # Algorithm config
         algo=dict(
@@ -74,8 +65,6 @@ if __name__ == '__main__':
             replay_buffer_class=HACOReplayBuffer,
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!
-                discard_takeover_start=False,
-                takeover_stop_td=False
             ),
             policy_kwargs=dict(net_arch=[256, 256]),
             intervention_start_stop_td=True,
@@ -88,9 +77,6 @@ if __name__ == '__main__':
             batch_size=100,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
-            # train_freq=1,
-            # target_policy_noise=0,
-            # policy_delay=1,
             action_noise=None,
             tensorboard_log=trial_dir,
             create_eval_env=False,
@@ -99,10 +85,7 @@ if __name__ == '__main__':
             device="auto",
         ),
 
-        # Meta data
-        # TODO: What is this?
-        # project_name=project_name,
-        # team_name=team_name,
+        # Experiment log
         exp_name=experiment_batch_name,
         seed=seed,
         use_wandb=use_wandb,
@@ -124,7 +107,11 @@ if __name__ == '__main__':
         # TODO: Test wandb later
         callbacks.append(
             WandbCallback(
-                trial_name=trial_name, exp_name=experiment_batch_name, project_name=project_name, config=config
+                trial_name=trial_name,
+                exp_name=experiment_batch_name,
+                team_name=team_name,
+                project_name=project_name,
+                config=config
             )
         )
     callbacks = CallbackList(callbacks)

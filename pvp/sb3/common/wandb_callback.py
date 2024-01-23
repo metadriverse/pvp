@@ -1,5 +1,4 @@
 """
-
 PZH: Copied from official wandb implementation.
 
 W&B callback for sb3
@@ -81,12 +80,13 @@ class WandbCallback(BaseCallback):
         exp_name,
         project_name,
         config=None,
-        team_name="drivingforce",
+        team_name="",
         verbose: int = 0,
         model_save_path: str = None,
         model_save_freq: int = 0,
         gradient_save_freq: int = 0,
-    ):
+        log: str = "all",
+    ) -> None:
 
         # PZH: Setup our key
         WANDB_ENV_VAR = "WANDB_API_KEY"
@@ -97,22 +97,27 @@ class WandbCallback(BaseCallback):
         key = key.replace(" ", "")
         os.environ[WANDB_ENV_VAR] = key
 
+        # PZH: A weird bug here and don't know why this fixes
+        if os.environ["PYTHONUTF8"] == 'on':
+            os.environ["PYTHONUTF8"] = '1'
+
         self.run = wandb.init(
+
+            # Names
+            project=project_name,
             id=trial_name,
+            group=exp_name,
+            entity=team_name,
             # id=exp_name,
             # name=run_name,
             config=config or {},
             resume=True,
             reinit=True,
-            # allow_val_change=True,
-            group=exp_name,
-            project=project_name,
-            entity=team_name,
             sync_tensorboard=True,  # Open this and setup tb in sb3 so that we can get log!
-            save_code=False
+            save_code=True
         )
 
-        super(WandbCallback, self).__init__(verbose)
+        super().__init__(verbose)
         if wandb.run is None:
             raise wandb.Error("You must call wandb.init() before WandbCallback()")
         with wb_telemetry.context() as tel:
@@ -120,7 +125,10 @@ class WandbCallback(BaseCallback):
         self.model_save_freq = model_save_freq
         self.model_save_path = model_save_path
         self.gradient_save_freq = gradient_save_freq
-
+        if log not in ["gradients", "parameters", "all", None]:
+            wandb.termwarn("`log` must be one of `None`, 'gradients', 'parameters', or 'all', " "falling back to 'all'")
+            log = "all"
+        self.log = log
         # Create folder if needed
         if self.model_save_path is not None:
             os.makedirs(self.model_save_path, exist_ok=True)
@@ -142,7 +150,11 @@ class WandbCallback(BaseCallback):
             else:
                 d[key] = str(self.model.__dict__[key])
         if self.gradient_save_freq > 0:
-            wandb.watch(self.model.policy, log_freq=self.gradient_save_freq, log="all")
+            wandb.watch(
+                self.model.policy,
+                log_freq=self.gradient_save_freq,
+                log=self.log,
+            )
         wandb.config.setdefaults(d)
 
     def _on_step(self) -> bool:
@@ -160,4 +172,4 @@ class WandbCallback(BaseCallback):
         self.model.save(self.path)
         wandb.save(self.path, base_path=self.model_save_path)
         if self.verbose > 1:
-            logger.info("Saving model checkpoint to " + self.path)
+            logger.info(f"Saving model checkpoint to {self.path}")
