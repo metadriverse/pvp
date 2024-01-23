@@ -1,11 +1,12 @@
 import copy
+from collections import deque
 
 import numpy as np
 from metadrive.component.pgblock.first_block import FirstPGBlock
 from metadrive.engine.core.onscreen_message import ScreenMessage
 from metadrive.envs.safe_metadrive_env import SafeMetaDriveEnv
 from metadrive.policy.manual_control_policy import TakeoverPolicy
-from metadrive.utils.math_utils import safe_clip
+from metadrive.utils.math import safe_clip
 
 ScreenMessage.SCALE = 0.1
 
@@ -14,13 +15,25 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
     """
     This Env depends on the new version of MetaDrive
     """
+
+    _takeover_recorder = deque(maxlen=2000)
+
+    total_steps = 0
+
     def default_config(self):
         config = super(HumanInTheLoopEnv, self).default_config()
         config.update(
             {
-                "environment_num": 50,
+                "num_scenarios": 50,
                 "start_seed": 100,
+
+                # Environment setting:
+
+                # Controller:
+
+                # Reward and cost setting:
                 "cost_to_reward": True,
+
                 "traffic_density": 0.06,
                 "manual_control": False,
                 "out_of_route_done": True,
@@ -30,7 +43,14 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
                 "main_exp": True,
                 "random_spawn": True,
                 "cos_similarity": True,
-                "in_replay": False
+                "in_replay": False,
+
+                # Visualization
+                "vehicle_config": {
+                    "show_dest_mark": True,
+                    "show_line_to_dest": True,
+                    "show_line_to_navi_mark": True,
+                }
             },
             allow_add_new_key=True
         )
@@ -43,16 +63,20 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         self.input_action = None
         ret = super(HumanInTheLoopEnv, self).reset(*args, **kwargs)
         if self.config["random_spawn"]:
-            self.config["vehicle_config"]["spawn_lane_index"] = (
-                FirstPGBlock.NODE_1, FirstPGBlock.NODE_2, self.engine.np_random.randint(3)
-            )
-        self.vehicle.update_config({"max_speed": 40})
+            self.config["vehicle_config"]["spawn_lane_index"] = (FirstPGBlock.NODE_1, FirstPGBlock.NODE_2,
+                                                                 self.engine.np_random.randint(3))
+        # self.vehicle.update_config({"max_speed": 40})
         return ret
 
     def _get_step_return(self, actions, engine_info):
-        o, r, d, engine_info = super(HumanInTheLoopEnv, self)._get_step_return(actions, engine_info)
-        if self.config["in_replay"]:
-            return o, r, d, engine_info
+        o, r, tm, tc, engine_info = super(HumanInTheLoopEnv, self)._get_step_return(actions, engine_info)
+
+        # TODO(pzh): Double check what is this
+        # if self.config["in_replay"]:
+        #     return o, r, d, engine_info
+
+        d = tm or tc
+
         controller = self.engine.get_policy(self.vehicle.id)
         last_t = self.t_o
         self.t_o = controller.takeover if hasattr(controller, "takeover") else False
@@ -84,16 +108,21 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         ret = super(HumanInTheLoopEnv, self).step(actions)
         while self.in_stop:
             self.engine.taskMgr.step()
+
+        self._takeover_recorder.append(self.t_o)
         if self.config["use_render"] and self.config["main_exp"] and not self.config["in_replay"]:
-            super(HumanInTheLoopEnv, self).render(
-                text={
-                    "Total Cost": self.episode_cost,
-                    "Takeover Cost": self.total_takeover_cost,
-                    "Takeover": self.t_o,
-                    "COST": ret[-1]["takeover_cost"],
-                    "Stop (Press E)": ""
-                }
-            )
+            super(HumanInTheLoopEnv, self).render(text={
+                "Total Cost": round(self.episode_cost, 3),
+                "Takeover Cost": round(self.total_takeover_cost, 3),
+                "Takeover": self.t_o,
+                "COST": ret[-1]["takeover_cost"],
+                "Total Step": self.total_steps,
+                "Takeover Rate": "{:.3f}%".format(np.mean(np.array(self._takeover_recorder) * 100)),
+                "Pause (Press E)": "",
+            })
+
+        self.total_steps += 1
+
         return ret
 
     def stop(self):
@@ -106,10 +135,9 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
     def get_takeover_cost(self, info):
         if not self.config["cos_similarity"]:
             return 1
+
         takeover_action = safe_clip(np.array(info["raw_action"]), -1, 1)
         agent_action = safe_clip(np.array(self.input_action), -1, 1)
-        # cos_dist = (agent_action[0] * takeover_action[0] + agent_action[1] * takeover_action[1]) / 1e-6 +(
-        #         np.linalg.norm(takeover_action) * np.linalg.norm(agent_action))
 
         multiplier = (agent_action[0] * takeover_action[0] + agent_action[1] * takeover_action[1])
         divident = np.linalg.norm(takeover_action) * np.linalg.norm(agent_action)
@@ -123,15 +151,9 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
 
 if __name__ == "__main__":
     env = HumanInTheLoopEnv(
-        {
-            "manual_control": True,
-            "disable_model_compression": True,
-            "use_render": True,
-            "main_exp": True
-        }
-    )
+        {"manual_control": True, "disable_model_compression": True, "use_render": True, "main_exp": True})
     env.reset()
     while True:
-        o, r, d, i = env.step([0, 0])
-        if d:
+        _, _, done, _ = env.step([0, 0])
+        if done:
             env.reset()

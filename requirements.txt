@@ -19,7 +19,6 @@ screeninfo
 keyboard
 gym==0.19.0
 gym[atari]==0.19.0
-metadrive-simulator==0.2.5.1
 ray==1.0.0
 dm-tree
 tabulate
@@ -31,3 +30,4 @@ stable-baselines3==1.4.0
 pyglet
 gym-minigrid==1.0.3
 easydict
+metadrive-simulator==0.4.2.2  # Use latest MetaDrive at the time of release.
