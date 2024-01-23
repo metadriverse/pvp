@@ -18,7 +18,7 @@ from pvp.sb3.td3.td3 import TD3
 
 class HACOTD3(TD3):
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
-        """Please find the hyper parameters from original TD3"""
+        """Please find the hyperparameters from original TD3"""
         if "cql_coefficient" in kwargs:
             self.cql_coefficient = kwargs["cql_coefficient"]
             kwargs.pop("cql_coefficient")
@@ -27,11 +27,13 @@ class HACOTD3(TD3):
         if "replay_buffer_class" not in kwargs:
             kwargs["replay_buffer_class"] = HACOReplayBuffer
 
+        # TODO: Check if this is useful.
         if "intervention_start_stop_td" in kwargs:
             self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
             kwargs.pop("intervention_start_stop_td")
         else:
             self.intervention_start_stop_td = True
+
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
         super(HACOTD3, self).__init__(*args, **kwargs)
@@ -88,7 +90,6 @@ class HACOTD3(TD3):
                 next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
                 target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
 
-            # === NEW ===
             # Get current Q-values estimates for each critic network
             current_q_behavior_values = self.critic(replay_data.observations, replay_data.actions_behavior)
             current_q_novice_values = self.critic(replay_data.observations, replay_data.actions_novice)
@@ -98,6 +99,8 @@ class HACOTD3(TD3):
 
             # Compute critic loss
             for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
+
+                # TODO: Check if this is useful.
                 if not self.intervention_start_stop_td:
                     l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
                 else:
@@ -105,24 +108,19 @@ class HACOTD3(TD3):
                         replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
                     )
 
-                # PZH: Here is the CQL loss with Q value bound
-                # l += th.mean(replay_data.interventions * self.cql_coefficient * (
-                #     F.mse_loss(current_q_behavior, self.q_value_bound * th.ones_like(current_q_behavior))))
-                # l += th.mean(replay_data.interventions * self.cql_coefficient * (
-                #     F.mse_loss(current_q_novice, -self.q_value_bound * th.ones_like(current_q_novice))))
-                # LQY: harm performance
-                # l += th.mean((1 - replay_data.stop_td) * self.cql_coefficient * (
-                #     F.mse_loss(current_q_behavior, -self.q_value_bound * th.ones_like(current_q_behavior))))
-
-                # 2023-05-16: Native CQL loss
-                # PZH: Here is the CQL loss
-                l -= th.mean(replay_data.interventions * self.cql_coefficient * (current_q_behavior - current_q_novice))
+                # ====== The key of Proxy Value Objective =====
+                l += th.mean(
+                    replay_data.interventions * self.cql_coefficient *
+                    (F.mse_loss(current_q_behavior, self.q_value_bound * th.ones_like(current_q_behavior)))
+                )
+                l += th.mean(
+                    replay_data.interventions * self.cql_coefficient *
+                    (F.mse_loss(current_q_novice, -self.q_value_bound * th.ones_like(current_q_novice)))
+                )
 
                 critic_loss.append(l)
             critic_loss = sum(critic_loss)
-            # critic_losses.append(critic_loss.item())
             stat_recorder["critic_loss"].append(critic_loss.item())
-            # new =====
 
             # Optimize the critics
             self.critic.optimizer.zero_grad()
@@ -168,6 +166,7 @@ class HACOTD3(TD3):
         self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
                                                                                           io.BufferedIOBase]
     ) -> None:
+        # TODO: Check this
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
         super(HACOTD3, self).save_replay_buffer(path_replay)
 
@@ -186,6 +185,7 @@ class HACOTD3(TD3):
             (and truncate it).
             If set to ``False``, we assume that we continue the same trajectory (same episode).
         """
+        # TODO: Check this
         self.human_data_buffer = load_from_pkl(path_human, self.verbose)
         assert isinstance(
             self.human_data_buffer, ReplayBuffer
@@ -213,7 +213,7 @@ class HACOTD3(TD3):
         buffer_save_timesteps: int = 2000,
         save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
         save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-        save_buffer: bool = True,  # TODO: Would be better to set it to false by default when public code.
+        save_buffer: bool = True,
         load_buffer: bool = False,
         load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
         load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
@@ -252,7 +252,6 @@ class HACOTD3(TD3):
 
             if rollout.continue_training is False:
                 break
-            # print(self.num_timesteps)
             if self.num_timesteps > 0 and self.num_timesteps > self.learning_starts:
                 # If no `gradient_steps` is specified,
                 # do as many gradients steps as steps performed during the rollout
