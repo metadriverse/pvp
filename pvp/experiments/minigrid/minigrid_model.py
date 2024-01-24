@@ -4,8 +4,8 @@ import torch as th
 from pvp.sb3.common.preprocessing import is_image_space
 from pvp.sb3.common.torch_layers import BaseFeaturesExtractor
 
-
 # Model from: https://github.com/lcswillems/rl-starter-files/blob/e604b36915a13e25ac8a8a912f9a9a15e2d4a170/model.py
+
 
 def init_params(m):
     classname = m.__class__.__name__
@@ -24,13 +24,8 @@ class MinigridCNN(BaseFeaturesExtractor):
         assert is_image_space(observation_space, check_channels=False)
         # n_input_channels = observation_space.shape[0]
         self.cnn = nn.Sequential(
-            nn.Conv2d(observation_space.shape[0], 16, (2, 2)),
-            nn.ReLU(),
-            nn.MaxPool2d((2, 2)),
-            nn.Conv2d(16, 32, (2, 2)),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, (2, 2)),
-            nn.ReLU()
+            nn.Conv2d(observation_space.shape[0], 16, (2, 2)), nn.ReLU(), nn.MaxPool2d((2, 2)),
+            nn.Conv2d(16, 32, (2, 2)), nn.ReLU(), nn.Conv2d(32, 64, (2, 2)), nn.ReLU()
         )
         # Compute shape by doing one forward pass
         # with th.no_grad():
@@ -51,6 +46,7 @@ class MinigridCNN(BaseFeaturesExtractor):
 
 # https://github.com/facebookresearch/adversarially-motivated-intrinsic-goals/blob/main/monobeast/minigrid/monobeast_amigo.py
 
+
 def init(module, weight_init, bias_init, gain=1):
     weight_init(module.weight.data, gain=gain)
     bias_init(module.bias.data)
@@ -68,9 +64,9 @@ flags = easydict.EasyDict(
     num_input_frames=1,  # Frame stack
 )
 
-
 # class MinigridNet(nn.Module):
 #     def __init__(self, observation_shape, num_actions, state_embedding_dim=256, num_input_frames=1, use_lstm=False, num_lstm_layers=1):
+
 
 class MinigridNet(BaseFeaturesExtractor):
     def __init__(self, observation_space: gym.spaces.Box, features_dim: int = 256):
@@ -97,11 +93,13 @@ class MinigridNet(BaseFeaturesExtractor):
         self.embed_color = nn.Embedding(6, self.col_dim)
         self.embed_contains = nn.Embedding(4, self.con_dim)
         # self.embed_goal = nn.Embedding(self.observation_shape[0]*self.observation_shape[1] + 1, self.goal_dim)
-        self.embed_agent_loc = nn.Embedding(self.observation_shape[0] * self.observation_shape[1] + 1,
-                                            self.agent_loc_dim)
+        self.embed_agent_loc = nn.Embedding(
+            self.observation_shape[0] * self.observation_shape[1] + 1, self.agent_loc_dim
+        )
 
-        init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
-                               constant_(x, 0), nn.init.calculate_gain('relu'))
+        init_ = lambda m: init(
+            m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), nn.init.calculate_gain('relu')
+        )
 
         self.feat_extract = nn.Sequential(
             init_(nn.Conv2d(in_channels=self.num_channels, out_channels=32, kernel_size=(3, 3), stride=2, padding=1)),
@@ -154,7 +152,7 @@ class MinigridNet(BaseFeaturesExtractor):
         if self.use_index_select:
             out = embed.weight.index_select(0, x.reshape(-1))
             # handle reshaping x to 1-d and output back to N-d
-            return out.reshape(x.shape + (-1,))
+            return out.reshape(x.shape + (-1, ))
         else:
             return embed(x)
 
@@ -203,8 +201,15 @@ class MinigridNet(BaseFeaturesExtractor):
         # carried_obj = carried_obj.long()
         # carried_col = carried_col.long()
         # -- [B x H x W x K]
-        x = torch.cat([self.create_embeddings(x, 0), self.create_embeddings(x, 1), self.create_embeddings(x, 2),
-                       goal_channel.float()], dim=3)
+        x = torch.cat(
+            [
+                self.create_embeddings(x, 0),
+                self.create_embeddings(x, 1),
+                self.create_embeddings(x, 2),
+                goal_channel.float()
+            ],
+            dim=3
+        )
         # carried_obj_emb = self._select(self.embed_object, carried_obj)
         # carried_col_emb = self._select(self.embed_color, carried_col)
 
@@ -278,12 +283,12 @@ class FullObsMinigridPolicyNet(BaseFeaturesExtractor):
         # )
         assert self.observation_shape[1] == self.observation_shape[2]
         self.embed_agent_loc = nn.Embedding(
-            num_embeddings=self.observation_shape[1] * self.observation_shape[2] + 1,
-            embedding_dim=self.agent_loc_dim
+            num_embeddings=self.observation_shape[1] * self.observation_shape[2] + 1, embedding_dim=self.agent_loc_dim
         )
 
-        init_ = lambda m: init(m, nn.init.orthogonal_, lambda x: nn.init.
-                               constant_(x, 0), nn.init.calculate_gain('relu'))
+        init_ = lambda m: init(
+            m, nn.init.orthogonal_, lambda x: nn.init.constant_(x, 0), nn.init.calculate_gain('relu')
+        )
 
         ##Because Fully_observed
         self.feat_extract = nn.Sequential(
@@ -322,7 +327,7 @@ class FullObsMinigridPolicyNet(BaseFeaturesExtractor):
         if self.use_index_select:
             out = embed.weight.index_select(0, x.reshape(-1))
             # handle reshaping x to 1-d and output back to N-d
-            return out.reshape(x.shape + (-1,))
+            return out.reshape(x.shape + (-1, ))
         else:
             return embed(x)
 

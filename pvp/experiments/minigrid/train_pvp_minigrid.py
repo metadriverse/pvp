@@ -21,7 +21,6 @@ from pvp.sb3.dqn.policies import CnnPolicy
 from pvp.utils.utils import get_time_str
 import minigrid
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="pvp_minigrid", type=str, help="The name for this batch of experiments.")
@@ -103,7 +102,6 @@ if __name__ == '__main__':
             # tau=1.0,
             # target_update_interval=1000,
             gradient_steps=32,
-
             tensorboard_log=trial_dir,
             create_eval_env=False,
             verbose=2,
@@ -129,7 +127,6 @@ if __name__ == '__main__':
     env = ImgObsWrapper(env)
     train_env = VecFrameStack(DummyVecEnv([lambda: env]), n_stack=4)
 
-
     # ===== Also build the eval env =====
     def _make_eval_env():
         env = gym.make(env_name)
@@ -137,7 +134,6 @@ if __name__ == '__main__':
         env = Monitor(env=env, filename=eval_log_dir)
         env = ImgObsWrapper(env)
         return env
-
 
     eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
     config["algo"]["env"] = train_env

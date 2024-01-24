@@ -167,6 +167,7 @@ class MinigridWrapper(Wrapper):
 
 # Copied from: https://github.com/facebookresearch/impact-driven-exploration/blob/877c4ea530cc0ca3902211dba4e922bf8c3ce276/src/env_utils.py#L38
 
+
 class FullyObsCustomWrapper(gym.Wrapper):
     def __init__(self, env, fix_seed=False, env_seed=1):
         super(FullyObsCustomWrapper, self).__init__(env)
@@ -192,8 +193,8 @@ class FullyObsCustomWrapper(gym.Wrapper):
 
         if self.gym_env.env.env.carrying:
             carried_col, carried_obj = torch.LongTensor(
-                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]), torch.LongTensor(
-                [[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
+                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]
+            ), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
         else:
             carried_col, carried_obj = torch.LongTensor([[5]]), torch.LongTensor([[1]])
 
@@ -239,8 +240,8 @@ class FullyObsCustomWrapper(gym.Wrapper):
 
         if self.gym_env.env.env.carrying:
             carried_col, carried_obj = torch.LongTensor(
-                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]), torch.LongTensor(
-                [[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
+                [[COLOR_TO_IDX[self.gym_env.env.env.carrying.color]]]
+            ), torch.LongTensor([[OBJECT_TO_IDX[self.gym_env.env.env.carrying.type]]])
         else:
             carried_col, carried_obj = torch.LongTensor([[5]]), torch.LongTensor([[1]])
 
@@ -259,11 +260,8 @@ class FullyObsCustomWrapper(gym.Wrapper):
     def get_full_obs(self):
         env = self.gym_env.unwrapped
         full_grid = env.grid.encode()
-        full_grid[env.agent_pos[0]][env.agent_pos[1]] = np.array([
-            OBJECT_TO_IDX['agent'],
-            COLOR_TO_IDX['red'],
-            env.agent_dir
-        ])
+        full_grid[env.agent_pos[0]][env.agent_pos[1]
+                                    ] = np.array([OBJECT_TO_IDX['agent'], COLOR_TO_IDX['red'], env.agent_dir])
         return full_grid
 
     def close(self):
