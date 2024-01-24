@@ -1,3 +1,6 @@
+"""
+Training script for training PVP in MetaDrive Safety Env.
+"""
 import argparse
 import os
 from pathlib import Path
@@ -18,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument(
         "--device",
-        default="keyboard",
+        required=True,
         choices=['wheel', 'gamepad', 'keyboard'],
         type=str,
         help="The control device, selected from [wheel, gamepad, keyboard]."
@@ -66,14 +69,13 @@ if __name__ == '__main__':
                 discard_reward=True,  # We run in reward-free manner!
             ),
             policy_kwargs=dict(net_arch=[256, 256]),
-            intervention_start_stop_td=True,
             env=None,
             learning_rate=1e-4,
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=50_000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  # The number of steps before
-            batch_size=100,  # Reduce the batch size for real-time copilot
+            batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
             action_noise=None,

@@ -2,7 +2,6 @@ import copy
 from collections import deque
 
 import numpy as np
-from metadrive.component.pgblock.first_block import FirstPGBlock
 from metadrive.engine.core.onscreen_message import ScreenMessage
 from metadrive.envs.safe_metadrive_env import SafeMetaDriveEnv
 from metadrive.policy.manual_control_policy import TakeoverPolicy
