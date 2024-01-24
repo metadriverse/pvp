@@ -1,4 +1,5 @@
 import io
+import logging
 import os
 import pathlib
 from collections import defaultdict
@@ -15,6 +16,9 @@ from pvp.sb3.common.utils import polyak_update
 from pvp.sb3.haco.haco_buffer import HACOReplayBuffer, concat_samples
 from pvp.sb3.td3.td3 import TD3
 
+logger = logging.getLogger(__name__)
+
+
 class HACOTD3(TD3):
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
         """Please find the hyperparameters from original TD3"""
@@ -27,11 +31,11 @@ class HACOTD3(TD3):
             kwargs["replay_buffer_class"] = HACOReplayBuffer
 
         # TODO: Check if this is useful.
-        if "intervention_start_stop_td" in kwargs:
-            self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
-            kwargs.pop("intervention_start_stop_td")
-        else:
-            self.intervention_start_stop_td = True
+        # if "intervention_start_stop_td" in kwargs:
+        #     self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
+        #     kwargs.pop("intervention_start_stop_td")
+        # else:
+        #     self.intervention_start_stop_td = True
 
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
@@ -62,9 +66,6 @@ class HACOTD3(TD3):
         stat_recorder = defaultdict(list)
 
         for step in range(gradient_steps):
-            # if warmup and step % 100 ==0:
-            #     print("Warmup: " + str(step))
-            actor_losses, critic_loss = [], []
             self._n_updates += 1
             # Sample replay buffer
             if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
@@ -78,11 +79,12 @@ class HACOTD3(TD3):
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
-                # LQY: no noise
-                # noise = replay_data.actions_behavior.clone().data.normal_(0, self.target_policy_noise)
-                # noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
-                # next_actions = (self.actor_target(replay_data.next_observations) + noise).clamp(-1, 1)
-                next_actions = self.actor_target(replay_data.next_observations).clamp(-1, 1)
+
+                # TODO(PZH): We now reuse the noise! Check if that affect something.
+                noise = replay_data.actions_behavior.clone().data.normal_(0, self.target_policy_noise)
+                noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
+                next_actions = (self.actor_target(replay_data.next_observations) + noise).clamp(-1, 1)
+                # next_actions = self.actor_target(replay_data.next_observations).clamp(-1, 1)
 
                 # Compute the next Q-values: min over all critics targets
                 next_q_values = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
@@ -97,15 +99,15 @@ class HACOTD3(TD3):
             stat_recorder["q_value_novice"].append(current_q_novice_values[0].mean().item())
 
             # Compute critic loss
+            critic_loss = []
             for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
-
-                # TODO: Check if this is useful.
-                if not self.intervention_start_stop_td:
-                    l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
-                else:
-                    l = 0.5 * F.mse_loss(
-                        replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
-                    )
+                # TODO(PZH): We now remove the intervention_start_stop_td. Check if that affect something.
+                # if not self.intervention_start_stop_td:
+                l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
+                # else:
+                #     l = 0.5 * F.mse_loss(
+                #         replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
+                #     )
 
                 # ====== The key of Proxy Value Objective =====
                 l += th.mean(
@@ -119,32 +121,29 @@ class HACOTD3(TD3):
 
                 critic_loss.append(l)
             critic_loss = sum(critic_loss)
-            stat_recorder["critic_loss"].append(critic_loss.item())
 
             # Optimize the critics
             self.critic.optimizer.zero_grad()
             critic_loss.backward()
             self.critic.optimizer.step()
+            self.logger.record("train/critic_loss", critic_loss.item())
 
             # Delayed policy updates
             if self._n_updates % self.policy_delay == 0:
                 # Compute actor loss
                 actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations
                                                                                           )).mean()
-                actor_losses.append(actor_loss.item())
 
                 # Optimize the actor
                 self.actor.optimizer.zero_grad()
                 actor_loss.backward()
                 self.actor.optimizer.step()
+                self.logger.record("train/actor_loss", actor_loss.item())
 
                 polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
                 polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-        if len(actor_losses) > 0:
-            self.logger.record("train/actor_loss", np.mean(actor_losses))
-        # self.logger.record("train/critic_loss", np.mean(critic_loss))
         for key, values in stat_recorder.items():
             self.logger.record("train/{}".format(key), np.mean(values))
 
@@ -162,8 +161,8 @@ class HACOTD3(TD3):
         super(HACOTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save_replay_buffer(
-        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase],
-            path_replay: Union[str, pathlib.Path, io.BufferedIOBase]
+        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
+                                                                                          io.BufferedIOBase]
     ) -> None:
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
         super(HACOTD3, self).save_replay_buffer(path_replay)
@@ -183,7 +182,6 @@ class HACOTD3(TD3):
             (and truncate it).
             If set to ``False``, we assume that we continue the same trajectory (same episode).
         """
-        # TODO: Check this
         self.human_data_buffer = load_from_pkl(path_human, self.verbose)
         assert isinstance(
             self.human_data_buffer, ReplayBuffer
@@ -264,8 +262,8 @@ class HACOTD3(TD3):
                 buffer_location_replay = os.path.join(
                     save_path_replay, "replay_buffer_" + str(self.num_timesteps) + ".pkl"
                 )
-                print("Saving..." + str(buffer_location_human))
-                print("Saving..." + str(buffer_location_replay))
+                logger.info("Saving..." + str(buffer_location_human))
+                logger.info("Saving..." + str(buffer_location_replay))
                 self.save_replay_buffer(buffer_location_human, buffer_location_replay)
 
         callback.on_training_end()
