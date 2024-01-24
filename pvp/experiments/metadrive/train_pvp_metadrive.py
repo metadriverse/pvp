@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="pvp_metadrive", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    parser.add_argument("--toy_env", action="store_true", help="Whether to use toy environment.")
+    parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     parser.add_argument(
         "--device",
         required=True,
@@ -100,7 +100,7 @@ if __name__ == '__main__':
             # Here we set num_scenarios to 1, remove all traffic, and fix the map to be a very simple one.
             num_scenarios=1,
             traffic_density=0.0,
-            map="C"
+            map="COT"
         )
 
     # ===== Setup the training environment =====

@@ -1,10 +1,11 @@
 import copy
-from collections import deque
 import time
+from collections import deque
+
 import numpy as np
 from metadrive.engine.core.onscreen_message import ScreenMessage
 from metadrive.envs.safe_metadrive_env import SafeMetaDriveEnv
-from metadrive.policy.manual_control_policy import TakeoverPolicy
+from metadrive.policy.manual_control_policy import TakeoverPolicyWithoutBrake
 from metadrive.utils.math import safe_clip
 
 ScreenMessage.SCALE = 0.1
@@ -14,18 +15,17 @@ HUMAN_IN_THE_LOOP_ENV_CONFIG = {
     "out_of_route_done": True,  # Raise done if out of route.
     "num_scenarios": 50,  # There are totally 50 possible maps.
     "start_seed": 100,  # We will use the map 100~150 as the default training environment.
-    # "random_spawn": True,  # The spawn positions of ego car is randomized.  # TODO: Remove this.
     "traffic_density": 0.06,
 
     # Reward and cost setting:
     "cost_to_reward": True,  # Cost will be negated and added to the reward. Useless in PVP.
-    "cos_similarity": True,  # If True, the takeover cost will be the cos sim between human/agent actions.
+    "cos_similarity": False,  # If True, the takeover cost will be the cos sim between a_h and a_n. Useless in PVP.
 
     # Set up the control device. Default to use keyboard with the pop-up interface.
     "manual_control": True,
-    "agent_policy": TakeoverPolicy,
+    "agent_policy": TakeoverPolicyWithoutBrake,
     "controller": "keyboard",  # Selected from [keyboard, xbox, steering_wheel].
-    "only_takeover_start_cost": True,  # If True, only return a cost when takeover starts. Useless in PVP.
+    "only_takeover_start_cost": False,  # If True, only return a cost when takeover starts. Useless in PVP.
 
     # Visualization
     "vehicle_config": {
@@ -56,16 +56,9 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         return config
 
     def reset(self, *args, **kwargs):
-        self.in_pause = False
         self.takeover = False
-        # self.total_takeover_cost = 0
         self.agent_action = None
         obs, info = super(HumanInTheLoopEnv, self).reset(*args, **kwargs)
-        # if self.config["random_spawn"]:
-        #     self.config["vehicle_config"]["spawn_lane_index"] = (
-        #         FirstPGBlock.NODE_1, FirstPGBlock.NODE_2, self.engine.np_random.randint(3)
-        #     )
-
         # The training code is for older version of gym, so we discard the additional info from the reset.
         return obs
 

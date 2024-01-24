@@ -30,12 +30,12 @@ class PVPTD3(TD3):
         if "replay_buffer_class" not in kwargs:
             kwargs["replay_buffer_class"] = HACOReplayBuffer
 
-        # TODO: Check if this is useful.
-        # if "intervention_start_stop_td" in kwargs:
-        #     self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
-        #     kwargs.pop("intervention_start_stop_td")
-        # else:
-        #     self.intervention_start_stop_td = True
+        if "intervention_start_stop_td" in kwargs:
+            self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
+            kwargs.pop("intervention_start_stop_td")
+        else:
+            # Default to set it True. We find this can improve the performance and user experience.
+            self.intervention_start_stop_td = True
 
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
@@ -81,12 +81,9 @@ class PVPTD3(TD3):
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
-
-                # TODO(PZH): We now reuse the noise! Check if that affect something.
                 noise = replay_data.actions_behavior.clone().data.normal_(0, self.target_policy_noise)
                 noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
                 next_actions = (self.actor_target(replay_data.next_observations) + noise).clamp(-1, 1)
-                # next_actions = self.actor_target(replay_data.next_observations).clamp(-1, 1)
 
                 # Compute the next Q-values: min over all critics targets
                 next_q_values = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
@@ -103,13 +100,13 @@ class PVPTD3(TD3):
             # Compute critic loss
             critic_loss = []
             for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
-                # TODO(PZH): We now remove the intervention_start_stop_td. Check if that affect something.
-                # if not self.intervention_start_stop_td:
-                l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
-                # else:
-                #     l = 0.5 * F.mse_loss(
-                #         replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
-                #     )
+                if self.intervention_start_stop_td:
+                    l = 0.5 * F.mse_loss(
+                        replay_data.stop_td * current_q_behavior, replay_data.stop_td * target_q_values
+                    )
+
+                else:
+                    l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
 
                 # ====== The key of Proxy Value Objective =====
                 l += th.mean(
@@ -150,30 +147,30 @@ class PVPTD3(TD3):
             self.logger.record("train/{}".format(key), np.mean(values))
 
     def _store_transition(
-            self,
-            replay_buffer: ReplayBuffer,
-            buffer_action: np.ndarray,
-            new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
-            reward: np.ndarray,
-            dones: np.ndarray,
-            infos: List[Dict[str, Any]],
+        self,
+        replay_buffer: ReplayBuffer,
+        buffer_action: np.ndarray,
+        new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
+        reward: np.ndarray,
+        dones: np.ndarray,
+        infos: List[Dict[str, Any]],
     ) -> None:
         if infos[0]["takeover"] or infos[0]["takeover_start"]:
             replay_buffer = self.human_data_buffer
         super(PVPTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save_replay_buffer(
-            self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
-            io.BufferedIOBase]
+        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
+                                                                                          io.BufferedIOBase]
     ) -> None:
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
         super(PVPTD3, self).save_replay_buffer(path_replay)
 
     def load_replay_buffer(
-            self,
-            path_human: Union[str, pathlib.Path, io.BufferedIOBase],
-            path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
-            truncate_last_traj: bool = True,
+        self,
+        path_human: Union[str, pathlib.Path, io.BufferedIOBase],
+        path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
+        truncate_last_traj: bool = True,
     ) -> None:
         """
         Load a replay buffer from a pickle file.
@@ -197,26 +194,26 @@ class PVPTD3(TD3):
         super(PVPTD3, self).load_replay_buffer(path_replay, truncate_last_traj)
 
     def learn(
-            self,
-            total_timesteps: int,
-            callback: MaybeCallback = None,
-            log_interval: int = 4,
-            eval_env: Optional[GymEnv] = None,
-            eval_freq: int = -1,
-            n_eval_episodes: int = 5,
-            tb_log_name: str = "run",
-            eval_log_path: Optional[str] = None,
-            reset_num_timesteps: bool = True,
-            save_timesteps: int = 2000,
-            buffer_save_timesteps: int = 2000,
-            save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            save_buffer: bool = True,
-            load_buffer: bool = False,
-            load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-            warmup: bool = False,
-            warmup_steps: int = 5000,
+        self,
+        total_timesteps: int,
+        callback: MaybeCallback = None,
+        log_interval: int = 4,
+        eval_env: Optional[GymEnv] = None,
+        eval_freq: int = -1,
+        n_eval_episodes: int = 5,
+        tb_log_name: str = "run",
+        eval_log_path: Optional[str] = None,
+        reset_num_timesteps: bool = True,
+        save_timesteps: int = 2000,
+        buffer_save_timesteps: int = 2000,
+        save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        save_buffer: bool = True,
+        load_buffer: bool = False,
+        load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+        warmup: bool = False,
+        warmup_steps: int = 5000,
     ) -> "OffPolicyAlgorithm":
 
         total_timesteps, callback = self._setup_learn(
