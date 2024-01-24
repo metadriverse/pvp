@@ -66,21 +66,16 @@ if __name__ == '__main__':
         # Algorithm config
         algo=dict(
             policy=CnnPolicy,
-            policy_kwargs=dict(
-                features_extractor_class=MinigridCNN,
-                activation_fn=torch.nn.Tanh,
-                net_arch=[64, ]
-            ),
+            policy_kwargs=dict(features_extractor_class=MinigridCNN, activation_fn=torch.nn.Tanh, net_arch=[
+                64,
+            ]),
 
             # === HACO setting ===
-            replay_buffer_kwargs=dict(
-                discard_reward=True  # PZH: We run in reward-free manner!
-            ),
-
+            replay_buffer_kwargs=dict(discard_reward=True  # PZH: We run in reward-free manner!
+                                      ),
             exploration_fraction=0.0,  # 1% * 100k = 1k
             exploration_initial_eps=0.0,
             exploration_final_eps=0.0,
-
             env=None,
             optimize_memory_usage=True,
 
@@ -103,9 +98,7 @@ if __name__ == '__main__':
             # train_freq=4,
             # tau=1.0,
             # target_update_interval=1000,
-
             gradient_steps=32,  # PZH: @chenda, try to change this!
-
             tensorboard_log=log_dir,
             create_eval_env=False,
             verbose=2,
@@ -134,14 +127,12 @@ if __name__ == '__main__':
     # ===== Also build the eval env =====
     eval_log_dir = osp.join(log_dir, "evaluations")
 
-
     def _make_eval_env():
         env = gym.make(env_name)
         env = MinigridWrapper(env, enable_render=False, enable_human=False)
         env = Monitor(env=env, filename=eval_log_dir)
         env = ImgObsWrapper(env)
         return env
-
 
     # eval_env = _make_eval_env()
     eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
@@ -151,21 +142,11 @@ if __name__ == '__main__':
 
     # ===== Setup the callbacks =====
     callbacks = [
-        CheckpointCallback(
-            name_prefix="rl_model",
-            verbose=1,
-            save_freq=10000,
-            save_path=osp.join(log_dir, "models")
-        )
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=10000, save_path=osp.join(log_dir, "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(
-                trial_name=trial_name,
-                exp_name=exp_name,
-                project_name=project_name,
-                config=config
-            )
+            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
         )
     callbacks = CallbackList(callbacks)
 
