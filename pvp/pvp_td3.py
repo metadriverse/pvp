@@ -74,8 +74,10 @@ class HACOTD3(TD3):
                 replay_data = concat_samples(replay_data_agent, replay_data_human)
             elif self.human_data_buffer.pos > batch_size:
                 replay_data = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
-            else:
+            elif self.replay_buffer.pos > batch_size:
                 replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+            else:
+                break
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
