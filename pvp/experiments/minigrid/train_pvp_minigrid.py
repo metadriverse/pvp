@@ -1,61 +1,65 @@
+"""
+Training script for training PVP in MiniGrid environment.
+"""
 import argparse
 import os
+from pathlib import Path
 
+# import gym
+import gymnasium as gym
+import torch
+from minigrid.wrappers import ImgObsWrapper
+
+from pvp.experiments.minigrid.minigrid_env import MinigridWrapper
+from pvp.experiments.minigrid.minigrid_model import MinigridCNN
+from pvp.pvp_dqn import PVPDQN
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
 from pvp.sb3.common.wandb_callback import WandbCallback
+from pvp.sb3.dqn.policies import CnnPolicy
 from pvp.utils.utils import get_time_str
+import minigrid
 
-# import argparse
-# import os
-# import os.path as osp
-#
-# import gym
-# import torch
-# from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
-# from pvp.sb3.common.monitor import Monitor
-# from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
-# from pvp.sb3.common.wandb_callback import WandbCallback
-# from pvp.sb3.dqn.policies import CnnPolicy
-# from pvp.ujt
-# from drivingforce.haco_2022.utils import get_time_str
-# from drivingforce.new_haco.haco_dqn.haco_dqn import HACODQN
-# from drivingforce.new_haco.training_script.minigrid.minigrid_env import MinigridWrapper
-# from drivingforce.new_haco.training_script.minigrid.minigrid_model import MinigridCNN
-# from minigrid.wrappers import ImgObsWrapper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp-name", default="minigrid_haco", type=str, help="The experiment name.")
-    parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
+    parser.add_argument("--exp_name", default="pvp_minigrid", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    parser.add_argument("--env-name", default="MiniGrid-Empty-Random-6x6-v0", type=str, help="Name of Gym environment")
-    parser.add_argument("--lr", type=float, default=1e-4)
-    # parser.add_argument("--render", action="store_true", help="Whether to pop up window for visualization.")
-    args = parser.parse_args()
+    # parser.add_argument(
+    #     "--device",
+    #     required=True,
+    #     choices=['wheel', 'gamepad', 'keyboard'],
+    #     type=str,
+    #     help="The control device, selected from [wheel, gamepad, keyboard]."
+    # )
 
+    parser.add_argument("--env_name", default="MiniGrid-Empty-Random-6x6-v0", type=str, help="Name of Gym environment")
     # Or use environment: --env-name MiniGrid-MultiRoom-N6-v0
 
-    # ===== Setup some meta information =====
-    exp_name = args.exp_name
-    seed = int(args.seed)
+    parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
+    parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
+    parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+    args = parser.parse_args()
+
+    # ===== Set up some arguments =====
+    experiment_batch_name = args.exp_name
+    seed = args.seed
+    trial_name = "{}_{}_{}".format(experiment_batch_name, 'keyboard', get_time_str())
+
     use_wandb = args.wandb
+    project_name = args.wandb_project
+    team_name = args.wandb_team
+    env_name = args.env_name
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
-    # obs_mode = args.obs_mode
-    env_name = args.env_name
-    # render = args.render
-    # control_mode = args.control
-    lr = args.lr
 
-    project_name = "haco_2022"
-    team_name = "drivingforce"
-
-    trial_name = "{}_{}_lr{}_seed{}_{}".format(exp_name, env_name, lr, seed, get_time_str())
-    log_dir = osp.join("../../haco_minigrid/runs", exp_name, trial_name)
-    os.makedirs(osp.join("../../haco_minigrid/runs", exp_name), exist_ok=True)
-    os.makedirs(log_dir, exist_ok=True)
-    print("We start logging training data into {}".format(log_dir))
+    experiment_dir = Path("runs") / experiment_batch_name
+    trial_dir = experiment_dir / trial_name
+    eval_log_dir = trial_dir / "evaluations"
+    os.makedirs(experiment_dir, exist_ok=True)
+    os.makedirs(trial_dir, exist_ok=True)
+    print(f"We start logging training data into {trial_dir}")
 
     # ===== Setup the config =====
     config = dict(
@@ -82,7 +86,7 @@ if __name__ == '__main__':
             # Hyper-parameters are collected from https://arxiv.org/pdf/1910.02078.pdf
             # MiniGrid specified parameters
             buffer_size=10_000,
-            learning_rate=lr,
+            learning_rate=1e-4,
 
             # === New hypers ===
             learning_starts=50,  # PZH: Original DQN has 100K warmup steps
@@ -98,8 +102,9 @@ if __name__ == '__main__':
             # train_freq=4,
             # tau=1.0,
             # target_update_interval=1000,
-            gradient_steps=32,  # PZH: @chenda, try to change this!
-            tensorboard_log=log_dir,
+            gradient_steps=32,
+
+            tensorboard_log=trial_dir,
             create_eval_env=False,
             verbose=2,
             seed=seed,
@@ -109,24 +114,23 @@ if __name__ == '__main__':
         # Meta data
         project_name=project_name,
         team_name=team_name,
-        exp_name=exp_name,
+        exp_name=experiment_batch_name,
         seed=seed,
         use_wandb=use_wandb,
-        # obs_mode=obs_mode,
         trial_name=trial_name,
-        log_dir=log_dir
+        log_dir=str(trial_dir)
     )
 
     # ===== Setup the training environment =====
+    minigrid.register_minigrid_envs()
     env = gym.make(env_name)
     env = MinigridWrapper(env, enable_render=True, enable_human=True)
-    env = Monitor(env=env, filename=log_dir)
+    env = Monitor(env=env, filename=str(trial_dir))
     env = ImgObsWrapper(env)
     train_env = VecFrameStack(DummyVecEnv([lambda: env]), n_stack=4)
 
-    # ===== Also build the eval env =====
-    eval_log_dir = osp.join(log_dir, "evaluations")
 
+    # ===== Also build the eval env =====
     def _make_eval_env():
         env = gym.make(env_name)
         env = MinigridWrapper(env, enable_render=False, enable_human=False)
@@ -134,30 +138,36 @@ if __name__ == '__main__':
         env = ImgObsWrapper(env)
         return env
 
-    # eval_env = _make_eval_env()
-    eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
 
+    eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
     # ===== Setup the callbacks =====
+    save_freq = 500  # Number of steps per model checkpoint
     callbacks = [
-        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=10000, save_path=osp.join(log_dir, "models"))
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=save_freq, save_path=str(trial_dir / "models"))
     ]
     if use_wandb:
         callbacks.append(
-            WandbCallback(trial_name=trial_name, exp_name=exp_name, project_name=project_name, config=config)
+            WandbCallback(
+                trial_name=trial_name,
+                exp_name=experiment_batch_name,
+                team_name=team_name,
+                project_name=project_name,
+                config=config
+            )
         )
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
     # TODO: Do we have similar 'stop td at intervention start' thing here?
-    model = HACODQN(**config["algo"])
+    model = PVPDQN(**config["algo"])
 
     # ===== Launch training =====
     model.learn(
         # training
-        total_timesteps=100_000,
+        total_timesteps=50_000,
         callback=callbacks,
         reset_num_timesteps=True,
 
@@ -165,9 +175,9 @@ if __name__ == '__main__':
         eval_env=eval_env,
         eval_freq=20,
         n_eval_episodes=10,
-        eval_log_path=log_dir,
+        eval_log_path=trial_dir,
 
         # logging
-        tb_log_name=exp_name,  # Should place the algorithm name here!
+        tb_log_name=experiment_batch_name,
         log_interval=1,
     )
