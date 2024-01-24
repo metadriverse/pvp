@@ -13,7 +13,7 @@ from pvp.sb3.dqn.dqn import DQN, compute_entropy
 from pvp.sb3.haco.haco_buffer import HACOReplayBuffer, concat_samples
 
 
-class HACODQN(DQN):
+class PVPDQN(DQN):
     def __init__(self, q_value_bound=1., *args, **kwargs):
         kwargs["replay_buffer_class"] = HACOReplayBuffer
         if "cql_coefficient" in kwargs:
@@ -29,7 +29,7 @@ class HACODQN(DQN):
             kwargs.pop("intervention_start_stop_td")
         else:
             self.intervention_start_stop_td = True
-        super(HACODQN, self).__init__(*args, **kwargs)
+        super(PVPDQN, self).__init__(*args, **kwargs)
         self.q_value_bound = q_value_bound
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
@@ -137,7 +137,7 @@ class HACODQN(DQN):
         self.logger.record("train/entropy", np.mean(entropies))
 
     def _setup_model(self) -> None:
-        super(HACODQN, self)._setup_model()
+        super(PVPDQN, self)._setup_model()
         self.human_data_buffer = HACOReplayBuffer(
             self.buffer_size,
             self.observation_space,
@@ -160,7 +160,7 @@ class HACODQN(DQN):
     ) -> None:
         if infos[0]["takeover"] or infos[0]["takeover_start"]:
             replay_buffer = self.human_data_buffer
-        super(HACODQN, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
+        super(PVPDQN, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save(
         self,

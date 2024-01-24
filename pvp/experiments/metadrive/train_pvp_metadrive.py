@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.pvp_td3 import HACOTD3
+from pvp.pvp_td3 import PVPTD3
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
-    model = HACOTD3(**config["algo"])
+    model = PVPTD3(**config["algo"])
 
     # ===== Launch training =====
     model.learn(

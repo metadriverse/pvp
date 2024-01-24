@@ -19,7 +19,7 @@ from pvp.sb3.td3.td3 import TD3
 logger = logging.getLogger(__name__)
 
 
-class HACOTD3(TD3):
+class PVPTD3(TD3):
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
         """Please find the hyperparameters from original TD3"""
         if "cql_coefficient" in kwargs:
@@ -39,10 +39,10 @@ class HACOTD3(TD3):
 
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
-        super(HACOTD3, self).__init__(*args, **kwargs)
+        super(PVPTD3, self).__init__(*args, **kwargs)
 
     def _setup_model(self) -> None:
-        super(HACOTD3, self)._setup_model()
+        super(PVPTD3, self)._setup_model()
         if self.use_balance_sample:
             self.human_data_buffer = HACOReplayBuffer(
                 self.buffer_size,
@@ -150,30 +150,30 @@ class HACOTD3(TD3):
             self.logger.record("train/{}".format(key), np.mean(values))
 
     def _store_transition(
-        self,
-        replay_buffer: ReplayBuffer,
-        buffer_action: np.ndarray,
-        new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
-        reward: np.ndarray,
-        dones: np.ndarray,
-        infos: List[Dict[str, Any]],
+            self,
+            replay_buffer: ReplayBuffer,
+            buffer_action: np.ndarray,
+            new_obs: Union[np.ndarray, Dict[str, np.ndarray]],
+            reward: np.ndarray,
+            dones: np.ndarray,
+            infos: List[Dict[str, Any]],
     ) -> None:
         if infos[0]["takeover"] or infos[0]["takeover_start"]:
             replay_buffer = self.human_data_buffer
-        super(HACOTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
+        super(PVPTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save_replay_buffer(
-        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
-                                                                                          io.BufferedIOBase]
+            self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
+            io.BufferedIOBase]
     ) -> None:
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
-        super(HACOTD3, self).save_replay_buffer(path_replay)
+        super(PVPTD3, self).save_replay_buffer(path_replay)
 
     def load_replay_buffer(
-        self,
-        path_human: Union[str, pathlib.Path, io.BufferedIOBase],
-        path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
-        truncate_last_traj: bool = True,
+            self,
+            path_human: Union[str, pathlib.Path, io.BufferedIOBase],
+            path_replay: Union[str, pathlib.Path, io.BufferedIOBase],
+            truncate_last_traj: bool = True,
     ) -> None:
         """
         Load a replay buffer from a pickle file.
@@ -194,29 +194,29 @@ class HACOTD3(TD3):
         if not hasattr(self.human_data_buffer, "handle_timeout_termination"):  # pragma: no cover
             self.human_data_buffer.handle_timeout_termination = False
             self.human_data_buffer.timeouts = np.zeros_like(self.replay_buffer.dones)
-        super(HACOTD3, self).load_replay_buffer(path_replay, truncate_last_traj)
+        super(PVPTD3, self).load_replay_buffer(path_replay, truncate_last_traj)
 
     def learn(
-        self,
-        total_timesteps: int,
-        callback: MaybeCallback = None,
-        log_interval: int = 4,
-        eval_env: Optional[GymEnv] = None,
-        eval_freq: int = -1,
-        n_eval_episodes: int = 5,
-        tb_log_name: str = "run",
-        eval_log_path: Optional[str] = None,
-        reset_num_timesteps: bool = True,
-        save_timesteps: int = 2000,
-        buffer_save_timesteps: int = 2000,
-        save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-        save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-        save_buffer: bool = True,
-        load_buffer: bool = False,
-        load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-        load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
-        warmup: bool = False,
-        warmup_steps: int = 5000,
+            self,
+            total_timesteps: int,
+            callback: MaybeCallback = None,
+            log_interval: int = 4,
+            eval_env: Optional[GymEnv] = None,
+            eval_freq: int = -1,
+            n_eval_episodes: int = 5,
+            tb_log_name: str = "run",
+            eval_log_path: Optional[str] = None,
+            reset_num_timesteps: bool = True,
+            save_timesteps: int = 2000,
+            buffer_save_timesteps: int = 2000,
+            save_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+            save_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+            save_buffer: bool = True,
+            load_buffer: bool = False,
+            load_path_human: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+            load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
+            warmup: bool = False,
+            warmup_steps: int = 5000,
     ) -> "OffPolicyAlgorithm":
 
         total_timesteps, callback = self._setup_learn(
