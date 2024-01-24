@@ -55,6 +55,32 @@ During experiments human subject can always press `E` to pause the experiment an
 
 Click for the experiment details:
 
+
+
+<details>
+  <summary><b>MetaDrive - Keyboard</b></summary>
+
+```bash
+# Go to repo root
+cd ~/pvp
+
+# A toy experiment, should be solved in TODO: Steps
+python pvp/experiments/metadrive/train_pvp_metadrive.py --device keyboard --toy_env
+
+# Run formal experiment
+
+```
+| Action             | Control       |
+|--------------------|---------------|
+| Throttle           | W             |
+| Break              | S             |
+| Steering           | A/D           |
+| Human intervention | Space or WASD |
+</details>
+
+
+
+
 <details>
   <summary><b>MetaDrive - Steering Wheel (Logitech G29)</b></summary>
   
@@ -84,22 +110,6 @@ python -m training_script.metadrive.train_pvp_td3_metadrive.py --control xboxCon
 | Break              | Left trigger  |
 | Human intervention | X/A           |
 | Steering           | Left stick    |
-</details>
-
-
-
-<details>
-  <summary><b>MetaDrive - Keyboard</b></summary>
-
-```bash
-python -m training_script.metadrive.train_pvp_td3_metadrive.py --control keyboard
-```
-| Action             | Control                            |
-|--------------------|------------------------------------|
-| Throttle           | W                                  |
-| Break              | S                                  |
-| Human intervention | Always intervened when key pressed |
-| Steering           | A/D                                |
 </details>
 
 

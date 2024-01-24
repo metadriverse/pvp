@@ -1,6 +1,6 @@
 import copy
 from collections import deque
-
+import time
 import numpy as np
 from metadrive.engine.core.onscreen_message import ScreenMessage
 from metadrive.envs.safe_metadrive_env import SafeMetaDriveEnv
@@ -43,10 +43,12 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
     """
     total_steps = 0
     total_takeover_cost = 0
+    total_cost = 0
     takeover = False
     takeover_recorder = deque(maxlen=2000)
     agent_action = None
     in_pause = False
+    start_time = time.time()
 
     def default_config(self):
         config = super(HumanInTheLoopEnv, self).default_config()
@@ -87,6 +89,7 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         engine_info["total_takeover_cost"] = self.total_takeover_cost
         engine_info["native_cost"] = engine_info["cost"]
         engine_info["total_native_cost"] = self.episode_cost
+        self.total_cost += engine_info["cost"]
 
         return o, r, d, engine_info
 
@@ -108,11 +111,12 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         if self.config["use_render"]:  # and self.config["main_exp"]: #and not self.config["in_replay"]:
             super(HumanInTheLoopEnv, self).render(
                 text={
-                    "Total Cost": round(self.episode_cost, 3),
+                    "Total Cost": round(self.total_cost, 3),
                     "Takeover Cost": round(self.total_takeover_cost, 3),
                     "Takeover": self.takeover,
                     "COST": ret[-1]["takeover_cost"],
                     "Total Step": self.total_steps,
+                    "Total Time": time.strftime("%M:%S", time.gmtime(time.time() - self.start_time)),
                     "Takeover Rate": "{:.3f}%".format(np.mean(np.array(self.takeover_recorder) * 100)),
                     "Pause (Press E)": "",
                 }

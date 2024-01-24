@@ -19,6 +19,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="pvp_metadrive", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
+    parser.add_argument("--toy_env", action="store_true", help="Whether to use toy environment.")
     parser.add_argument(
         "--device",
         required=True,
@@ -78,6 +79,7 @@ if __name__ == '__main__':
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
+            train_freq=(1, "step"),
             action_noise=None,
             tensorboard_log=trial_dir,
             create_eval_env=False,
@@ -93,6 +95,13 @@ if __name__ == '__main__':
         trial_name=trial_name,
         log_dir=str(trial_dir)
     )
+    if args.toy_env:
+        config["env_config"].update(
+            # Here we set num_scenarios to 1, remove all traffic, and fix the map to be a very simple one.
+            num_scenarios=1,
+            traffic_density=0.0,
+            map="C"
+        )
 
     # ===== Setup the training environment =====
     train_env = HumanInTheLoopEnv(config=config["env_config"], )
