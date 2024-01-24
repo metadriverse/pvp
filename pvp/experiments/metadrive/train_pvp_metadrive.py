@@ -26,8 +26,6 @@ if __name__ == '__main__':
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
-
-    # TODO: Add a flag to control whether should record data. See how to record this.
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
@@ -97,16 +95,17 @@ if __name__ == '__main__':
     # ===== Setup the training environment =====
     train_env = HumanInTheLoopEnv(config=config["env_config"], )
     train_env = Monitor(env=train_env, filename=str(trial_dir))
+    # Store all shared control data to the files.
     train_env = SharedControlMonitor(env=train_env, folder=trial_dir / "data", prefix=trial_name)
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
     # ===== Setup the callbacks =====
+    save_freq = 500  # Number of steps per model checkpoint
     callbacks = [
-        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=200, save_path=str(trial_dir / "models"))
+        CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=save_freq, save_path=str(trial_dir / "models"))
     ]
     if use_wandb:
-        # TODO: Test wandb later
         callbacks.append(
             WandbCallback(
                 trial_name=trial_name,
@@ -135,23 +134,8 @@ if __name__ == '__main__':
         eval_log_path=None,
 
         # logging
-        tb_log_name=experiment_batch_name,  # Should place the algorithm name here!
+        tb_log_name=experiment_batch_name,
         log_interval=1,
-
-        # TODO: How to process save buffer and load buffer?
-        # save buffer
-        buffer_save_timesteps=5000,
-        save_path_human="./",
-        save_path_replay="./",
-        save_buffer=True,
-
-        # load buffer
+        save_buffer=False,
         load_buffer=False,
-        # load_path_human = "./human_buffer_100.pkl",
-        # load_path_replay = "./replay_buffer_100.pkl",
-
-        # TODO: What is CQL warmup?
-        # cql warmup
-        # warmup = True,
-        # warmup_steps = 50000,
     )
