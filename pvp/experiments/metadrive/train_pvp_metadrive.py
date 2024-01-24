@@ -4,11 +4,12 @@ from pathlib import Path
 
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
 from pvp.pvp_td3 import HACOTD3
-from pvp.sb3.td3.policies import TD3Policy
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.haco import HACOReplayBuffer
+from pvp.sb3.td3.policies import TD3Policy
+from pvp.utils.shared_control_monitor import SharedControlMonitor
 from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
@@ -96,6 +97,7 @@ if __name__ == '__main__':
     # ===== Setup the training environment =====
     train_env = HumanInTheLoopEnv(config=config["env_config"], )
     train_env = Monitor(env=train_env, filename=str(trial_dir))
+    train_env = SharedControlMonitor(env=train_env, folder=trial_dir / "data", prefix=trial_name)
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 

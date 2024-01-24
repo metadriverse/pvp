@@ -15,7 +15,6 @@ from pvp.sb3.common.utils import polyak_update
 from pvp.sb3.haco.haco_buffer import HACOReplayBuffer, concat_samples
 from pvp.sb3.td3.td3 import TD3
 
-
 class HACOTD3(TD3):
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
         """Please find the hyperparameters from original TD3"""
@@ -163,10 +162,9 @@ class HACOTD3(TD3):
         super(HACOTD3, self)._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save_replay_buffer(
-        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase], path_replay: Union[str, pathlib.Path,
-                                                                                          io.BufferedIOBase]
+        self, path_human: Union[str, pathlib.Path, io.BufferedIOBase],
+            path_replay: Union[str, pathlib.Path, io.BufferedIOBase]
     ) -> None:
-        # TODO: Check this
         save_to_pkl(path_human, self.human_data_buffer, self.verbose)
         super(HACOTD3, self).save_replay_buffer(path_replay)
 
