@@ -18,7 +18,7 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_metadrive", type=str, help="The name for this batch of experiments.")
+    parser.add_argument("--exp_name", default="pvp_carla", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")

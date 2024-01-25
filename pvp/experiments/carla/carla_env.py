@@ -1,4 +1,5 @@
 import copy
+import logging
 import platform
 import time
 from collections import defaultdict
@@ -11,9 +12,9 @@ import pygame
 from easydict import EasyDict
 from evdev import ecodes, InputDevice
 
-from pvp.utils.carla.core.envs.simple_carla_env import SimpleCarlaEnv
-from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
-from pvp.utils.carla.demo.simple_rl.sac_train import compile_config
+from pvp.experiments.carla.di_drive.core.envs.simple_carla_env import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
+from pvp.experiments.carla.di_drive.demo.simple_rl.sac_train import compile_config
 from pvp.utils.print_dict_utils import merge_dicts
 from pvp.utils.utils import ForceFPS, merge_dicts
 
@@ -33,6 +34,7 @@ train_config = dict(
     enable_takeover=True,
     show_text=True,
     normalize_obs=False,
+    disable_brake=True,
     env=dict(
         collector_env_num=1,
         evaluator_env_num=0,
@@ -146,6 +148,12 @@ class SteeringWheelController:
         self.button_triangle = True if self.joystick.get_button(3) else False
         self.button_x = True if self.joystick.get_button(0) else False
 
+        if self.button_x:
+            logging.warning("X is pressed. Exit ...")
+            raise KeyboardInterrupt()
+
+        self.maybe_pause()
+
         hat = self.joystick.get_hat(0)
         self.button_up = True if hat[-1] == 1 else False
         self.button_down = True if hat[-1] == -1 else False
@@ -155,6 +163,47 @@ class SteeringWheelController:
         self.feedback(speed_kmh)
 
         return [-steering * self.STEERING_MAKEUP, (throttle - brake)]
+
+    def maybe_pause(self):
+        paused = False
+        for event in pygame.event.get():
+            if event.type == pygame.JOYBUTTONDOWN and event.button == 3:  # Triangle button pressed
+                paused = not paused  # Toggle pause
+                # Wait for button release
+                while True:
+                    event_happened = False
+                    for event in pygame.event.get():
+                        if event.type == pygame.JOYBUTTONUP and event.button == 3:
+                            event_happened = True
+                            break
+                    if event_happened:
+                        break
+                    pygame.time.delay(100)
+
+                # Wait for the next button press to unpause
+                while True:
+                    event_happened = False
+                    for event in pygame.event.get():
+                        if event.type == pygame.JOYBUTTONDOWN and event.button == 3:
+                            event_happened = True
+                            break
+                    if event_happened:
+                        break
+                    pygame.time.delay(100)
+
+                # Button pressed again, unpause
+                paused = False
+
+                # Wait for button release before exiting
+                while True:
+                    event_happened = False
+                    for event in pygame.event.get():
+                        if event.type == pygame.JOYBUTTONUP and event.button == 3:
+                            event_happened = True
+                            break
+                    if event_happened:
+                        break
+                    pygame.time.delay(100)
 
     def reset(self):
         if self.disable:
@@ -283,7 +332,13 @@ class HumanInTheLoopCARLAEnv(ContinuousBenchmarkEnvWrapper):
 
         # Get control signal from human
         if self.controller is not None:
-            human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed_kmh'])
+            try:
+                human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed_kmh'])
+            except KeyboardInterrupt as e:
+                self.close()
+                raise e
+            if self.main_config["disable_brake"] and human_action[1] < 0.0:
+                human_action[1] = 0.0
             takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
         else:
             human_action = [0, 0]

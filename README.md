@@ -203,14 +203,11 @@ Note: Do not connect Xbox controller with the steering wheel at the same time!
 cd ~/pvp
 
 # Run experiment without Wandb:
-python pvp/experiments/carla/train_pvp_carla.py \
---device wheel \
---exp_name pvp_carla_test
+python pvp/experiments/carla/train_pvp_carla.py --exp_name pvp_carla_test
 
 # Run full experiment
 python pvp/experiments/metadrive/train_pvp_metadrive.py \
---device wheel \
---exp_name pvp_metadrive_wheel \
+--exp_name pvp_carla \
 --wandb \
 --wandb_project WADNB_PROJECT_NAME \
 --wandb_team WANDB_ENTITY_NAME
