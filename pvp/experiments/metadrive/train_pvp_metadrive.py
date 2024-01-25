@@ -36,7 +36,7 @@ if __name__ == '__main__':
     control_device = args.device
     experiment_batch_name = args.exp_name
     seed = args.seed
-    trial_name = "{}_{}_{}".format(experiment_batch_name, control_device, get_time_str())
+    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 
     use_wandb = args.wandb
     project_name = args.wandb_project

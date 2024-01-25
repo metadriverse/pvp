@@ -51,7 +51,7 @@ pip install di-engine==0.2.0 markupsafe==2.0.1
 
 [Metadrive](https://github.com/metadriverse/metadrive) provides options for three control devices: steering wheel, gamepad and keyboard.
 
-During experiments human subject can always press `E` to pause the experiment and press `Esc` to exit the experiment. The main experiment will run for 40K steps and takes about one hour.
+During experiments human subject can always press `E` to pause the experiment and press `Esc` to exit the experiment. The main experiment will run for 40K steps and takes about one hour. For toy environment with `--toy_env`, it takes about 10 minutes.
 
 Click for the experiment details:
 
@@ -61,20 +61,28 @@ Click for the experiment details:
   <summary><b>MetaDrive - Keyboard</b></summary>
 
 ```bash
-# Go to repo root
+# Go to the repo root
 cd ~/pvp
 
-# A toy experiment, should be solved in TODO: Steps
-python pvp/experiments/metadrive/train_pvp_metadrive.py --device keyboard --toy_env
+# Run toy experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device keyboard \
+--toy_env \
+--exp_name pvp_metadrive_toy_keyboard
 
-# Run formal experiment
-
+# Run full experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device keyboard \
+--exp_name pvp_metadrive_keyboard \
+--wandb \
+--wandb_project WADNB_PROJECT_NAME \
+--wandb_team WANDB_ENTITY_NAME
 ```
+
 | Action             | Control       |
 |--------------------|---------------|
-| Throttle           | W             |
-| Break              | S             |
 | Steering           | A/D           |
+| Throttle           | W             |
 | Human intervention | Space or WASD |
 </details>
 
@@ -83,17 +91,34 @@ python pvp/experiments/metadrive/train_pvp_metadrive.py --device keyboard --toy_
 
 <details>
   <summary><b>MetaDrive - Steering Wheel (Logitech G29)</b></summary>
-  
+
+Note: Do not connect Xbox controller with the steering wheel at the same time!
+
 ```bash
-cd ~/pvp  # Go to the repo root.
-python pvp/training_script/metadrive/train_pvp_td3_metadrive.py --control joystick
+# Go to the repo root
+cd ~/pvp
+
+# Run toy experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device wheel \
+--toy_env \
+--exp_name pvp_metadrive_toy_wheel
+
+# Run full experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device wheel \
+--exp_name pvp_metadrive_wheel \
+--wandb \
+--wandb_project WADNB_PROJECT_NAME \
+--wandb_team WANDB_ENTITY_NAME
 ```
+
+
 | Action             | Control                 |
 |--------------------|-------------------------|
-| Throttle           | Throttle pedal          |
-| Break              | Break pedal             |
-| Human intervention | Left/Right gear shifter |
 | Steering           | Steering wheel          |
+| Throttle           | Throttle pedal          |
+| Human intervention | Left/Right gear shifter |
 </details>
 
 
@@ -101,83 +126,43 @@ python pvp/training_script/metadrive/train_pvp_td3_metadrive.py --control joysti
 <details>
   <summary><b>MetaDrive - Gamepad (Xbox Wireless Controller)</b></summary>
 
+Note: Do not connect Xbox controller with the steering wheel at the same time!
+
 ```bash
-python -m training_script.metadrive.train_pvp_td3_metadrive.py --control xboxController
+# Go to the repo root
+cd ~/pvp
+
+# Run toy experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device gamepad \
+--toy_env \
+--exp_name pvp_metadrive_toy_gamepad
+
+# Run full experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device gamepad \
+--exp_name pvp_metadrive_gamepad \
+--wandb \
+--wandb_project WADNB_PROJECT_NAME \
+--wandb_team WANDB_ENTITY_NAME
 ```
-| Action             | Control       |
-|--------------------|---------------|
-| Throttle           | Right trigger |
-| Break              | Left trigger  |
-| Human intervention | X/A           |
-| Steering           | Left stick    |
+| Action             | Control                    |
+|--------------------|----------------------------|
+| Steering           | Left-right of Left Stick   |
+| Throttle           | Up-down of Right Stick     |
+| Human intervention | X/A/B & Left/Right Trigger |
 </details>
 
 
-### Atari games
+### CARLA
 
-TODO
+Coming soon!
 
+### Minigrid
 
-#### Default
-Run default game Breakout-ram-v0: ram observation space
-```bash
-python -m training_script.atari.train_atari_pvp.py 
-```
-#### Enable wandb recording 
-Please change key file in stable_baseline3/common/wandb_callback.py
-```bash
-python -m training_script.atari.train_atari_pvp.py --wandb
-```
-#### Custom game selection 
-A full list of support games can be found using `gym.envs.registry.env_specs.keys()`. Meaning of suffix of each game (v0 vs v4) can be found [here](https://github.com/openai/gym/issues/1280#issuecomment-999696133)
-```bash
-python -m training_script.atari.train_atari_pvp.py --env-name $game_name
-```
-#### Custom seed
-```bash
-python -m training_script.atari.train_atari_pvp.py --seed $seed_num
-```
-#### Control
-| Action | Control                            |
-|--------|------------------------------------|
-| Move   | AWSD                               |
-| Fire   | I                                  |
+Coming soon!
 
 
-### CARLA Experiment
-#### CARLA Installment
-Install all necessary dependencies for CARLA from [CARLA official repository](https://github.com/carla-simulator/carla) to install it.
-To start training, launch CARLA client by
-```bash
-./CarlaUE4.sh -carla-rpc-port=9000
-```
-#### Script
-```bash
-python train_pvp_carla.py
-```
-#### Control (Logitech G29)
-| Action             | Control                 |
-|--------------------|-------------------------|
-| Throttle           | Throttle pedal          |
-| Break              | Break pedal             |
-| Human intervention | Left/Right gear shifter |
-| Steering           | Steering wheel          |
+## Reference
 
-### Minigrid Experimennt
-#### Minigrid Installment
-Please make sure the vestion of gym-minigrid==1.0.3
-#### Script
-```bash
-python -m training_script.minigrid.train_minigrid_pvp.py
-```
-#### Control (Keyboard)
-| Action             | Control           |
-|--------------------|-------------------|
-| Turn left          | Left button       |
-| Turn right         | Right button      |
-| Gown Straight      | Up button         |
-| Follow agent action| Space/down button |
-| Open door / Toggle | "t"               | 
-> [!NOTE]
-> We are finalizing the code release. Please check out later!
-
+WIP
