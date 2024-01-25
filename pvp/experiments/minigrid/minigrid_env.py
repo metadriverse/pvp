@@ -3,21 +3,34 @@ Borrowed part of the code from:
 https://github.com/Farama-Foundation/Minigrid/blob/master/minigrid/manual_control.py
 
 We change the renderer to print text indicating agent's actions.
+
+All environments, except the OldGymWrapper, act like a new gymnasium environment.
 """
-# import gym
+import logging
+import sys
+
+import gym as old_gym
 import gymnasium as gym
 import numpy as np
-# from gym import Wrapper
-
 import pygame
-
+from gymnasium.wrappers import FrameStack
 from minigrid.envs import EmptyEnv as NativeEmptyEnv
 from minigrid.envs import MultiRoomEnv as NativeMultiRoomEnv
+from minigrid.wrappers import ImgObsWrapper
+
+from pvp.sb3.common.monitor import Monitor
+
+# Someone change the logging config. So we have to revert them here.
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
+
+logger = logging.getLogger(__file__)
 
 ADDITIONAL_HEIGHT = 200
 RULE_WIDTH = 5
 SCREEN_SIZE = 2000
-DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X\n"
+DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X | Quit: Esc \n"
 
 
 def new_render(self):
@@ -98,6 +111,32 @@ def new_render(self):
         return img
 
 
+class OldGymWrapper(old_gym.Wrapper):
+    def step(self, *args, **kwargs):
+        o, r, tm, tc, i = super().step(*args, **kwargs)
+        return o, r, tm or tc, i
+
+    def reset(self, *args, **kwargs):
+        o, i = super().reset(*args, **kwargs)
+        return o
+
+
+class ConcatenateChannel(gym.ObservationWrapper):
+    """Convert the observation from shape (4, 7, 7, 3) to (12, 7, 7), in channel-first manner."""
+    def __init__(self, env):
+        super(ConcatenateChannel, self).__init__(env)
+        old_shape = self.observation_space.shape
+        self.observation_space = gym.spaces.Box(
+            low=0, high=255, dtype=np.uint8, shape=(old_shape[0] * old_shape[-1], *old_shape[1:-1])
+        )
+
+    def observation(self, obs):
+        assert len(obs.shape) == 4
+        obs = np.swapaxes(obs, 1, -1)
+        obs = np.reshape(obs, (-1, *obs.shape[2:]))
+        return obs
+
+
 class EmptyEnv(NativeEmptyEnv):
     additional_text = ""
 
@@ -128,7 +167,7 @@ class MiniGridEmpty6x6(EmptyEnv):
         )
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, size=6, render_mode="human", screen_size=SCREEN_SIZE, **kwargs)
+        super().__init__(*args, size=6, **kwargs)
 
 
 class MiniGridMultiRoomN2S4(MultiRoomEnv):
@@ -141,9 +180,7 @@ class MiniGridMultiRoomN2S4(MultiRoomEnv):
         )
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, minNumRooms=2, maxNumRooms=2, maxRoomSize=4, render_mode="human", screen_size=SCREEN_SIZE, **kwargs
-        )
+        super().__init__(*args, minNumRooms=2, maxNumRooms=2, maxRoomSize=4, **kwargs)
 
 
 class MiniGridMultiRoomN4S5(MultiRoomEnv):
@@ -156,9 +193,7 @@ class MiniGridMultiRoomN4S5(MultiRoomEnv):
         )
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args, minNumRooms=6, maxNumRooms=6, maxRoomSize=5, render_mode="human", screen_size=SCREEN_SIZE, **kwargs
-        )
+        super().__init__(*args, minNumRooms=6, maxNumRooms=6, maxRoomSize=5, **kwargs)
 
 
 class MinigridWrapper(gym.Wrapper):
@@ -191,7 +226,10 @@ class MinigridWrapper(gym.Wrapper):
                         else:
                             event.key = pygame.key.name(int(event.key))
                             self.discrete_key_detect(event)
-                        should_break = True
+                            if self.valid_key_press:
+                                should_break = True
+                            else:
+                                should_break = False
                         break
 
         # TODO: Check all here.
@@ -199,34 +237,31 @@ class MinigridWrapper(gym.Wrapper):
         cost = 0
         behavior_action = self.keyboard_action if should_takeover else a
         o, r, tm, tc, i = super(MinigridWrapper, self).step(behavior_action)
-        d = tm or tc
         takeover_start = should_takeover and not self.takeover
         i["cost"] = cost
         i["total_cost"] = self.total_cost
         i["takeover_cost"] = cost
         i["total_takeover_cost"] = self.total_cost
-        i["raw_action"] = [int(behavior_action)]
+        i["raw_action"] = int(behavior_action)
         i["takeover_start"] = True if takeover_start else False
         i["takeover"] = True if should_takeover and self.takeover else False
         i["is_success"] = i["success"] = True if r > 0.0 else False
         self.takeover = should_takeover
         self.valid_key_press = False  # refresh
         self.update_caption(None)  # Set caption to "waiting"
-        return o, r, d, i
+        return o, r, tm, tc, i
 
-    def reset(self):
+    def reset(self, *args, **kwargs):
         self.total_cost = 0
         self.takeover = False
         self.keyboard_action = None
-        # ret = super(MinigridWrapper, self).reset()
-        ret = self.env.reset()
+        ret = self.env.reset(*args, **kwargs)
         if self.use_render:
             pygame.display.set_caption("Reset!")
             self.env.render()
         return ret
 
     def discrete_key_detect(self, event):
-        print("Find key press event!", event.key)
         if event.key == "left":
             self.valid_key_press = True
             self.keyboard_action = self.env.actions.left
@@ -236,7 +271,7 @@ class MinigridWrapper(gym.Wrapper):
         elif event.key == "up":
             self.valid_key_press = True
             self.keyboard_action = self.env.actions.forward
-        elif event.key == " " or event.key == "down":  # Space/Down means allowing agent action!
+        elif event.key == "space" or event.key == "down":  # Space/Down means allowing agent action!
             self.valid_key_press = True
             self.keyboard_action = None
         elif event.key == "p":
@@ -257,6 +292,7 @@ class MinigridWrapper(gym.Wrapper):
             self.keyboard_action = self.env.actions.done
         else:
             self.valid_key_press = False
+            logger.warning("Find unknown key press event: {}! Please press again!".format(event.key))
 
     def update_caption(self, agent_action=None):
         if not self.use_render:
@@ -284,13 +320,32 @@ class MinigridWrapper(gym.Wrapper):
         self.env.close()
         pygame.quit()
 
+    def seed(self, seed):
+        """Forward compatibility to gymnasium"""
+        self.env.reset(seed=seed)
+
+
+def wrap_minigrid_env(env_class, enable_takeover):
+    if enable_takeover:
+        env = env_class(render_mode="human", screen_size=SCREEN_SIZE)
+    else:
+        env = env_class()
+    env = MinigridWrapper(env)
+    env = ImgObsWrapper(env)
+    env = FrameStack(env, num_stack=4)
+    env = ConcatenateChannel(env)
+    env = OldGymWrapper(env)
+    return env
+
 
 if __name__ == '__main__':
     # env = MinigridWrapper(MiniGridEmpty6x6())
-    env = MinigridWrapper(MiniGridMultiRoomN4S5())
+    env = wrap_minigrid_env(MiniGridMultiRoomN4S5, enable_takeover=True)
+    env = Monitor(env)
     env.reset()
+    print(env.observation_space)
     while True:
         o, r, d, i = env.step(env.action_space.sample())
         if d:
             o = env.reset()
-        print(o)
+        print(o.shape)

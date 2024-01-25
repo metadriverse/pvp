@@ -5,40 +5,35 @@ import argparse
 import os
 from pathlib import Path
 
-# import gym
-import gymnasium as gym
+# import gymnasium as gym
 import torch
-from minigrid.wrappers import ImgObsWrapper
 
-from pvp.experiments.minigrid.minigrid_env import MinigridWrapper
+from pvp.experiments.minigrid.minigrid_env import MiniGridMultiRoomN2S4, MiniGridMultiRoomN4S5, \
+    MiniGridEmpty6x6, wrap_minigrid_env
 from pvp.experiments.minigrid.minigrid_model import MinigridCNN
 from pvp.pvp_dqn import PVPDQN
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
-from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.dqn.policies import CnnPolicy
+from pvp.utils.shared_control_monitor import SharedControlMonitor
 from pvp.utils.utils import get_time_str
-import minigrid
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="pvp_minigrid", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    # parser.add_argument(
-    #     "--device",
-    #     required=True,
-    #     choices=['wheel', 'gamepad', 'keyboard'],
-    #     type=str,
-    #     help="The control device, selected from [wheel, gamepad, keyboard]."
-    # )
-
-    parser.add_argument("--env_name", default="MiniGrid-Empty-Random-6x6-v0", type=str, help="Name of Gym environment")
-    # Or use environment: --env-name MiniGrid-MultiRoom-N6-v0
-
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+
+    parser.add_argument(
+        "--env",
+        default="emptyroom",
+        type=str,
+        help="Nick name of the environment.",
+        choices=["emptyroom", "tworoom", "fourroom"]
+    )
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
@@ -49,7 +44,7 @@ if __name__ == '__main__':
     use_wandb = args.wandb
     project_name = args.wandb_project
     team_name = args.wandb_team
-    env_name = args.env_name
+    env_name = args.env
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
 
@@ -88,7 +83,7 @@ if __name__ == '__main__':
             learning_rate=1e-4,
 
             # === New hypers ===
-            learning_starts=50,  # PZH: Original DQN has 100K warmup steps
+            learning_starts=10,  # PZH: Original DQN has 100K warmup steps
             batch_size=256,  # or 32?
             train_freq=1,  # or 4?
             tau=0.005,
@@ -120,22 +115,25 @@ if __name__ == '__main__':
     )
 
     # ===== Setup the training environment =====
-    minigrid.register_minigrid_envs()
-    env = gym.make(env_name)
-    env = MinigridWrapper(env, enable_render=True, enable_human=True)
+    if env_name == "emptyroom":
+        env_class = MiniGridEmpty6x6
+    elif env_name == "tworoom":
+        env_class = MiniGridMultiRoomN2S4
+    elif env_name == "fourroom":
+        env_class = MiniGridMultiRoomN4S5
+    else:
+        raise ValueError("Unknown environment: {}".format(env_name))
+    env = wrap_minigrid_env(env_class, enable_takeover=True)
     env = Monitor(env=env, filename=str(trial_dir))
-    env = ImgObsWrapper(env)
-    train_env = VecFrameStack(DummyVecEnv([lambda: env]), n_stack=4)
+    train_env = SharedControlMonitor(env=env, folder=trial_dir / "data", prefix=trial_name, save_freq=10)
 
     # ===== Also build the eval env =====
     def _make_eval_env():
-        env = gym.make(env_name)
-        env = MinigridWrapper(env, enable_render=False, enable_human=False)
-        env = Monitor(env=env, filename=eval_log_dir)
-        env = ImgObsWrapper(env)
+        env = wrap_minigrid_env(env_class, enable_takeover=False)
+        env = Monitor(env=env, filename=str(trial_dir))
         return env
 
-    eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
+    eval_env = _make_eval_env()
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
