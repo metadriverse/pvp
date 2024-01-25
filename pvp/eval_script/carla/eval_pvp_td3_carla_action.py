@@ -11,7 +11,7 @@ import json
 import numpy as np
 from pvp.sb3.common.monitor import Monitor
 from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
-from pvp.utils.carla.pvp_carla_env import PVPEnv
+from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 
 
 # class DummyEnv(gym.Env):
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     seed = 0
     datapath = "/home/xxx/model/human_traj_1.json"
     obs_mode = "birdview"
-    train_env = PVPEnv(
+    train_env = HumanInTheLoopCARLAEnv(
         config=dict(
             obs_mode=obs_mode,
             force_fps=0,

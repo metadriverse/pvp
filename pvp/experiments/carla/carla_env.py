@@ -4,15 +4,17 @@ import time
 from collections import defaultdict
 from collections import deque
 
+import evdev
 import gym
 import numpy as np
+import pygame
 from easydict import EasyDict
+from evdev import ecodes, InputDevice
 
-from pvp.utils.print_dict_utils import merge_dicts
 from pvp.utils.carla.core.envs.simple_carla_env import SimpleCarlaEnv
 from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
 from pvp.utils.carla.demo.simple_rl.sac_train import compile_config
-from pvp.utils.human_interface import SteeringWheelController
+from pvp.utils.print_dict_utils import merge_dicts
 from pvp.utils.utils import ForceFPS, merge_dicts
 
 is_windows = "Win" in platform.system()
@@ -26,10 +28,9 @@ def safe_clip(array, min_val, max_val):
 train_config = dict(
     obs_mode="birdview",
     force_fps=0,
-    disable_vis=True,
-    debug_vis=False,
+    disable_vis=False,
     port=9000,
-    disable_takeover=False,
+    enable_takeover=True,
     show_text=True,
     normalize_obs=False,
     env=dict(
@@ -44,7 +45,7 @@ train_config = dict(
                 type='behavior',
                 resolution=1,
             ),
-            # obs = ..., We autofill this in PVPEnv
+            # obs = ..., We will autofill this in HumanInTheLoopCARLAEnv
         ),
         col_is_failure=True,
         stuck_is_failure=False,
@@ -69,19 +70,142 @@ train_config = dict(
 )
 
 
-class PVPEnv(ContinuousBenchmarkEnvWrapper):
+class SteeringWheelController:
+    RIGHT_SHIFT_PADDLE = 4
+    LEFT_SHIFT_PADDLE = 5
+    STEERING_MAKEUP = 1.5
+
+    def __init__(self, disable=False):
+        self.disable = disable
+        if not self.disable:
+            pygame.display.init()
+            pygame.joystick.init()
+            assert pygame.joystick.get_count() > 0, "Please connect the steering wheel!"
+            print("Successfully Connect your Steering Wheel!")
+
+            ffb_device = evdev.list_devices()[0]
+            self.ffb_dev = InputDevice(ffb_device)
+
+            self.joystick = pygame.joystick.Joystick(0)
+
+        self.right_shift_paddle = False
+        self.left_shift_paddle = False
+
+        self.button_circle = False
+        self.button_rectangle = False
+        self.button_triangle = False
+        self.button_x = False
+
+        self.button_up = False
+        self.button_down = False
+        self.button_right = False
+        self.button_left = False
+
+    def process_input(self, speed_kmh):
+        if self.disable:
+            return [0.0, 0.0]
+
+        if not self.joystick.get_init():
+            self.joystick.init()
+
+        pygame.event.pump()
+
+        if is_windows:
+            raise ValueError("We have not yet tested windows.")
+            steering = (-self.joystick.get_axis(0)) / 1.5
+            throttle = (1 - self.joystick.get_axis(1)) / 2
+            brake = (1 - self.joystick.get_axis(3)) / 2
+        else:
+            # print("Num axes: ", self.joystick.get_numaxes())
+
+            # Our wheel can provide values in [-1.5, 1.5].
+            steering = (-self.joystick.get_axis(0)) / 1.5  # 0th axis is the wheel
+
+            # 2nd axis is the right paddle. Range from 0 to 1
+            # 3rd axis is the middle paddle. Range from 0 to 1
+            # Of course then 1st axis is the left paddle.
+
+            # print("Raw throttle: {}, raw brake: {}".format(self.joystick.get_axis(2), self.joystick.get_axis(3)))
+            raw_throttle = self.joystick.get_axis(2)
+            raw_brake = self.joystick.get_axis(3)
+            # It is possible that the paddles always return 0 (should be 1 if not pressed) after initialization.
+            if abs(raw_throttle) < 1e-6:
+                raw_throttle = 1.0 - 1e-6
+            if abs(raw_brake) < 1e-6:
+                raw_brake = 1.0 - 1e-6
+            throttle = (1 - raw_throttle) / 2
+            brake = (1 - raw_brake) / 2
+
+        self.right_shift_paddle = True if self.joystick.get_button(self.RIGHT_SHIFT_PADDLE) else False
+        self.left_shift_paddle = True if self.joystick.get_button(self.LEFT_SHIFT_PADDLE) else False
+
+        # self.print_debug_message()
+
+        self.button_circle = True if self.joystick.get_button(2) else False
+        self.button_rectangle = True if self.joystick.get_button(1) else False
+        self.button_triangle = True if self.joystick.get_button(3) else False
+        self.button_x = True if self.joystick.get_button(0) else False
+
+        hat = self.joystick.get_hat(0)
+        self.button_up = True if hat[-1] == 1 else False
+        self.button_down = True if hat[-1] == -1 else False
+        self.button_left = True if hat[0] == -1 else False
+        self.button_right = True if hat[0] == 1 else False
+
+        self.feedback(speed_kmh)
+
+        return [-steering * self.STEERING_MAKEUP, (throttle - brake)]
+
+    def reset(self):
+        if self.disable:
+            self.right_shift_paddle = False
+            self.left_shift_paddle = False
+            return
+
+        self.right_shift_paddle = False
+        self.left_shift_paddle = False
+        self.button_circle = False
+        self.button_rectangle = False
+        self.button_triangle = False
+        self.button_x = False
+        self.button_up = False
+        self.button_down = False
+        self.button_right = False
+        self.button_left = False
+        self.joystick.quit()
+        pygame.event.clear()
+
+        val = int(65535)
+        self.ffb_dev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
+
+    def feedback(self, speed_kmh):
+        assert not self.disable
+        offset = 5000
+        total = 50000
+        val = int(total * min(speed_kmh / 80, 1) + offset)
+        self.ffb_dev.write(ecodes.EV_FF, ecodes.FF_AUTOCENTER, val)
+
+    def print_debug_message(self):
+        msg = "Left: {}, Right: {}, Event: ".format(
+            self.joystick.get_button(self.LEFT_SHIFT_PADDLE), self.joystick.get_button(self.RIGHT_SHIFT_PADDLE)
+        )
+        for e in pygame.event.get():
+            msg += str(e.type)
+        print(msg)
+
+
+class HumanInTheLoopCARLAEnv(ContinuousBenchmarkEnvWrapper):
     def __init__(
         self,
-        config=None,
+        external_config=None,
     ):
-        main_config = copy.deepcopy(train_config)
-        disable_vis = config.get("disable_vis", None)
+        config = copy.deepcopy(train_config)
+
+        # If disable visualization, we don't need to create the main camera (third person view)
+        disable_vis = external_config.get("disable_vis", None)
         if disable_vis is None:
-            disable_vis = main_config["disable_vis"]
-        debug_vis = config.get("debug_vis", None)
-        if debug_vis is None:
-            debug_vis = main_config["debug_vis"]
-        if disable_vis or debug_vis:
+            disable_vis = config["disable_vis"]
+        if disable_vis:
             sensors = []
         else:
             sensors = [
@@ -94,7 +218,8 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
                 )
             ]
 
-        if config["obs_mode"] == "birdview":
+        # Add camera to generate agent observation
+        if external_config["obs_mode"] == "birdview":
             sensors.append(
                 dict(
                     name="birdview",
@@ -104,70 +229,55 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
                     pixels_ahead_vehicle=16,
                 )
             )
-            if debug_vis:
-                main_config["env"]["visualize"]["type"] = "birdview"
-        elif config["obs_mode"] in ["first", "firststack"]:
+        elif external_config["obs_mode"] in ["first", "firststack"]:
             sensors.append(
                 dict(
                     name='rgb',
                     type='rgb',
                     size=[320, 180],
 
-                    # xxx note: Default is:
+                    # PZH Note: To recap, the default config contains:
                     # 'position':[2.0, 0.0, 1.4],
                     # 'rotation':[0, 0, 0],
                 )
             )
-            if config["obs_mode"] == "firststack":
+            if external_config["obs_mode"] == "firststack":
                 self._frame_stack = deque(maxlen=5)
-            if debug_vis:
-                main_config["env"]["visualize"]["type"] = "rgb"
-        elif config["obs_mode"] == "birdview42":
+        elif external_config["obs_mode"] == "birdview42":
             sensors.append(dict(name="birdview", type='bev', size=[42, 42], pixels_per_meter=6))
-            if debug_vis:
-                main_config["env"]["visualize"]["type"] = "birdview"
         else:
-            raise ValueError("Unknown obs mode: {}".format(config["obs_mode"]))
-        main_config["env"]["simulator"]["obs"] = tuple(sensors)
-        main_config["env"]["obs_mode"] = config["obs_mode"]
-        main_config = EasyDict(main_config)
-        if config is not None and config:
-            main_config = EasyDict(merge_dicts(main_config, config))
-        if main_config["show_text"] is False:
-            main_config["env"]["visualize"]["show_text"] = False
-        if main_config["disable_vis"]:
-            main_config["env"]["visualize"] = None
+            raise ValueError("Unknown obs mode: {}".format(external_config["obs_mode"]))
 
-        # self.eval = eval
-        # if eval:
-        #     train_config["env"]["wrapper"]["collect"]["suite"] = 'FullTown02-v1'
-        #     raise ValueError("Not sure what this is doing.")
-        cfg = compile_config(main_config)
+        # Tweak the config
+        config["env"]["simulator"]["obs"] = tuple(sensors)
+        config["env"]["obs_mode"] = external_config["obs_mode"]
+        config = EasyDict(config)
+        if external_config is not None and external_config:
+            config = EasyDict(merge_dicts(config, external_config))
+        if config["show_text"] is False:
+            config["env"]["visualize"]["show_text"] = False
+        if config["disable_vis"]:
+            config["env"]["visualize"] = None
+        self.monitor_index = config["env"].get("visualize", {}).get("monitor_index", 0)
+        compiled_config = compile_config(config)
+        port = compiled_config["port"]
+        self.main_config = compiled_config
+        super(HumanInTheLoopCARLAEnv, self).__init__(
+            SimpleCarlaEnv(compiled_config.env, "localhost", port, None), compiled_config.env.wrapper.collect
+        )
 
-        port = cfg["port"]
-        disable_takeover = cfg["disable_takeover"]
-
-        # TODO(xxx): This is really stupid. The config system need more consideration!
-        self.xxx_cfg = cfg
-        super(PVPEnv, self).__init__(SimpleCarlaEnv(cfg.env, "localhost", port, None), cfg.env.wrapper.collect)
-
-        # xxx: We should not escape this error.
-        # try:
-        if disable_takeover:
+        # Set up controller
+        if compiled_config["enable_takeover"]:
+            self.controller = SteeringWheelController(disable=False)
+        else:
             self.controller = None
-        else:
-            self.controller = SteeringWheelController(disable_takeover)
-        # except:
-        #     self.controller = None
 
+        # Set up some variables
         self.last_takeover = False
-
         self.episode_recorder = defaultdict(list)
-
-        # TODO(xxx): I hard coded here!
-        force_fps = self.xxx_cfg["force_fps"]
+        force_fps = self.main_config["force_fps"]
         self.force_fps = ForceFPS(fps=force_fps, start=(force_fps > 0))
-        self.normalize_obs = self.xxx_cfg["normalize_obs"]
+        self.normalize_obs = self.main_config["normalize_obs"]
 
     def step(self, action):
         if self.controller is not None:
@@ -176,47 +286,23 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
         else:
             human_action = [0, 0]
             takeover = False
-
-        # print("CURRENT TAKEOVER: ", takeover)
-
-        o, r, d, info = super(PVPEnv, self).step(human_action if takeover else action)
-
+        o, r, d, info = super(HumanInTheLoopCARLAEnv, self).step(human_action if takeover else action)
         self.episode_recorder["reward"].append(r)
-
-        # if not self.last_takeover and takeover:
-        #     cost = self.get_takeover_cost(human_action, action)
-        #     self.episode_recorder["cost"].append(cost)
-        #     info["takeover_cost"] = cost
-        # else:
-        #     self.episode_recorder["cost"].append(0)
-        #     info["takeover_cost"] = 0
-        #
-        # info["takeover"] = takeover
-        # info["takeover_start"] = takeover
-
         info["takeover_start"] = True if not self.last_takeover and takeover else False
         info["takeover"] = takeover and not info["takeover_start"]
         condition = info["takeover_start"]
-
         if not condition:
-            # self.total_takeover_cost += 0
             self.episode_recorder["cost"].append(0)
             info["takeover_cost"] = 0
         else:
             cost = self.get_takeover_cost(human_action, action)
             self.episode_recorder["cost"].append(cost)
-            # self.total_takeover_cost += cost
             info["takeover_cost"] = cost
-
-        # info["total_takeover_cost"] = self.total_takeover_cost
-
         info["total_cost"] = info["total_takeover_cost"] = sum(self.episode_recorder["cost"])
         info["raw_action"] = list(action) if not takeover else list(human_action)
         self.last_takeover = takeover
-
         info["velocity"] = self.env._simulator_databuffer['state']['speed']
         self.episode_recorder["velocity"].append(info["velocity"])
-
         info["steering"] = float(info["raw_action"][0])
         info["acceleration"] = float(info["raw_action"][1])
         info["step_reward"] = float(r)
@@ -230,17 +316,10 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
         info["episode_average_velocity"] = (
             sum(self.episode_recorder["velocity"]) / len(self.episode_recorder["velocity"])
         )
-        # if not self.eval:
-
-        if not self.xxx_cfg["disable_vis"]:
+        if not self.main_config["disable_vis"]:
             self.render()
-
         self.force_fps.sleep_if_needed()
-        # print({k: (v.shape, v.dtype) for k, v in o.items()})
-
         return o, float(r[0]), d, info
-
-        # return self.observation_space.sample(), 0.0, False, {}
 
     def native_cost(self, info):
         if info["off_route"] or info["off_road"] or info["collided"] or info["wrong_direction"]:
@@ -251,9 +330,6 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
     def get_takeover_cost(self, human_action, agent_action):
         takeover_action = safe_clip(np.array(human_action), -1, 1)
         agent_action = safe_clip(np.array(agent_action), -1, 1)
-        # cos_dist = (agent_action[0] * takeover_action[0] + agent_action[1] * takeover_action[1]) / 1e-6 +(
-        #         np.linalg.norm(takeover_action) * np.linalg.norm(agent_action))
-
         multiplier = (agent_action[0] * takeover_action[0] + agent_action[1] * takeover_action[1])
         divident = np.linalg.norm(takeover_action) * np.linalg.norm(agent_action)
         if divident < 1e-6:
@@ -265,19 +341,16 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
     def reset(self, *args, **kwargs):
         self.last_takeover = False
         self.episode_recorder.clear()
-
         if self.controller:
             self.controller.reset()
-        obs = super(PVPEnv, self).reset()
-
+        obs = super(HumanInTheLoopCARLAEnv, self).reset()
         self.force_fps.clear()
-
         return obs
 
     def postprocess_obs(self, raw_obs, in_reset=False):
         speed = float(raw_obs["speed_kmh"])  # in km/h
         normalized_speed = min(speed, self.env._max_speed_kmh) / self.env._max_speed_kmh
-        if self.xxx_cfg["obs_mode"] in ["birdview", "birdview42"]:
+        if self.main_config["obs_mode"] in ["birdview", "birdview42"]:
             obs = raw_obs["birdview"][..., [0, 1, 5, 6, 8]]
             if self.normalize_obs:
                 obs = obs.astype(np.float32) / 255
@@ -285,7 +358,7 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
                 "image": obs,
                 'speed': np.array([normalized_speed]),
             }
-        elif self.xxx_cfg["obs_mode"] == "first":
+        elif self.main_config["obs_mode"] == "first":
             obs = raw_obs["rgb"]
             if self.normalize_obs:
                 obs = obs.astype(np.float32) / 255
@@ -293,7 +366,7 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
                 'image': obs,
                 'speed': np.array([normalized_speed]),
             }
-        elif self.xxx_cfg["obs_mode"] == "firststack":
+        elif self.main_config["obs_mode"] == "firststack":
             obs = raw_obs['rgb']
             obs = np.mean(obs, axis=-1)
             if in_reset:
@@ -314,24 +387,24 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
 
     @property
     def observation_space(self):
-        if self.xxx_cfg["obs_mode"] == "birdview":
+        if self.main_config["obs_mode"] == "birdview":
             return gym.spaces.Dict(
                 {
                     "image": gym.spaces.Box(low=0, high=255, shape=(84, 84, 5), dtype=np.uint8),
                     "speed": gym.spaces.Box(0., 1.0, shape=(1, ))
                 }
             )
-        elif self.xxx_cfg["obs_mode"] == "first":
+        elif self.main_config["obs_mode"] == "first":
             return gym.spaces.Dict(
                 {
                     "image": gym.spaces.Box(low=0, high=255, shape=(180, 320, 3), dtype=np.uint8),
                     "speed": gym.spaces.Box(0., 1.0, shape=(1, ))
                 }
             )
-        elif self.xxx_cfg["obs_mode"] == "firststack":
+        elif self.main_config["obs_mode"] == "firststack":
             return gym.spaces.Box(low=0, high=255, shape=(180, 320, 5), dtype=np.uint8)
 
-        elif self.xxx_cfg["obs_mode"] == "birdview42":
+        elif self.main_config["obs_mode"] == "birdview42":
             return gym.spaces.Dict(
                 {
                     "image": gym.spaces.Box(low=0, high=255, shape=(42, 42, 5), dtype=np.uint8),
@@ -342,52 +415,24 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
             raise ValueError("Wrong obs_mode")
 
     def render(self):
-        return super(PVPEnv, self).render(takeover=self.last_takeover)
+        return super(HumanInTheLoopCARLAEnv, self).render(takeover=self.last_takeover, monitor_index=self.monitor_index)
 
 
 if __name__ == "__main__":
-    # from pvp.sb3.common.env_checker import check_env
-    # env = PVPEnv({"obs_mode": "birdview", "disable_vis": False})
-    # check_env(env)
-    # env.close()
-
-    env = PVPEnv(
-        {
-            "obs_mode": "firststack",
-            "force_fps": 0,
-            "disable_vis": False,
-            "debug_vis": True,
-            "disable_takeover": False,
-
-            # "env": {"visualize": {"location": "upper left"}}
-        }
-    )
+    env = HumanInTheLoopCARLAEnv({
+        "obs_mode": "firststack",
+        "force_fps": 10,
+        "enable_takeover": True,
+    })
     env.seed(0)
     o = env.reset()
-
     st = time.time()
     count = 0
     while True:
-        # if not env.observation_space.contains(o):
-        #     print(
-        #         "Wrong observation and space: ",
-        #         {k: (v.shape, v.dtype) for k, v in env.observation_space.spaces.items()},
-        #         {k: (v.shape, v.dtype) for k, v in o.items()}
-        #     )
         o, r, d, i = env.step([0., 1.0])
         count += 1
-
-        # if count == 100:
-        #     import pickle
-        #
-        #     with open("first_obs_sample.pkl", "wb") as f:
-        #         pickle.dump(o, f)
-        #     break
-
         ct = time.time()
         fps = 1 / (ct - st)
         st = ct
-        # print("RL steps per second: ", fps)
-
         if d:
             env.reset()

@@ -193,7 +193,7 @@ class Visualizer(object):
             self._video_maker = VideoMaker()
             self._video_maker.init(self._save_dir, self._name)
 
-    def paint(self, image: Any, data_dict: Optional[Dict] = None) -> None:
+    def paint(self, image: Any, data_dict: Optional[Dict] = None, monitor_index=0) -> None:
         """
         Paint canvas with observation images and data.
 
@@ -211,7 +211,13 @@ class Visualizer(object):
             self._canvas = resize_birdview(self._canvas, rate)
 
         if not self._already_show_window:
-            move_window(self._name, self._cfg["location"], image_x=self._canvas.shape[1], image_y=self._canvas.shape[0])
+            move_window(
+                self._name,
+                self._cfg["location"],
+                image_x=self._canvas.shape[1],
+                image_y=self._canvas.shape[0],
+                monitor_index=monitor_index
+            )
             self._already_show_window = True
 
         if not self._text:
@@ -270,11 +276,12 @@ def resize_birdview(img, rate):
     return img_res
 
 
-def move_window(name, location, image_x, image_y, monitor_index=1):
+def move_window(name, location, image_x, image_y, monitor_index=0):
     """monitor_index starts by 0."""
     from screeninfo import get_monitors
     monitors = get_monitors()
-    assert monitor_index < len(monitors)
+    if monitor_index >= len(monitors):
+        raise ValueError("Monitor index {} out of the scope. Your monitors: {}".format(monitor_index, monitors))
     current_monitor = list(get_monitors())[monitor_index]
     cv2.namedWindow(name)
     if location == "upper left":

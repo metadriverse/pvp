@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from pvp.utils.carla.pvp_carla_env import PVPEnv
+from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 from ray.rllib.policy.sample_batch import SampleBatch
 
 
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         }}
     )
 
-    env = PVPEnv(config=env_config)  # for carla
+    env = HumanInTheLoopCARLAEnv(config=env_config)  # for carla
     success = 0
     episode_reward = []
     episode_cost = []

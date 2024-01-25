@@ -57,13 +57,13 @@ export PYTHONPATH="${CARLA_ROOT}/PythonAPI/carla/":"${CARLA_ROOT}/PythonAPI/carl
 conda activate pvp  # If you are using conda environment "pvp"
 python -c "import carla"  # If no error raises, the installation is successful.
 
-# Step 4: Install DI-engine
+# Step 4: Install dependencies
 pip install DI-engine==0.2.2
+pip install torchvision
+pip install markupsafe==2.0.1
 
 # NOTE: If you are using a new conda environment, you might need to reinstall 'pvp' repo.
-
-# Step 5: Verify if CARLA is working with 'pvp' repo.
-# TODO: Add something here.
+# Now let's jump to the CARLA section to run experiment!
 ```
 </details>
 
@@ -179,25 +179,59 @@ python pvp/experiments/metadrive/train_pvp_metadrive.py \
 
 ### CARLA
 
-#### CARLA Installment
+We use CARLA 0.9.10.1 as the backend and use the environment created by [DI-Drive](https://github.com/opendilab/DI-drive) as the gym interface. CARLA uses a server-client architecture. To run experiment, launch the server first:
 
-TODO: What is this?
-To start training, launch CARLA client by
 ```bash
-./CarlaUE4.sh -carla-rpc-port=9000
+# Launch an independent terminal, then:
+cd ~/CARLA_0.9.10.1  # Go to your CARLA root
+./CarlaUE4.sh -carla-rpc-port=9000  -quality-level=Epic  # Can set to Low to accelerate
+# Now you should see a pop-up window and you can use WASD to control the camera.
 ```
 
-#### Script
+Click for the experiment details:
+
+<details>
+  <summary><b>CARLA - Steering Wheel (Logitech G29)</b></summary>
+
+Note: Do not connect Xbox controller with the steering wheel at the same time!
+
 ```bash
-python train_pvp_carla.py
+# Launch the CARLA server if you haven't done yet
+~/CARLA_0.9.10.1/CarlaUE4.sh -carla-rpc-port=9000  -quality-level=Epic  # Can set to Low to accelerate
+
+# Go to the repo root
+cd ~/pvp
+
+# Run experiment without Wandb:
+python pvp/experiments/carla/train_pvp_carla.py \
+--device wheel \
+--exp_name pvp_carla_test
+
+# Run full experiment
+python pvp/experiments/metadrive/train_pvp_metadrive.py \
+--device wheel \
+--exp_name pvp_metadrive_wheel \
+--wandb \
+--wandb_project WADNB_PROJECT_NAME \
+--wandb_team WANDB_ENTITY_NAME
 ```
-#### Control (Logitech G29)
+
 | Action             | Control                 |
 |--------------------|-------------------------|
 | Throttle           | Throttle pedal          |
-| Break              | Break pedal             |
 | Human intervention | Left/Right gear shifter |
 | Steering           | Steering wheel          |
+</details>
+
+
+
+
+
+
+
+
+
+
 
 ### Minigrid
 

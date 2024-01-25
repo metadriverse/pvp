@@ -452,7 +452,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
 
         return float(total_reward), reward_info
 
-    def render(self, mode='rgb_array', takeover=None) -> None:
+    def render(self, mode='rgb_array', takeover=None, monitor_index=0) -> None:
         """
         Render a runtime visualization on screen, save a gif or video according to visualizer config.
         The main canvas is from a specific sensor data. It only works when 'visualize' is set in config dict.
@@ -488,7 +488,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         render_info.update(self._simulator_databuffer['information'])
         render_info.update(self._simulator_databuffer['action'])
 
-        self._visualizer.paint(self._render_buffer, render_info)
+        self._visualizer.paint(self._render_buffer, render_info, monitor_index)
         self._visualizer.run_visualize()
         return self._visualizer.canvas
 
