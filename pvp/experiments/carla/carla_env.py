@@ -1,6 +1,7 @@
 import copy
 import logging
 import platform
+import sys
 import time
 from collections import defaultdict
 from collections import deque
@@ -17,6 +18,13 @@ from pvp.experiments.carla.di_drive.demo.simple_rl.env_wrapper import Continuous
 from pvp.experiments.carla.di_drive.demo.simple_rl.sac_train import compile_config
 from pvp.utils.print_dict_utils import merge_dicts
 from pvp.utils.utils import ForceFPS, merge_dicts
+
+# Someone change the logging config. So we have to revert them here.
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler(sys.stdout))
+
+logger = logging.getLogger(__file__)
 
 is_windows = "Win" in platform.system()
 
@@ -149,7 +157,7 @@ class SteeringWheelController:
         self.button_x = True if self.joystick.get_button(0) else False
 
         if self.button_x:
-            logging.warning("X is pressed. Exit ...")
+            logger.warning("X is pressed. Exit ...")
             raise KeyboardInterrupt()
 
         self.maybe_pause()
