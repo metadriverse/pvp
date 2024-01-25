@@ -11,13 +11,13 @@ import carla
 import numpy as np
 import pkg_resources
 from carla import WeatherParameters
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints_new
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import find_traffic_manager_port
-from pvp_iclr_release.utils.carla.core.utils.planner import BasicPlanner, BehaviorPlanner, LBCPlannerNew
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import control_to_signal, get_birdview
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.map_utils import BeVWrapper
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.sensor_utils import SensorHelper, CollisionSensor, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints_new
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.others.tcp_helper import find_traffic_manager_port
+from pvp.utils.carla.core.utils.planner import BasicPlanner, BehaviorPlanner, LBCPlannerNew
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import control_to_signal, get_birdview
+from pvp.utils.carla.core.utils.simulator_utils.map_utils import BeVWrapper
+from pvp.utils.carla.core.utils.simulator_utils.sensor_utils import SensorHelper, CollisionSensor, \
     TrafficLightHelper
 from .base_simulator import BaseSimulator
 
@@ -116,14 +116,14 @@ class CarlaSimulator(BaseSimulator):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            client: Optional[carla.Client] = None,
-            host: str = 'localhost',
-            port: int = 9000,
-            tm_port: Optional[int] = None,
-            timeout: float = 60.0,  # xxx: We set the timeout here to 60s.
-            **kwargs
+        self,
+        cfg: Dict,
+        client: Optional[carla.Client] = None,
+        host: str = 'localhost',
+        port: int = 9000,
+        tm_port: Optional[int] = None,
+        timeout: float = 60.0,  # xxx: We set the timeout here to 60s.
+        **kwargs
     ) -> None:
         """
         Init Carla simulator.
@@ -295,9 +295,7 @@ class CarlaSimulator(BaseSimulator):
 
             if weather_string == 'random':
                 if "weathers" in config:
-                    weather = np.random.choice([
-                        PRESET_WEATHERS[ind] for ind in config['weathers']
-                    ])
+                    weather = np.random.choice([PRESET_WEATHERS[ind] for ind in config['weathers']])
                 else:
                     weather = np.random.choice(list(PRESET_WEATHERS.values()))
             else:
@@ -582,9 +580,7 @@ class CarlaSimulator(BaseSimulator):
                 'speed': speed,
                 'location': np.array([location.x, location.y, location.z]),
                 'forward_vector': np.array([forward_vector.x, forward_vector.y]),
-                'acceleration': np.array(
-                    [acceleration.x, acceleration.y, acceleration.z]
-                ),
+                'acceleration': np.array([acceleration.x, acceleration.y, acceleration.z]),
                 'velocity': np.array([velocity.x, velocity.y, velocity.z]),
                 'angular_velocity': np.array([angular_velocity.x, angular_velocity.y, angular_velocity.z]),
                 'rotation': np.array([transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]),

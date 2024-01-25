@@ -17,15 +17,14 @@ class SteerNoiseWrapper(object):
 
     :Instance: forward
     """
-
     def __init__(
-            self,
-            model: Any,
-            noise_type: str = 'uniform',
-            noise_args: dict = {},
-            noise_len: int = 5,
-            drive_len: int = 100,
-            noise_range: Optional[dict] = None,
+        self,
+        model: Any,
+        noise_type: str = 'uniform',
+        noise_args: dict = {},
+        noise_len: int = 5,
+        drive_len: int = 100,
+        noise_range: Optional[dict] = None,
     ) -> None:
         self._model = model
         self._noise_func = get_noise_generator(noise_type, noise_args)

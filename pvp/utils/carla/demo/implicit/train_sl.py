@@ -39,7 +39,6 @@ class Loss(torch.nn.Module):
     '''
     Loss function for implicit affordances
     '''
-
     def __init__(self, weights=[1.0, 1.0, 10.0, 1.0, 1.0]):
         super(Loss, self).__init__()
         self.ce_loss = nn.CrossEntropyLoss()
@@ -67,7 +66,6 @@ class lossMetric():
     '''
      Get the moving average of different kinds losses
     '''
-
     def __init__(self, keys):
         self.keys = keys
         self.metric = {}

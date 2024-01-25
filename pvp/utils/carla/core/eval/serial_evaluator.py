@@ -45,13 +45,13 @@ class SerialEvaluator(BaseEvaluator):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            env: BaseEnvManager,
-            policy: Any,
-            tb_logger: Optional['SummaryWriter'] = None,  # noqa
-            exp_name: Optional[str] = 'default_experiment',
-            instance_name: Optional[str] = 'serial_evaluator',
+        self,
+        cfg: Dict,
+        env: BaseEnvManager,
+        policy: Any,
+        tb_logger: Optional['SummaryWriter'] = None,  # noqa
+        exp_name: Optional[str] = 'default_experiment',
+        instance_name: Optional[str] = 'serial_evaluator',
     ) -> None:
         super().__init__(cfg, env, policy, tb_logger=tb_logger, exp_name=exp_name, instance_name=instance_name)
         self._transform_obs = self._cfg.transform_obs
@@ -109,12 +109,12 @@ class SerialEvaluator(BaseEvaluator):
         return True
 
     def eval(
-            self,
-            save_ckpt_fn: Callable = None,
-            train_iter: int = -1,
-            envstep: int = -1,
-            policy_kwargs: Optional[Dict] = None,
-            n_episode: Optional[int] = None
+        self,
+        save_ckpt_fn: Callable = None,
+        train_iter: int = -1,
+        envstep: int = -1,
+        policy_kwargs: Optional[Dict] = None,
+        n_episode: Optional[int] = None
     ) -> Tuple[bool, float]:
         """
         Run evaluation with provided policy arguments. It will evaluate all available episodes of the benchmark suite

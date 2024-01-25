@@ -32,14 +32,13 @@ class VehiclePIDController():
 
     :Interfaces: forward
     """
-
     def __init__(
-            self,
-            args_lateral: Dict,
-            args_longitudinal: Dict,
-            max_throttle: float = 0.75,
-            max_brake: float = 0.3,
-            max_steering: float = 0.8
+        self,
+        args_lateral: Dict,
+        args_longitudinal: Dict,
+        max_throttle: float = 0.75,
+        max_brake: float = 0.3,
+        max_steering: float = 0.8
     ):
         """
         Constructor method.
@@ -53,7 +52,7 @@ class VehiclePIDController():
         self._lat_controller = PIDLateralController(**args_lateral)
 
     def forward(
-            self, current_speed: float, current_loc: List, current_ori: List, target_speed: float, target_loc: List
+        self, current_speed: float, current_loc: List, current_ori: List, target_speed: float, target_loc: List
     ) -> Dict:
         """
         Execute one step of control invoking both lateral and longitudinal PID controllers to reach a target waypoint
@@ -102,7 +101,6 @@ class PIDLongitudinalController():
     """
     PIDLongitudinalController implements longitudinal control using a PID.
     """
-
     def __init__(self, K_P=1.0, K_D=0.0, K_I=0.0, dt=0.03):
         """
         Constructor method.
@@ -154,7 +152,6 @@ class PIDLateralController():
     """
     PIDLateralController implements lateral control using a PID.
     """
-
     def __init__(self, K_P=1.0, K_D=0.0, K_I=0.0, dt=0.03):
         """
         Constructor method.
@@ -192,7 +189,6 @@ class PIDLateralController():
 
 
 class RWPFLateralController():
-
     def __init__(self, L=2.405, k_k=1.235, k_theta=0.456, k_e=0.11, alpha=1.8):
         self.L = L
         self.k_k = k_k
@@ -219,7 +215,7 @@ class RWPFLateralController():
 
         w1 = self.k_k * target_state['v'] * target_state['k'] * np.cos(theta_e)
         w2 = -self.k_theta * np.abs(current_state['v']) * theta_e
-        w3 = (self.k_e * target_state['v'] * np.exp(-theta_e ** 2 / self.alpha)) * e
+        w3 = (self.k_e * target_state['v'] * np.exp(-theta_e**2 / self.alpha)) * e
         w = (w1 + w2 + w3) * 0.8
         if current_state['v'] < 0.02:
             steer = 0
@@ -231,14 +227,13 @@ class RWPFLateralController():
 
 
 class VehicleCapacController():
-
     def __init__(
-            self,
-            args_lateral: Dict,
-            args_longitudinal: Dict,
-            max_throttle: float = 0.8,
-            max_brake: float = 0.5,
-            max_steering: float = 0.8
+        self,
+        args_lateral: Dict,
+        args_longitudinal: Dict,
+        max_throttle: float = 0.8,
+        max_brake: float = 0.5,
+        max_steering: float = 0.8
     ):
         """
         Constructor method.

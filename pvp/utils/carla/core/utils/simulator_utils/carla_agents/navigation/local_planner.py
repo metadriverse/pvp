@@ -9,9 +9,9 @@ from collections import deque
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.controller import VehiclePIDController
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.controller import VehiclePIDController
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
 
 
 class LocalPlanner(object):

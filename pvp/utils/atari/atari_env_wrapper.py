@@ -41,18 +41,19 @@ class HumanInTheLoopAtariWrapper(Wrapper):
             "cost", "total_cost", "takeover_cost", "total_takeover_cost", "raw_action", "takeover", "takeover_start"
         )
         self.displaytext = "Agent behavior"
-        self.actionmapping = {0: "No Op", 1: "Right", 2: "Left",3:"?"}
+        self.actionmapping = {0: "No Op", 1: "Right", 2: "Left", 3: "?"}
         # pygame.init()
         # self.display_surface = pygame.display.set_mode((200, 200))
         # pygame.display.set_caption('User Input')
         # self.font = pygame.font.Font('freesansbold.ttf', 32)
+
     # def rendertext(self, text):
     #     text = self.font.render(text, True, (0, 0, 128), (255,255,255))
     #     textRect = text.get_rect()
     #     textRect.center = (100,100)
     #     self.display_surface.fill((255,255,255))
     #     self.display_surface.blit(text, textRect)
-        # pygame.display.flip()
+    # pygame.display.flip()
     def step(self, a):
         # discrete: 1 static, 2 right, 3 left
         while self.pause:
@@ -136,15 +137,16 @@ class HumanInTheLoopAtariWrapper(Wrapper):
             self.pause = not self.pause
         else:
             self.keypress = False
-    def puttext(self,image, text):
+
+    def puttext(self, image, text):
         import cv2
         font = cv2.FONT_HERSHEY_SIMPLEX
         org = (50, 410)
         fontScale = 1
         color = (0, 0, 255)
         thickness = 2
-        return cv2.putText(image, text, org, font,
-                            fontScale, color, thickness, cv2.LINE_AA)
+        return cv2.putText(image, text, org, font, fontScale, color, thickness, cv2.LINE_AA)
+
     def render(self, mode="human", **kwargs):
         if mode == "human":  # Hack to increase window size
             from gym.envs.classic_control import rendering
@@ -155,7 +157,7 @@ class HumanInTheLoopAtariWrapper(Wrapper):
             scale = 2
             resized = cv2.resize(img, (img.shape[1] * scale, img.shape[0] * scale), interpolation=cv2.INTER_LINEAR)
             # cv2.imshow("test1",resized)
-            resized = self.puttext(resized,self.displaytext)
+            resized = self.puttext(resized, self.displaytext)
             # cv2.imshow("test0", resized)
             # cv2.waitKey(500)
             # cv2.imshow("test",resized)

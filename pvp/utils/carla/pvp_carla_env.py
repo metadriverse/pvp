@@ -8,12 +8,12 @@ import gym
 import numpy as np
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.print_dict_utils import merge_dicts
-from pvp_iclr_release.utils.carla.core.envs.simple_carla_env import SimpleCarlaEnv
-from pvp_iclr_release.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
-from pvp_iclr_release.utils.carla.demo.simple_rl.sac_train import compile_config
-from pvp_iclr_release.utils.human_interface import SteeringWheelController
-from pvp_iclr_release.utils.older_utils import ForceFPS, merge_dicts
+from pvp.utils.print_dict_utils import merge_dicts
+from pvp.utils.carla.core.envs.simple_carla_env import SimpleCarlaEnv
+from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
+from pvp.utils.carla.demo.simple_rl.sac_train import compile_config
+from pvp.utils.human_interface import SteeringWheelController
+from pvp.utils.utils import ForceFPS, merge_dicts
 
 is_windows = "Win" in platform.system()
 
@@ -24,7 +24,6 @@ def safe_clip(array, min_val, max_val):
 
 
 train_config = dict(
-
     obs_mode="birdview",
     force_fps=0,
     disable_vis=True,
@@ -33,7 +32,6 @@ train_config = dict(
     disable_takeover=False,
     show_text=True,
     normalize_obs=False,
-
     env=dict(
         collector_env_num=1,
         evaluator_env_num=0,
@@ -54,35 +52,28 @@ train_config = dict(
         off_route_is_failure=True,
         off_road_is_failure=True,
         ignore_light=True,
-
         off_route_distance=10.0,
-
-        visualize=dict(
-            type="vis",
-            outputs=['show'],
-            location="center"
-        ),
+        visualize=dict(type="vis", outputs=['show'], location="center"),
         # visualize=None,
-        manager=dict(
-            collect=dict(
-                auto_reset=True,
-                shared_memory=False,
-                context='spawn',
-                max_retry=1,
-            ),
-            eval=dict()
-        ),
+        manager=dict(collect=dict(
+            auto_reset=True,
+            shared_memory=False,
+            context='spawn',
+            max_retry=1,
+        ), eval=dict()),
         wrapper=dict(
             # Collect and eval suites for training
             collect=dict(suite='NoCrashTown01-v1'),
-
         ),
     ),
 )
 
 
 class PVPEnv(ContinuousBenchmarkEnvWrapper):
-    def __init__(self, config=None, ):
+    def __init__(
+        self,
+        config=None,
+    ):
         main_config = copy.deepcopy(train_config)
         disable_vis = config.get("disable_vis", None)
         if disable_vis is None:
@@ -93,13 +84,15 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
         if disable_vis or debug_vis:
             sensors = []
         else:
-            sensors = [dict(
-                name='vis',
-                type='rgb',
-                size=[2100, 1400],
-                position=[-5.5, 0, 2.8],
-                rotation=[-15, 0, 0],
-            )]
+            sensors = [
+                dict(
+                    name='vis',
+                    type='rgb',
+                    size=[2100, 1400],
+                    position=[-5.5, 0, 2.8],
+                    rotation=[-15, 0, 0],
+                )
+            ]
 
         if config["obs_mode"] == "birdview":
             sensors.append(
@@ -130,14 +123,7 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
             if debug_vis:
                 main_config["env"]["visualize"]["type"] = "rgb"
         elif config["obs_mode"] == "birdview42":
-            sensors.append(
-                dict(
-                    name="birdview",
-                    type='bev',
-                    size=[42, 42],
-                    pixels_per_meter=6
-                )
-            )
+            sensors.append(dict(name="birdview", type='bev', size=[42, 42], pixels_per_meter=6))
             if debug_vis:
                 main_config["env"]["visualize"]["type"] = "birdview"
         else:
@@ -242,7 +228,7 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
         info["episode_length"] = info["tick"]
         info["episode_reward"] = float(sum(self.episode_recorder["reward"]))
         info["episode_average_velocity"] = (
-                sum(self.episode_recorder["velocity"]) / len(self.episode_recorder["velocity"])
+            sum(self.episode_recorder["velocity"]) / len(self.episode_recorder["velocity"])
         )
         # if not self.eval:
 
@@ -324,28 +310,34 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
 
     @property
     def action_space(self):
-        return gym.spaces.Box(-1.0, 1.0, shape=(2,))
+        return gym.spaces.Box(-1.0, 1.0, shape=(2, ))
 
     @property
     def observation_space(self):
         if self.xxx_cfg["obs_mode"] == "birdview":
-            return gym.spaces.Dict({
-                "image": gym.spaces.Box(low=0, high=255, shape=(84, 84, 5), dtype=np.uint8),
-                "speed": gym.spaces.Box(0., 1.0, shape=(1,))
-            })
+            return gym.spaces.Dict(
+                {
+                    "image": gym.spaces.Box(low=0, high=255, shape=(84, 84, 5), dtype=np.uint8),
+                    "speed": gym.spaces.Box(0., 1.0, shape=(1, ))
+                }
+            )
         elif self.xxx_cfg["obs_mode"] == "first":
-            return gym.spaces.Dict({
-                "image": gym.spaces.Box(low=0, high=255, shape=(180, 320, 3), dtype=np.uint8),
-                "speed": gym.spaces.Box(0., 1.0, shape=(1,))
-            })
+            return gym.spaces.Dict(
+                {
+                    "image": gym.spaces.Box(low=0, high=255, shape=(180, 320, 3), dtype=np.uint8),
+                    "speed": gym.spaces.Box(0., 1.0, shape=(1, ))
+                }
+            )
         elif self.xxx_cfg["obs_mode"] == "firststack":
             return gym.spaces.Box(low=0, high=255, shape=(180, 320, 5), dtype=np.uint8)
 
         elif self.xxx_cfg["obs_mode"] == "birdview42":
-            return gym.spaces.Dict({
-                "image": gym.spaces.Box(low=0, high=255, shape=(42, 42, 5), dtype=np.uint8),
-                "speed": gym.spaces.Box(0., 1.0, shape=(1,))
-            })
+            return gym.spaces.Dict(
+                {
+                    "image": gym.spaces.Box(low=0, high=255, shape=(42, 42, 5), dtype=np.uint8),
+                    "speed": gym.spaces.Box(0., 1.0, shape=(1, ))
+                }
+            )
         else:
             raise ValueError("Wrong obs_mode")
 
@@ -354,20 +346,22 @@ class PVPEnv(ContinuousBenchmarkEnvWrapper):
 
 
 if __name__ == "__main__":
-    # from pvp_iclr_release.stable_baseline3.common.env_checker import check_env
+    # from pvp.sb3.common.env_checker import check_env
     # env = PVPEnv({"obs_mode": "birdview", "disable_vis": False})
     # check_env(env)
     # env.close()
 
-    env = PVPEnv({
-        "obs_mode": "firststack",
-        "force_fps": 0,
-        "disable_vis": False,
-        "debug_vis": True,
-        "disable_takeover": False,
+    env = PVPEnv(
+        {
+            "obs_mode": "firststack",
+            "force_fps": 0,
+            "disable_vis": False,
+            "debug_vis": True,
+            "disable_takeover": False,
 
-        # "env": {"visualize": {"location": "upper left"}}
-    })
+            # "env": {"visualize": {"location": "upper left"}}
+        }
+    )
     env.seed(0)
     o = env.reset()
 

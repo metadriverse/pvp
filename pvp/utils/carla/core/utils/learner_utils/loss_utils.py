@@ -5,7 +5,6 @@ import torch
 
 
 class LocationLoss(torch.nn.Module):
-
     def __init__(self, w=192, h=192, choice='l2'):
         super(LocationLoss, self).__init__()
 
@@ -59,7 +58,7 @@ def weight_decay_l2(loss, model, intention_factors, alpha, gating):
     wdecay = 0
     for w in model.parameters():
         if w.requires_grad:
-            wdecay = torch.add(torch.sum(w ** 2), wdecay)
+            wdecay = torch.add(torch.sum(w**2), wdecay)
 
     if intention_factors is not None:
 
@@ -145,12 +144,11 @@ def l2_loss(params):
     # TODO This is hardcoded but all our cases rigth now uses four branches
     for i in range(len(params['branches']) - 1):
         loss_branches_vec.append(
-            ((params['branches'][i] - params['targets']) ** 2 * params['controls_mask'][i]) *
-            params['branch_weights'][i]
+            ((params['branches'][i] - params['targets'])**2 * params['controls_mask'][i]) * params['branch_weights'][i]
         )
     """ The last branch is a speed branch"""
     # TODO: Activate or deactivate speed branch loss
-    loss_branches_vec.append((params['branches'][-1] - params['inputs']) ** 2 * params['branch_weights'][-1])
+    loss_branches_vec.append((params['branches'][-1] - params['inputs'])**2 * params['branch_weights'][-1])
     return loss_branches_vec, {}
 
 
@@ -233,7 +231,7 @@ def branched_loss(loss_function, params):
     speed_loss = loss_branches_vec[-1] / (params['branches'][0].shape[0])
 
     return torch.sum(loss_function) / (params['branches'][0].shape[0]
-    ) + torch.sum(speed_loss) / (params['branches'][0].shape[0]), plotable_params
+                                       ) + torch.sum(speed_loss) / (params['branches'][0].shape[0]), plotable_params
 
 
 def Loss(loss_name):

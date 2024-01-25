@@ -30,7 +30,6 @@ class Watchdog(object):
         _timeout (float): Timeout value of the watchdog [seconds].
         _failed (bool):   True if watchdog exception occured, false otherwise
     """
-
     def __init__(self, timeout=1.0):
         """
         Class constructor

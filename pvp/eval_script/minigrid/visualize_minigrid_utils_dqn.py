@@ -7,13 +7,13 @@ import numpy as np
 import pandas as pd
 import torch
 from gym_minigrid.wrappers import ImgObsWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-from pvp_iclr_release.utils.print_dict_utils import pretty_print
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.training_script.atari.train_atari_dqn import DQN
-from pvp_iclr_release.training_script.minigrid.minigrid_env import MinigridWrapper
-from pvp_iclr_release.training_script.minigrid.minigrid_model import MinigridCNN
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.sb3.dqn.policies import CnnPolicy
+from pvp.utils.print_dict_utils import pretty_print
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.training_script.atari.train_atari_dqn import DQN
+from pvp.training_script.minigrid.minigrid_env import MinigridWrapper
+from pvp.training_script.minigrid.minigrid_model import MinigridCNN
 
 EVAL_ENV_START = 0
 
@@ -25,9 +25,10 @@ class AtariPolicyFunction:
             policy_kwargs=dict(
                 features_extractor_class=MinigridCNN,
                 activation_fn=torch.nn.Tanh,
-                net_arch=[64, ]  # Remove FC in Q network
+                net_arch=[
+                    64,
+                ]  # Remove FC in Q network
             ),
-
             env=env,
             optimize_memory_usage=True,
 
@@ -35,7 +36,6 @@ class AtariPolicyFunction:
             # MiniGrid specified parameters
             buffer_size=10_000,
             learning_rate=1e-4,
-
             exploration_fraction=0.30,  # Reach minimal exploration rate at 30% Total Steps
             exploration_final_eps=0.05,
 
@@ -45,7 +45,6 @@ class AtariPolicyFunction:
             train_freq=1,
             tau=0.005,
             target_update_interval=1,
-
             gradient_steps=32,
 
             # tensorboard_log=log_dir,
@@ -59,29 +58,28 @@ class AtariPolicyFunction:
 
     def __call__(self, o, deterministic=False):
         assert deterministic
-        action, state =  self.algo.predict(o, deterministic=deterministic)
+        action, state = self.algo.predict(o, deterministic=deterministic)
         return action
 
 
 def evaluate_atari_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        env_name="BreakoutNoFrameskip-v4",
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    env_name="BreakoutNoFrameskip-v4",
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-
-
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.sb3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
 
     eval_log_dir = osp.join(ckpt_path, "evaluations")
+
     def _make_eval_env():
         env = gym.make(env_name)
         env = MinigridWrapper(env, enable_render=False, enable_human=False)
@@ -152,6 +150,8 @@ def evaluate_atari_once(
                 print("Episode finished!")
                 need_break = True
     return True
+
+
 if __name__ == '__main__':
     index_x = []
     success_y = []

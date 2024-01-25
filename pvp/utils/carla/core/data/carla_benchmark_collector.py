@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Union
 from ding.envs import BaseEnvManager
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp_iclr_release.utils.carla.core.data.benchmark import ALL_SUITES
-from pvp_iclr_release.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, read_pose_txt, \
+from pvp.utils.carla.core.data.benchmark import ALL_SUITES
+from pvp.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, read_pose_txt, \
     get_benchmark_dir
 from .base_collector import BaseCollector
 
@@ -46,10 +46,10 @@ class CarlaBenchmarkCollector(BaseCollector):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            env: BaseEnvManager,
-            policy: Any,
+        self,
+        cfg: Dict,
+        env: BaseEnvManager,
+        policy: Any,
     ) -> None:
         super().__init__(cfg, env, policy)
         self._benchmark_dir = self._cfg.benchmark_dir
@@ -141,9 +141,9 @@ class CarlaBenchmarkCollector(BaseCollector):
             self._generate_suite_reset_params()
 
     def collect(
-            self,
-            n_episode: int,
-            policy_kwargs: Optional[Dict] = None,
+        self,
+        n_episode: int,
+        policy_kwargs: Optional[Dict] = None,
     ) -> List:
         """
         Collect data from policy and env manager. It will collect each benchmark suite in average

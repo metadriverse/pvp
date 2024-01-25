@@ -40,13 +40,8 @@ def draw_waypoints_new(world, waypoints, z=0.05, life_time=1.0):
         wpt_t = wpt.transform
         wp = wpt_t.location + carla.Location(z=z)
         world.debug.draw_point(
-            carla.Location(wp),
-            size=size,
-            color=color,
-            life_time=float(life_time),
-            persistent_lines=False
+            carla.Location(wp), size=size, color=color, life_time=float(life_time), persistent_lines=False
         )
-
 
 
 def get_speed(vehicle):
@@ -58,7 +53,7 @@ def get_speed(vehicle):
     """
     vel = vehicle.get_velocity()
 
-    return 3.6 * math.sqrt(vel.x ** 2 + vel.y ** 2 + vel.z ** 2)
+    return 3.6 * math.sqrt(vel.x**2 + vel.y**2 + vel.z**2)
 
 
 def is_within_distance_ahead(target_transform, current_transform, max_distance):

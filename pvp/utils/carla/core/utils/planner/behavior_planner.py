@@ -3,12 +3,12 @@ from typing import Dict, List, Tuple
 import carla
 import numpy as np
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.planner.planner_utils import get_next_until_junction, \
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.planner.planner_utils import get_next_until_junction, \
     generate_change_lane_route
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
     Aggressive, Normal
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance, \
     compute_distance, positive
 from .basic_planner import AgentState, BasicPlanner, RoadOption
 
@@ -63,12 +63,12 @@ class BehaviorPlanner(BasicPlanner):
             )
 
     def _behavior_is_vehicle_hazard(
-            self,
-            vehicle_list: List,
-            proximity_th: float,
-            up_angle_th: float,
-            low_angle_th: float = 0,
-            lane_offset: int = 0
+        self,
+        vehicle_list: List,
+        proximity_th: float,
+        up_angle_th: float,
+        low_angle_th: float = 0,
+        lane_offset: int = 0
     ) -> Tuple[bool, carla.Actor, float]:
 
         # Get the right offset
@@ -302,8 +302,8 @@ class BehaviorPlanner(BasicPlanner):
         ignore it and go around this issue, until the car is near a new one.
         """
 
-        light_id = self._hero_vehicle.get_traffic_light(
-        ).id if self._hero_vehicle.get_traffic_light() is not None else -1
+        light_id = self._hero_vehicle.get_traffic_light().id if self._hero_vehicle.get_traffic_light(
+        ) is not None else -1
         light_state = str(self._hero_vehicle.get_traffic_light_state())
 
         if light_state == "Red":

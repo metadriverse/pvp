@@ -2,22 +2,22 @@ from typing import List, Dict, Optional
 
 import torch
 import torch.nn as nn
-from pvp_iclr_release.utils.carla.core.models import VanillaVAE
+from pvp.utils.carla.core.models import VanillaVAE
 from ding.model.common import DiscreteHead, DuelingHead, MultiHead
 
 
 class LatentDQNRLModel(nn.Module):
     def __init__(
-            self,
-            obs_shape: List = [192, 192, 7],
-            action_shape: int = 100,
-            latent_dim: int = 128,
-            dueling: bool = True,
-            head_hidden_size: Optional[int] = None,
-            head_layer_num: int = 1,
-            activation: Optional[nn.Module] = nn.ReLU(),
-            norm_type: Optional[str] = None,
-            vae_path: Optional[str] = None,
+        self,
+        obs_shape: List = [192, 192, 7],
+        action_shape: int = 100,
+        latent_dim: int = 128,
+        dueling: bool = True,
+        head_hidden_size: Optional[int] = None,
+        head_layer_num: int = 1,
+        activation: Optional[nn.Module] = nn.ReLU(),
+        norm_type: Optional[str] = None,
+        vae_path: Optional[str] = None,
     ) -> None:
         super().__init__()
         in_channels = obs_shape[-1]

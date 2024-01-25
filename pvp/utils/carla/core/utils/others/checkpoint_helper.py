@@ -1,7 +1,6 @@
 import os
 
-from pvp_iclr_release.utils.carla.core.utils.others.general_helper import sort_nicely
-
+from pvp.utils.carla.core.utils.others.general_helper import sort_nicely
 """ FUNCTIONS FOR SAVING THE CHECKPOINTS """
 
 

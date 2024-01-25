@@ -13,7 +13,7 @@ import pygame
 from carla import TrafficLightState as tls
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
 
 # ==============================================================================
 # -- Constants -----------------------------------------------------------------
@@ -77,7 +77,6 @@ DEFAULT_BEV_CONFIG = EasyDict({
 # -- Util -----------------------------------------------------------
 # ==============================================================================
 class Util(object):
-
     @staticmethod
     def blits(destination_surface, source_surfaces, rect=None, blend_mode=0):
         for surface in source_surfaces:
@@ -85,14 +84,13 @@ class Util(object):
 
     @staticmethod
     def length(v):
-        return math.sqrt(v.x ** 2 + v.y ** 2 + v.z ** 2)
+        return math.sqrt(v.x**2 + v.y**2 + v.z**2)
 
 
 # ==============================================================================
 # -- ModuleManager -------------------------------------------------------------
 # ==============================================================================
 class ModuleManager(object):
-
     def __init__(self):
         self.modules = []
 
@@ -128,7 +126,6 @@ class ModuleManager(object):
 
 
 class MapImage:
-
     def __init__(self, carla_world, carla_map, pixels_per_meter=10):
         self._pixels_per_meter = float(pixels_per_meter)
         self.scale = 1.0
@@ -167,7 +164,7 @@ class MapImage:
                 # pygame.draw.lines(surface, COLOR_ORANGE_0, False, points, 2)
                 pygame.draw.lines(surface, COLOR_WHITE, False, points, self._line_width)
             else:
-                broken_lines = [x for n, x in enumerate(zip(*(iter(points),) * 20)) if n % 3 == 0]
+                broken_lines = [x for n, x in enumerate(zip(*(iter(points), ) * 20)) if n % 3 == 0]
                 for line in broken_lines:
                     # pygame.draw.lines(surface, COLOR_ORANGE_0, False, line, 2)
                     pygame.draw.lines(surface, COLOR_WHITE, False, line, self._line_width)
@@ -239,9 +236,8 @@ class MapImage:
 
 
 class ModuleWorld(object):
-
     def __init__(
-            self, name, client, world, town_map, hero_actor, width, height, pixels_per_meter, pixels_ahead_vehicle
+        self, name, client, world, town_map, hero_actor, width, height, pixels_per_meter, pixels_ahead_vehicle
     ):
 
         self.name = name
@@ -538,15 +534,15 @@ class ModuleWorld(object):
             # pygame.draw.circle(waypoint_surface, pygame.Color(0, 100, 0), (x, y), radius)
 
     def render_actors(
-            self,
-            vehicle_surface,
-            self_surface,
-            walker_surface,
-            traffic_light_surface,
-            vehicles,
-            traffic_lights,
-            walkers,
-            from_snapshot=False
+        self,
+        vehicle_surface,
+        self_surface,
+        walker_surface,
+        traffic_light_surface,
+        vehicles,
+        traffic_lights,
+        walkers,
+        from_snapshot=False
     ):
         # Static actors
 

@@ -22,7 +22,6 @@ class Decorator(py_trees.behaviour.Behaviour):
     This is taken from py_trees 1.2 to work with our current implementation
     that uses py_trees 0.8.2
     """
-
     def __init__(self, child, name):
         """
         Common initialisation steps for a decorator - type checks and

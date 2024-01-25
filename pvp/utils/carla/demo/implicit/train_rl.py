@@ -2,8 +2,8 @@ import argparse
 import copy
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.utils.others.ding_utils import compile_config
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.utils.others.ding_utils import compile_config
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.policy import DQNPolicy
 from ding.rl_utils import get_epsilon_greedy_fn
@@ -50,7 +50,7 @@ def get_args():
         action="store_true",
         default=True,
         help="if using CARLA challenge model, let sky, we cropped "
-             "it for the models trained only on Town01/train weather",
+        "it for the models trained only on Town01/train weather",
     )
 
     args = parser.parse_known_args()[0]
@@ -126,12 +126,10 @@ train_config = dict(
                 ),
             ),
         ),
-        eval=dict(
-            evaluator=dict(
-                render=False,
-                final_reward=200,
-            ),
-        ),
+        eval=dict(evaluator=dict(
+            render=False,
+            final_reward=200,
+        ), ),
         collect=dict(
             # Cut trajectories into pieces with length "unrol_len".
             episode_num=float('inf'),
@@ -197,8 +195,9 @@ def main(cfg, env_args, seed=0):
 
     tb_logger = SummaryWriter('./log/{}/'.format(cfg.exp_name))
     learner = BaseLearner(cfg.policy.learn.learner, policy.learn_mode, tb_logger, exp_name=cfg.exp_name)
-    collector = SampleSerialCollector(cfg.policy.collect.collector, collector_env, policy.collect_mode, tb_logger,
-                                      exp_name=cfg.exp_name)
+    collector = SampleSerialCollector(
+        cfg.policy.collect.collector, collector_env, policy.collect_mode, tb_logger, exp_name=cfg.exp_name
+    )
     replay_buffer = AdvancedReplayBuffer(cfg.policy.other.replay_buffer, tb_logger, exp_name=cfg.exp_name)
 
     learner.call_hook('before_run')

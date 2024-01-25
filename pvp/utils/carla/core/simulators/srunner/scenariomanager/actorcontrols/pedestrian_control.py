@@ -12,7 +12,7 @@ import math
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
 
 
 class PedestrianControl(BasicControl):
@@ -22,7 +22,6 @@ class PedestrianControl(BasicControl):
     Args:
         actor (carla.Actor): Pedestrian actor that should be controlled.
     """
-
     def __init__(self, actor, args=None):
         if not isinstance(actor, carla.Walker):
             raise RuntimeError("PedestrianControl: The to be controlled actor is not a pedestrian")
@@ -57,7 +56,7 @@ class PedestrianControl(BasicControl):
             self._reached_goal = False
             location = self._waypoints[0].location
             direction = location - self._actor.get_location()
-            direction_norm = math.sqrt(direction.x ** 2 + direction.y ** 2)
+            direction_norm = math.sqrt(direction.x**2 + direction.y**2)
             control.direction = direction / direction_norm
             self._actor.apply_control(control)
             if direction_norm < 1.0:

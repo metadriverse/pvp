@@ -1,11 +1,11 @@
 import copy
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.envs import CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import SerialEvaluator
-from pvp_iclr_release.utils.carla.core.utils.data_utils.bev_utils import unpack_birdview
-from pvp_iclr_release.utils.carla.core.utils.others.ding_utils import compile_config
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import CarlaEnvWrapper
+from pvp.utils.carla.core.eval import SerialEvaluator
+from pvp.utils.carla.core.utils.data_utils.bev_utils import unpack_birdview
+from pvp.utils.carla.core.utils.others.ding_utils import compile_config
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager, BaseEnvManager
 from ding.policy import DQNPolicy
 from ding.rl_utils import get_epsilon_greedy_fn
@@ -14,8 +14,8 @@ from ding.worker import BaseLearner, SampleSerialCollector, AdvancedReplayBuffer
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 
-from pvp_iclr_release.utils.carla.demo.latent_rl.latent_rl_env import CarlaLatentRLEnv
-from pvp_iclr_release.utils.carla.demo.latent_rl.model import LatentDQNRLModel
+from pvp.utils.carla.demo.latent_rl.latent_rl_env import CarlaLatentRLEnv
+from pvp.utils.carla.demo.latent_rl.model import LatentDQNRLModel
 
 train_config = dict(
     exp_name='latentdqn_buf2e5_lr1e4_bs64_ns1000_update10_train_ft',
@@ -32,25 +32,20 @@ train_config = dict(
                 threshold_before=3.0,
                 threshold_after=3.0,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[320, 320],
-                    pixels_per_meter=5,
-                    pixels_ahead_vehicle=100,
-                ),
-            )
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[320, 320],
+                pixels_per_meter=5,
+                pixels_ahead_vehicle=100,
+            ), )
         ),
-        manager=dict(
-            collect=dict(
-                auto_reset=True,
-                shared_memory=False,
-                context='spawn',
-                max_retry=1,
-            ),
-            eval=dict()
-        ),
+        manager=dict(collect=dict(
+            auto_reset=True,
+            shared_memory=False,
+            context='spawn',
+            max_retry=1,
+        ), eval=dict()),
         wrapper=dict(
             collect=dict(suite='train_ft', ),
             eval=dict(suite='FullTown02-v1', ),
@@ -64,19 +59,13 @@ train_config = dict(
         priority=True,
         nstep=3,
         discount_factor=0.99,
-        model=dict(
-            action_shape=100,
-        ),
+        model=dict(action_shape=100, ),
         learn=dict(
             batch_size=64,
             learning_rate=0.0001,
             weight_decay=0.0001,
             target_update_freq=1000,
-            learner=dict(
-                hook=dict(
-                    load_ckpt_before_run='',
-                ),
-            ),
+            learner=dict(hook=dict(load_ckpt_before_run='', ), ),
         ),
         collect=dict(
             n_sample=1000,
@@ -86,14 +75,12 @@ train_config = dict(
                 transform_obs=True,
             ),
         ),
-        eval=dict(
-            evaluator=dict(
-                eval_freq=5000,
-                n_episode=3,
-                stop_rate=0.7,
-                transform_obs=True,
-            ),
-        ),
+        eval=dict(evaluator=dict(
+            eval_freq=5000,
+            n_episode=3,
+            stop_rate=0.7,
+            transform_obs=True,
+        ), ),
         other=dict(
             eps=dict(
                 type='exp',
@@ -105,12 +92,8 @@ train_config = dict(
                 replay_buffer_size=100000,
                 # max_use=100,
                 monitor=dict(
-                    sampled_data_attr=dict(
-                        print_freq=100,
-                    ),
-                    periodic_thruput=dict(
-                        seconds=120,
-                    ),
+                    sampled_data_attr=dict(print_freq=100, ),
+                    periodic_thruput=dict(seconds=120, ),
                 ),
             ),
         ),
@@ -145,8 +128,10 @@ def main(cfg, seed=0):
         cfg=cfg.env.manager.collect,
     )
     evaluate_env = BaseEnvManager(
-        env_fn=[partial(wrapped_env, cfg.env, cfg.env.wrapper.eval, *tcp_list[collector_env_num + i]) for i in
-                range(evaluator_env_num)],
+        env_fn=[
+            partial(wrapped_env, cfg.env, cfg.env.wrapper.eval, *tcp_list[collector_env_num + i])
+            for i in range(evaluator_env_num)
+        ],
         cfg=cfg.env.manager.eval,
     )
     collector_env.seed(seed)
@@ -158,10 +143,12 @@ def main(cfg, seed=0):
 
     tb_logger = SummaryWriter('./log/{}/'.format(cfg.exp_name))
     learner = BaseLearner(cfg.policy.learn.learner, policy.learn_mode, tb_logger, exp_name=cfg.exp_name)
-    collector = SampleSerialCollector(cfg.policy.collect.collector, collector_env, policy.collect_mode, tb_logger,
-                                      exp_name=cfg.exp_name)
-    evaluator = SerialEvaluator(cfg.policy.eval.evaluator, evaluate_env, policy.eval_mode, tb_logger,
-                                exp_name=cfg.exp_name)
+    collector = SampleSerialCollector(
+        cfg.policy.collect.collector, collector_env, policy.collect_mode, tb_logger, exp_name=cfg.exp_name
+    )
+    evaluator = SerialEvaluator(
+        cfg.policy.eval.evaluator, evaluate_env, policy.eval_mode, tb_logger, exp_name=cfg.exp_name
+    )
     replay_buffer = AdvancedReplayBuffer(cfg.policy.other.replay_buffer, tb_logger, exp_name=cfg.exp_name)
 
     # Set up other modules, etc. epsilon greedy

@@ -1,14 +1,14 @@
 import torch
-from pvp_iclr_release.utils.carla.core.envs import BenchmarkEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import BenchmarkEnvWrapper
+from pvp.utils.carla.core.eval import SingleCarlaEvaluator
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.policy import DQNPolicy
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.demo.latent_rl.latent_rl_env import CarlaLatentEvalEnv
-from pvp_iclr_release.utils.carla.demo.latent_rl.model import LatentDQNRLModel
+from pvp.utils.carla.demo.latent_rl.latent_rl_env import CarlaLatentEvalEnv
+from pvp.utils.carla.demo.latent_rl.model import LatentDQNRLModel
 
 eval_config = dict(
     env=dict(
@@ -22,38 +22,29 @@ eval_config = dict(
                 threshold_before=9,
                 threshold_after=1.5,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[320, 320],
-                    pixels_per_meter=5,
-                    pixels_ahead_vehicle=100,
-                ),
-            )
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[320, 320],
+                pixels_per_meter=5,
+                pixels_ahead_vehicle=100,
+            ), )
         ),
         discrete_action=True,
         discrete_dim=10,
         visualize=dict(type='birdview', outputs=['show']),
-        wrapper=dict(
-            suite='FullTown02-v1',
-        ),
+        wrapper=dict(suite='FullTown02-v1', ),
     ),
     policy=dict(
         cuda=True,
         ckpt_path='',
         model=dict(action_shape=100),
-        eval=dict(
-            evaluator=dict(
-                render=True,
-                transform_obs=True,
-            ),
-        ),
+        eval=dict(evaluator=dict(
+            render=True,
+            transform_obs=True,
+        ), ),
     ),
-    server=[dict(
-        carla_host='localhost',
-        carla_ports=[9000, 9002, 2]
-    )],
+    server=[dict(carla_host='localhost', carla_ports=[9000, 9002, 2])],
 )
 
 main_config = EasyDict(eval_config)

@@ -46,7 +46,6 @@ def project_point_to_circle(point, c, r):
 
 
 class ResnetBase(nn.Module):
-
     def __init__(self, backbone, input_channel=3, bias_first=True, pretrained=False):
         super().__init__()
 
@@ -61,7 +60,6 @@ class ResnetBase(nn.Module):
 
 
 class NormalizeV2(nn.Module):
-
     def __init__(self, mean, std):
         super().__init__()
 
@@ -120,7 +118,6 @@ def one_hot(x, num_digits=4, start=1):
 
 
 class Join(nn.Module):
-
     def __init__(self, params=None, module_name='Default'):
         # TODO:  For now the end module is a case
         # TODO: Make an auto naming function for this.
@@ -154,7 +151,6 @@ class Join(nn.Module):
 
 
 class Conv(nn.Module):
-
     def __init__(self, params=None, module_name='Default'):
         super(Conv, self).__init__()
 
@@ -225,7 +221,6 @@ class Conv(nn.Module):
 
 
 class FC(nn.Module):
-
     def __init__(self, params=None, module_name='Default'):
         # TODO: Make an auto naming function for this.
 
@@ -268,7 +263,6 @@ class FC(nn.Module):
 
 
 class Branching(nn.Module):
-
     def __init__(self, branched_modules=None):
         """
 

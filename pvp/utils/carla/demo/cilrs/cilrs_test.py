@@ -1,12 +1,12 @@
 import torch
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv
-from pvp_iclr_release.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp_iclr_release.utils.carla.core.policy import CILRSPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv
+from pvp.utils.carla.core.eval import SingleCarlaEvaluator
+from pvp.utils.carla.core.policy import CILRSPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.demo.cilrs.cilrs_env_wrapper import CILRSEnvWrapper
+from pvp.utils.carla.demo.cilrs.cilrs_env_wrapper import CILRSEnvWrapper
 
 cilrs_config = dict(
     env=dict(
@@ -18,20 +18,15 @@ cilrs_config = dict(
                 type='behavior',
                 resolution=1,
             ),
-            obs=(
-                dict(
-                    name='rgb',
-                    type='rgb',
-                    size=[400, 300],
-                    position=[1.3, 0.0, 2.3],
-                    fov=100,
-                ),
-            ),
+            obs=(dict(
+                name='rgb',
+                type='rgb',
+                size=[400, 300],
+                position=[1.3, 0.0, 2.3],
+                fov=100,
+            ), ),
         ),
-        visualize=dict(
-            type='rgb',
-            outputs=['show']
-        ),
+        visualize=dict(type='rgb', outputs=['show']),
         wrapper=dict(),
         col_is_failure=True,
         stuck_is_failure=True,

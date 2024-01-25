@@ -12,13 +12,13 @@ from __future__ import print_function
 
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
     TrafficLightManipulator
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest, DrivenDistanceTest, MaxVelocityTest
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
     DriveDistance, WaitEndIntersection
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
 
 
 class SignalJunctionCrossingRoute(BasicScenario):
@@ -38,7 +38,7 @@ class SignalJunctionCrossingRoute(BasicScenario):
     # Depending on the route, decide which traffic lights can be modified
 
     def __init__(
-            self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=180
+        self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=180
     ):
         """
         Setup all relevant parameters and create scenario
@@ -118,7 +118,7 @@ class NoSignalJunctionCrossingRoute(BasicScenario):
     _ego_distance_to_drive = 20  # Allowed distance to drive
 
     def __init__(
-            self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=180
+        self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=180
     ):
         """
         Setup all relevant parameters and create scenario

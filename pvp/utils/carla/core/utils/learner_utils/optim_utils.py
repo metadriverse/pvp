@@ -8,8 +8,8 @@ def decreasing_probability(values: np.ndarray) -> float:
     A = np.vstack([steps, np.ones(n_steps)]).T
     loc, shift = np.linalg.lstsq(A, values, rcond=None)[0]
     values_ = loc * steps + shift
-    sigma2 = np.sum((values - values_) ** 2) / (n_steps - 2)
-    scale = np.sqrt(12 * sigma2 / (n_steps ** 3 - n_steps))
+    sigma2 = np.sum((values - values_)**2) / (n_steps - 2)
+    scale = np.sqrt(12 * sigma2 / (n_steps**3 - n_steps))
     return scipy.stats.norm.cdf(0., loc=loc, scale=scale)
 
 
@@ -47,7 +47,7 @@ def adjust_learning_rate(optimizer, num_iters, LEARNING_RATE, LEARNING_RATE_DECA
 
 
 def adjust_learning_rate_auto(
-        optimizer, loss_window, LEARNING_RATE, LEARNING_RATE_THRESHOLD, LEARNING_RATE_DECAY_LEVEL
+    optimizer, loss_window, LEARNING_RATE, LEARNING_RATE_THRESHOLD, LEARNING_RATE_DECAY_LEVEL
 ):
     """
     Adjusts the learning rate every epoch based on the selected schedule

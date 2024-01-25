@@ -6,9 +6,9 @@ from collections import defaultdict
 
 import pandas as pd
 
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
+from pvp.sb3.common.monitor import Monitor
+from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
+from pvp.utils.carla.pvp_carla_env import PVPEnv
 
 
 def eval_one_checkpoint_random(model, eval_env, log_dir, num_episodes):
@@ -36,6 +36,7 @@ def eval_one_checkpoint_random(model, eval_env, log_dir, num_episodes):
 
     print("=====\nFinish evaluating agent with checkpoint: ", model_path)
     print("=====\n")
+
 
 def eval_one_checkpoint(model_path, model, eval_env, log_dir, num_episodes):
     model.set_parameters(model_path)
@@ -78,16 +79,20 @@ if __name__ == '__main__':
     obs_mode = "birdview"
 
     # ===== Setup the training environment =====
-    train_env = PVPEnv(config=dict(
-        obs_mode=obs_mode,
-        force_fps=0,
-        disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
-        debug_vis=False,
-        port=port,
-        disable_takeover=True,
-        controller="keyboard",
-        env={"visualize": {"location": "lower right"}}
-    ))
+    train_env = PVPEnv(
+        config=dict(
+            obs_mode=obs_mode,
+            force_fps=0,
+            disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
+            debug_vis=False,
+            port=port,
+            disable_takeover=True,
+            controller="keyboard",
+            env={"visualize": {
+                "location": "lower right"
+            }}
+        )
+    )
     eval_env = Monitor(env=train_env, filename=None)
     model = setup_model_old(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
 

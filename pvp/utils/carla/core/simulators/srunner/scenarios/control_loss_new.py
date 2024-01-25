@@ -3,23 +3,22 @@ import random
 import carla
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
     ChangeNoiseParameters, \
     ActorTransformSetter
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
     InTriggerDistanceToLocation, InTriggerDistanceToNextIntersection, DriveDistance
 )
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import get_location_in_distance_from_wp
+from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_location_in_distance_from_wp
 
 
 class ControlLossNew(BasicScenario):
-
     def __init__(
-            self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=60
+        self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=60
     ):
         self._no_of_jitter = 10
         self._noise_mean = 0

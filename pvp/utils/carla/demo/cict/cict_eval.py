@@ -5,13 +5,13 @@ Description:
 
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
-from pvp_iclr_release.utils.carla.demo.cict_demo.cict_policy import CICTPolicy
+from pvp.utils.carla.demo.cict_demo.cict_policy import CICTPolicy
 from easydict import EasyDict
 
 eval_config = dict(
@@ -53,18 +53,14 @@ eval_config = dict(
             max_retry=1,
         ),
     ),
-    server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9010, 2])
-    ],
+    server=[dict(carla_host='localhost', carla_ports=[9000, 9010, 2])],
     policy=dict(
         target_speed=25,
-        eval=dict(
-            evaluator=dict(
-                suite='FullTown01-v1',
-                episodes_per_suite=5,
-                transform_obs=True,
-            ),
-        ),
+        eval=dict(evaluator=dict(
+            suite='FullTown01-v1',
+            episodes_per_suite=5,
+            transform_obs=True,
+        ), ),
     ),
 )
 

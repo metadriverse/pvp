@@ -5,10 +5,10 @@ Description:
 
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
@@ -32,12 +32,10 @@ autoeval_config = dict(
     server=[dict(carla_host='localhost', carla_ports=[9000, 9008, 2])],
     policy=dict(
         target_speed=40,
-        eval=dict(
-            evaluator=dict(
-                suite='FullTown01-v0',
-                episodes_per_suite=10,
-            ),
-        ),
+        eval=dict(evaluator=dict(
+            suite='FullTown01-v0',
+            episodes_per_suite=10,
+        ), ),
     ),
 )
 

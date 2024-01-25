@@ -3,49 +3,36 @@ import os
 import pickle
 
 import numpy as np
-from pvp_iclr_release.utils.rllib_utils.callbacks import DrivingCallbacks
-from pvp_iclr_release.utils.rllib_utils.utils import initialize_ray
+from pvp.utils.rllib_utils.callbacks import DrivingCallbacks
+from pvp.utils.rllib_utils.utils import initialize_ray
 from ray import tune
 from ray.tune import CLIReporter
 
 root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
-def get_api_key_file(wandb_key_file):
-    if wandb_key_file is not None:
-        default_path = os.path.expanduser(wandb_key_file)
-    else:
-        default_path = os.path.expanduser("~/wandb_api_key_file.txt")
-    if os.path.exists(default_path):
-        print("We are using this wandb key file: ", default_path)
-        return default_path
-    path = os.path.join(root, "wandb", "wandb_api_key_file.txt")
-    print("We are using this wandb key file: ", path)
-    return path
-
-
 def train(
-        trainer,
-        config,
-        stop,
-        exp_name,
-        num_seeds=1,
-        num_gpus=0,
-        test_mode=False,
-        suffix="",
-        checkpoint_freq=10,
-        keep_checkpoints_num=None,
-        start_seed=0,
-        local_mode=False,
-        save_pkl=True,
-        custom_callback=None,
-        max_failures=5,
-        wandb_key_file=None,
-        wandb_project=None,
-        wandb_team="drivingforce",
-        wandb_log_config=True,
-        init_kws=None,
-        **kwargs
+    trainer,
+    config,
+    stop,
+    exp_name,
+    num_seeds=1,
+    num_gpus=0,
+    test_mode=False,
+    suffix="",
+    checkpoint_freq=10,
+    keep_checkpoints_num=None,
+    start_seed=0,
+    local_mode=False,
+    save_pkl=True,
+    custom_callback=None,
+    max_failures=5,
+    wandb_key_file=None,
+    wandb_project=None,
+    wandb_team="drivingforce",
+    wandb_log_config=True,
+    init_kws=None,
+    **kwargs
 ):
     init_kws = init_kws or dict()
     # initialize ray
@@ -116,25 +103,24 @@ def train(
         assert wandb_project is not None
         failed_wandb = False
         try:
-            from pvp_iclr_release.utils.rllib_utils.ray_wandb_callbacks import OurWandbLoggerCallback
+            from pvp.utils.rllib_utils.ray_wandb_callbacks import OurWandbLoggerCallback
         except Exception as e:
             # print("Please install wandb: pip install wandb")
             failed_wandb = True
 
         if failed_wandb:
             from ray.tune.logger import DEFAULT_LOGGERS
-            from pvp_iclr_release.utils.rllib_utils.ray_wandb_callbacks_ray100 import OurWandbLogger
-            kwargs["loggers"] = DEFAULT_LOGGERS + (OurWandbLogger,)
+            from pvp.utils.rllib_utils.ray_wandb_callbacks_ray100 import OurWandbLogger
+            kwargs["loggers"] = DEFAULT_LOGGERS + (OurWandbLogger, )
             config["logger_config"] = {
-                "wandb":
-                    {
-                        "group": exp_name,
-                        "exp_name": exp_name,
-                        "entity": wandb_team,
-                        "project": wandb_project,
-                        "api_key_file": get_api_key_file(wandb_key_file),
-                        "log_config": wandb_log_config,
-                    }
+                "wandb": {
+                    "group": exp_name,
+                    "exp_name": exp_name,
+                    "entity": wandb_team,
+                    "project": wandb_project,
+                    "api_key_file": get_api_key_file(wandb_key_file),
+                    "log_config": wandb_log_config,
+                }
             }
         else:
             kwargs["callbacks"] = [

@@ -3,10 +3,10 @@ import time
 import cv2
 import numpy as np
 import torch
-from pvp_iclr_release.utils.carla.core.data import LBCBirdViewDataset
-from pvp_iclr_release.utils.carla.core.policy import LBCBirdviewPolicy
-from pvp_iclr_release.utils.carla.core.utils.learner_utils.log_saver_utils import Experiment
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.utils.carla.core.data import LBCBirdViewDataset
+from pvp.utils.carla.core.policy import LBCBirdviewPolicy
+from pvp.utils.carla.core.utils.learner_utils.log_saver_utils import Experiment
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from easydict import EasyDict
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -60,22 +60,20 @@ def get_log_visualization(birdview, command, loss, locations, locations_pred, si
         cols = [x * (canvas.shape[1] // 10) for x in range(10 + 1)]
 
         def _write(text, i, j):
-            cv2.putText(
-                canvas, text, (cols[j], rows[i]),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
+            cv2.putText(canvas, text, (cols[j], rows[i]), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (255, 255, 255), 1)
 
         def _dot(i, j, color, radius=2):
             x, y = int(j), int(i)
             canvas[x - radius:x + radius + 1, y - radius:y + radius + 1] = color
 
-        _command = {
-            1: 'LEFT', 2: 'RIGHT',
-            3: 'STRAIGHT', 4: 'FOLLOW'}.get(torch.argmax(command[i]).item() + 1, '???')
+        _command = {1: 'LEFT', 2: 'RIGHT', 3: 'STRAIGHT', 4: 'FOLLOW'}.get(torch.argmax(command[i]).item() + 1, '???')
 
         _dot(0, 0, WHITE)
 
-        for x, y in locations[i]: _dot(x, y, BLUE)
-        for x, y in (locations_pred[i] + 1) * (0.5 * 192): _dot(x, y, RED)
+        for x, y in locations[i]:
+            _dot(x, y, BLUE)
+        for x, y in (locations_pred[i] + 1) * (0.5 * 192):
+            _dot(x, y, RED)
 
         _write('Command: %s' % _command, 1, 0)
         _write('Loss: %.2f' % loss[i].item(), 2, 0)
@@ -112,7 +110,11 @@ def train_or_eval(policy, loader, optim, is_train, config, is_first_epoch, log_s
             metrics['loss'] = loss_mean.item()
 
             images = get_log_visualization(
-                data['birdview'], data['command'], loss, data['location'], res_dict['locations_pred'],
+                data['birdview'],
+                data['command'],
+                loss,
+                data['location'],
+                res_dict['locations_pred'],
             )
 
             log_saver.scalar(is_train=is_train, loss_mean=loss_mean.item())
@@ -149,9 +151,7 @@ def main(cfg):
         train_or_eval(lbc_policy.learn_mode, val_dataloader, optim, False, cfg, epoch == 0, log_saver)
 
         if epoch in [1, 2, 4, 8, 16, 32, 64, 128, 256, 384, 512, 768, 1000]:
-            torch.save(
-                lbc_policy.learn_mode.state_dict(),
-                './log/{}/model-{}.th'.format(cfg.exp_name, epoch))
+            torch.save(lbc_policy.learn_mode.state_dict(), './log/{}/model-{}.th'.format(cfg.exp_name, epoch))
 
         log_saver.end_epoch()
 

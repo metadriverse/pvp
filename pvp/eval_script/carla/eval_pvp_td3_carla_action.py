@@ -9,9 +9,11 @@ import torch
 import pandas as pd
 import json
 import numpy as np
-from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
-from pvp_iclr_release.eval_script.carla.carla_eval_utilsimport setup_model, setup_model_old
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
+from pvp.sb3.common.monitor import Monitor
+from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
+from pvp.utils.carla.pvp_carla_env import PVPEnv
+
+
 # class DummyEnv(gym.Env):
 #     def __init__(self):
 #         self.action_space = spaces.Box(np.array[-1,-1], np.array[1,1], dtype=np.float32)
@@ -24,11 +26,7 @@ def load_human_data(path, data_usage=5000):
         episode_data = json.load(f)["data"]
     np.random.shuffle(episode_data)
     # assert data_usage < len(episode_data), "Data is not enough"
-    data = {"state": [],
-            "action": [],
-            "next_state": [],
-            "reward": [],
-            "terminal": []}
+    data = {"state": [], "action": [], "next_state": [], "reward": [], "terminal": []}
     for cnt, step_data in enumerate(episode_data):
         if cnt >= data_usage:
             break
@@ -52,16 +50,20 @@ if __name__ == '__main__':
     seed = 0
     datapath = "/home/xxx/model/human_traj_1.json"
     obs_mode = "birdview"
-    train_env = PVPEnv(config=dict(
-        obs_mode=obs_mode,
-        force_fps=0,
-        disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
-        debug_vis=False,
-        port=port,
-        disable_takeover=True,
-        controller="keyboard",
-        env={"visualize": {"location": "lower right"}}
-    ))
+    train_env = PVPEnv(
+        config=dict(
+            obs_mode=obs_mode,
+            force_fps=0,
+            disable_vis=False,  # xxx: @xxx, change this to disable/open vis!
+            debug_vis=False,
+            port=port,
+            disable_takeover=True,
+            controller="keyboard",
+            env={"visualize": {
+                "location": "lower right"
+            }}
+        )
+    )
     ckpt_index_list = []
     mean1 = []
     std1 = []
@@ -72,9 +74,11 @@ if __name__ == '__main__':
     mean4 = []
     std4 = []
     for ckpt_index in range(1000, 22000, 1000):
-        print("dealing with ckpt index: " + str(ckpt_index) )
+        print("dealing with ckpt index: " + str(ckpt_index))
         model_path1 = "/home/xxx/model/compare/models/rl_model_" + str(ckpt_index) + "_steps"
-        model_path2 = "/home/xxx/model/oldold_carla/CARLA-OLDold_birdview_seed0_2022-06-15_17-17-29/models/rl_model_"+str(ckpt_index)+"_steps.zip"
+        model_path2 = "/home/xxx/model/oldold_carla/CARLA-OLDold_birdview_seed0_2022-06-15_17-17-29/models/rl_model_" + str(
+            ckpt_index
+        ) + "_steps.zip"
 
         model1 = setup_model(eval_env=train_env, seed=seed, obs_mode=obs_mode)
         model1.set_parameters(model_path1)
@@ -114,7 +118,17 @@ if __name__ == '__main__':
         std3.append(np.std(throttle_list1))
         mean4.append(np.mean(throttle_list2))
         std4.append(np.std(throttle_list2))
-    results = {"ckpt_index": ckpt_index_list, "pvp_steer_mean": mean1, "pvp_steer_std": std1, "pvp_throttle_mean": mean3,"pvp_throttle_std": std3, "old_steer_mean": mean2, "old_steer_std": std2, "old_throttle_mean": mean4, "old_throttle_std": std4}
+    results = {
+        "ckpt_index": ckpt_index_list,
+        "pvp_steer_mean": mean1,
+        "pvp_steer_std": std1,
+        "pvp_throttle_mean": mean3,
+        "pvp_throttle_std": std3,
+        "old_steer_mean": mean2,
+        "old_steer_std": std2,
+        "old_throttle_mean": mean4,
+        "old_throttle_std": std4
+    }
     df = pd.DataFrame(results)
     df.to_csv("/home/xxx/model/finalcompare.csv")
     import matplotlib.pyplot as plt

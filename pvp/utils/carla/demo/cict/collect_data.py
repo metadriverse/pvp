@@ -1,10 +1,10 @@
 import os
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.data import CarlaBenchmarkCollector
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.data import CarlaBenchmarkCollector
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
@@ -62,8 +62,9 @@ def main(cfg, seed=0):
         os.makedirs(cfg.policy.collect.dir_path)
 
     collected_episodes = 0
-    saver = CICTBenchmarkDatasetSaver(cfg.policy.collect.dir_path, cfg.env.simulator.obs,
-                                      post_process_fn=cict_post_process_fn)
+    saver = CICTBenchmarkDatasetSaver(
+        cfg.policy.collect.dir_path, cfg.env.simulator.obs, post_process_fn=cict_post_process_fn
+    )
     saver.make_dataset_path(cfg.policy.collect)
     while collected_episodes < cfg.policy.collect.n_episode:
         # Sampling data from environments

@@ -16,16 +16,16 @@ import carla
 import py_trees
 from six.moves.queue import Queue  # pylint: disable=relative-import
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, ActorDestroy, ActorSource, ActorSink, WaypointFollower
 )
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
     DriveDistance
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import get_waypoint_in_distance
+from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_waypoint_in_distance
 
 
 class ManeuverOppositeDirection(BasicScenario):
@@ -33,17 +33,16 @@ class ManeuverOppositeDirection(BasicScenario):
     "Vehicle Maneuvering In Opposite Direction" (Traffic Scenario 06)
     This is a single ego vehicle scenario
     """
-
     def __init__(
-            self,
-            world,
-            ego_vehicles,
-            config,
-            randomize=False,
-            debug_mode=False,
-            criteria_enable=True,
-            obstacle_type='barrier',
-            timeout=120
+        self,
+        world,
+        ego_vehicles,
+        config,
+        randomize=False,
+        debug_mode=False,
+        criteria_enable=True,
+        obstacle_type='barrier',
+        timeout=120
     ):
         """
         Setup all relevant parameters and create scenario

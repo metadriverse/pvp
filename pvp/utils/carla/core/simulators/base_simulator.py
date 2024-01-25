@@ -8,7 +8,7 @@ from typing import Dict
 
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
 
 
 class BaseSimulator(ABC):

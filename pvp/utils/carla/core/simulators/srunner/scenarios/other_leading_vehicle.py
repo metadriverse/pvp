@@ -17,17 +17,17 @@ either via a timeout, or if the ego vehicle drives some distance.
 import carla
 import py_trees
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, WaypointFollower, ActorDestroy
 )
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
     InTriggerDistanceToVehicle, DriveDistance
 )
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import get_waypoint_in_distance
+from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_waypoint_in_distance
 
 
 class OtherLeadingVehicle(BasicScenario):
@@ -38,9 +38,8 @@ class OtherLeadingVehicle(BasicScenario):
 
     This is a single ego vehicle scenario
     """
-
     def __init__(
-            self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=80
+        self, world, ego_vehicles, config, randomize=False, debug_mode=False, criteria_enable=True, timeout=80
     ):
         """
         Setup all relevant parameters and create scenario

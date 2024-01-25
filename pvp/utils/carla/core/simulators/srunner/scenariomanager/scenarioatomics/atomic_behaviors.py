@@ -27,20 +27,20 @@ import numpy as np
 import py_trees
 from py_trees.blackboard import Blackboard
 
-from pvp_iclr_release.utils.carla.core.simulators import srunner
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.actor_control import ActorControl
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import detect_lane_obstacle
-from pvp_iclr_release.utils.carla.core.simulators.srunner.tools.scenario_helper import \
+from pvp.utils.carla.core.simulators import srunner
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.actor_control import ActorControl
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import detect_lane_obstacle
+from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import \
     generate_target_waypoint_list_multilane
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import BasicAgent, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import BasicAgent, \
     LocalPlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 is_0_9_10_version_carla = "0.9.10" in carla.__file__
 
@@ -97,7 +97,6 @@ class AtomicBehavior(py_trees.behaviour.Behaviour):
     Important parameters:
     - name: Name of the atomic behavior
     """
-
     def __init__(self, name, actor=None):
         """
         Default init. Has to be called via super from derived class
@@ -156,7 +155,6 @@ class RunScript(AtomicBehavior):
     Note:
         This is intended for the use with OpenSCENARIO. Be aware of security side effects.
     """
-
     def __init__(self, script, base_path=None, name="RunScript"):
         """
         Setup parameters
@@ -203,7 +201,6 @@ class ChangeWeather(AtomicBehavior):
     Attributes:
         _weather (srunner.scenariomanager.weather_sim.Weather): Weather settings.
     """
-
     def __init__(self, weather, name="ChangeWeather"):
         """
         Setup parameters
@@ -236,7 +233,6 @@ class ChangeRoadFriction(AtomicBehavior):
     Attributes:
         _friction (float): Friction coefficient.
     """
-
     def __init__(self, friction, name="ChangeRoadFriction"):
         """
         Setup parameters
@@ -288,7 +284,6 @@ class ChangeActorControl(AtomicBehavior):
     Attributes:
         _actor_control (ActorControl): Instance of the actor control.
     """
-
     def __init__(self, actor, control_py_module, args, name="ChangeActorControl"):
         """
         Setup actor controller.
@@ -334,7 +329,6 @@ class UpdateAllActorControls(AtomicBehavior):
         name (string): Name of the behavior.
             Defaults to 'UpdateAllActorControls'.
     """
-
     def __init__(self, name="UpdateAllActorControls"):
         """
         Constructor
@@ -412,19 +406,18 @@ class ChangeActorTargetSpeed(AtomicBehavior):
         _continuous (boolean): If True, the atomic remains in RUNNING, independent of duration or distance.
             Defaults to False.
     """
-
     def __init__(
-            self,
-            actor,
-            target_speed,
-            init_speed=False,
-            duration=None,
-            distance=None,
-            relative_actor=None,
-            value=None,
-            value_type=None,
-            continuous=False,
-            name="ChangeActorTargetSpeed"
+        self,
+        actor,
+        target_speed,
+        init_speed=False,
+        duration=None,
+        distance=None,
+        relative_actor=None,
+        value=None,
+        value_type=None,
+        continuous=False,
+        name="ChangeActorTargetSpeed"
     ):
         """
         Setup parameters
@@ -555,7 +548,6 @@ class ChangeActorWaypoints(AtomicBehavior):
         _start_time (float): Start time of the atomic [s].
             Defaults to None.
     """
-
     def __init__(self, actor, waypoints, name="ChangeActorWaypoints"):
         """
         Setup parameters
@@ -645,7 +637,6 @@ class ChangeActorWaypointsToReachPosition(ChangeActorWaypoints):
             Defaults to None.
         _grp (GlobalPlanner): global planner instance of the town
     """
-
     def __init__(self, actor, position, name="ChangeActorWaypointsToReachPosition"):
         """
         Setup parameters
@@ -718,14 +709,13 @@ class ChangeActorLateralMotion(AtomicBehavior):
         _start_time (float): Start time of the atomic [s].
             Defaults to None.
     """
-
     def __init__(
-            self,
-            actor,
-            direction='left',
-            distance_lane_change=25,
-            distance_other_lane=100,
-            name="ChangeActorLateralMotion"
+        self,
+        actor,
+        direction='left',
+        distance_lane_change=25,
+        distance_other_lane=100,
+        name="ChangeActorLateralMotion"
     ):
         """
         Setup parameters
@@ -844,7 +834,6 @@ class ActorTransformSetterToOSCPosition(AtomicBehavior):
     might fail if new_status is set to success before the actor is really positioned at the new transform.
     Therefore: calculate_distance(actor, transform) < 1 meter
     """
-
     def __init__(self, actor, osc_position, physics=True, name="ActorTransformSetterToOSCPosition"):
         """
         Setup parameters
@@ -898,7 +887,6 @@ class AccelerateToVelocity(AtomicBehavior):
 
     The behavior will terminate, if the actor's velocity is at least target_velocity
     """
-
     def __init__(self, actor, throttle_value, target_velocity, name="Acceleration"):
         """
         Setup parameters including acceleration value (via throttle_value)
@@ -955,16 +943,15 @@ class AccelerateToCatchUp(AtomicBehavior):
     If max_distance is driven by the actor before actors are in trigger_distance,
     then the behaviour ends with a failure.
     """
-
     def __init__(
-            self,
-            actor,
-            other_actor,
-            throttle_value=1,
-            delta_velocity=10,
-            trigger_distance=5,
-            max_distance=500,
-            name="AccelerateToCatchUp"
+        self,
+        actor,
+        other_actor,
+        throttle_value=1,
+        delta_velocity=10,
+        trigger_distance=5,
+        max_distance=500,
+        name="AccelerateToCatchUp"
     ):
         """
         Setup parameters
@@ -1039,7 +1026,6 @@ class KeepVelocity(AtomicBehavior):
     A termination can be enforced by providing distance or duration values.
     Alternatively, a parallel termination behavior has to be used.
     """
-
     def __init__(self, actor, target_velocity, duration=float("inf"), distance=float("inf"), name="KeepVelocity"):
         """
         Setup parameters including acceleration value (via throttle_value)
@@ -1129,7 +1115,6 @@ class ChangeAutoPilot(AtomicBehavior):
 
     The behavior terminates after changing the autopilot state
     """
-
     def __init__(self, actor, activate, parameters=None, name="ChangeAutoPilot"):
         """
         Setup parameters
@@ -1189,7 +1174,6 @@ class StopVehicle(AtomicBehavior):
 
     The behavior terminates when the actor stopped moving
     """
-
     def __init__(self, actor, brake_value, name="Stopping"):
         """
         Setup _actor and maximum braking value
@@ -1240,7 +1224,6 @@ class SyncArrival(AtomicBehavior):
           to keep continue synchronization for a certain duration, or for a
           certain distance, etc.
     """
-
     def __init__(self, actor, actor_reference, target_location, gain=1, name="SyncArrival"):
         """
         Setup required parameters
@@ -1312,7 +1295,6 @@ class AddNoiseToVehicle(AtomicBehavior):
 
     The behavior terminates after setting the new actor controls
     """
-
     def __init__(self, actor, steer_value, throttle_value, name="Jittering"):
         """
         Setup actor , maximum steer value and throttle value
@@ -1347,16 +1329,15 @@ class ChangeNoiseParameters(AtomicBehavior):
 
     The behavior terminates after one iteration
     """
-
     def __init__(
-            self,
-            new_steer_noise,
-            new_throttle_noise,
-            noise_mean,
-            noise_std,
-            dynamic_mean_for_steer,
-            dynamic_mean_for_throttle,
-            name="ChangeJittering"
+        self,
+        new_steer_noise,
+        new_throttle_noise,
+        noise_mean,
+        noise_std,
+        dynamic_mean_for_steer,
+        dynamic_mean_for_throttle,
+        name="ChangeJittering"
     ):
         """
         Setup actor , maximum steer value and throttle value
@@ -1443,7 +1424,6 @@ class Idle(AtomicBehavior):
     A termination can be enforced by providing a duration value.
     Alternatively, a parallel termination behavior has to be used.
     """
-
     def __init__(self, duration=float("inf"), name="Idle"):
         """
         Setup actor
@@ -1512,15 +1492,14 @@ class WaypointFollower(AtomicBehavior):
         Termination of active WaypointFollowers in initialise of AtomicBehavior because any
         following behavior must terminate the WaypointFollower.
     """
-
     def __init__(
-            self,
-            actor,
-            target_speed=None,
-            plan=None,
-            blackboard_queue_name=None,
-            avoid_collision=False,
-            name="FollowWaypoints"
+        self,
+        actor,
+        target_speed=None,
+        plan=None,
+        blackboard_queue_name=None,
+        avoid_collision=False,
+        name="FollowWaypoints"
     ):
         """
         Set up actor and local planner
@@ -1663,7 +1642,7 @@ class WaypointFollower(AtomicBehavior):
                     if self._actor_dict[actor]:
                         location = self._actor_dict[actor][0]
                         direction = location - actor_location
-                        direction_norm = math.sqrt(direction.x ** 2 + direction.y ** 2)
+                        direction_norm = math.sqrt(direction.x**2 + direction.y**2)
                         control = actor.get_control()
                         control.speed = self._target_speed
                         control.direction = direction / direction_norm
@@ -1724,16 +1703,15 @@ class LaneChange(WaypointFollower):
 
     A parallel termination behavior has to be used.
     """
-
     def __init__(
-            self,
-            actor,
-            speed=10,
-            direction='left',
-            distance_same_lane=5,
-            distance_other_lane=100,
-            distance_lane_change=25,
-            name='LaneChange'
+        self,
+        actor,
+        speed=10,
+        direction='left',
+        distance_same_lane=5,
+        distance_other_lane=100,
+        distance_lane_change=25,
+        name='LaneChange'
     ):
 
         self._direction = direction
@@ -1788,7 +1766,6 @@ class SetInitSpeed(AtomicBehavior):
     This class contains an atomic behavior to set the init_speed of an actor,
     succeding immeditely after initializing
     """
-
     def __init__(self, actor, init_speed=10, name='SetInitSpeed'):
         self._init_speed = init_speed
         self._terminate = None
@@ -1827,7 +1804,6 @@ class HandBrakeVehicle(AtomicBehavior):
 
     The behavior terminates after setting the hand brake value
     """
-
     def __init__(self, vehicle, hand_brake_value, name="Braking"):
         """
         Setup vehicle control and brake value
@@ -1864,7 +1840,6 @@ class ActorDestroy(AtomicBehavior):
 
     The behavior terminates after removing the actor
     """
-
     def __init__(self, actor, name="ActorDestroy"):
         """
         Setup actor
@@ -1900,7 +1875,6 @@ class ActorTransformSetter(AtomicBehavior):
     might fail if new_status is set to success before the actor is really positioned at the new transform.
     Therefore: calculate_distance(actor, transform) < 1 meter
     """
-
     def __init__(self, actor, transform, physics=True, name="ActorTransformSetter"):
         """
         Init
@@ -1948,7 +1922,6 @@ class TrafficLightStateSetter(AtomicBehavior):
 
     The behavior terminates after trying to set the new state
     """
-
     def __init__(self, actor, state, name="TrafficLightStateSetter"):
         """
         Init
@@ -1992,7 +1965,6 @@ class ActorSource(AtomicBehavior):
 
     A parallel termination behavior has to be used.
     """
-
     def __init__(self, actor_type_list, transform, threshold, blackboard_queue_name, actor_limit=7, name="ActorSource"):
         """
         Setup class members
@@ -2046,7 +2018,6 @@ class ActorSink(AtomicBehavior):
 
     A parallel termination behavior has to be used.
     """
-
     def __init__(self, sink_location, threshold, name="ActorSink"):
         """
         Setup class members
@@ -2074,7 +2045,6 @@ class StartRecorder(AtomicBehavior):
             it will be considered an absolute path.
         name (str): name of the behavior
     """
-
     def __init__(self, recorder_name, name="StartRecorder"):
         """
         Setup class members
@@ -2095,7 +2065,6 @@ class StopRecorder(AtomicBehavior):
     Args:
         name (str): name of the behavior
     """
-
     def __init__(self, name="StopRecorder"):
         """
         Setup class members
@@ -2401,7 +2370,7 @@ class ScenarioTriggerer(AtomicBehavior):
     WINDOWS_SIZE = 5
 
     def __init__(
-            self, actor, route, blackboard_list, distance, repeat_scenarios=False, debug=False, name="ScenarioTriggerer"
+        self, actor, route, blackboard_list, distance, repeat_scenarios=False, debug=False, name="ScenarioTriggerer"
     ):
         """
         Setup class members

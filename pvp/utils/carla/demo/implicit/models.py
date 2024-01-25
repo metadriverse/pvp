@@ -36,15 +36,14 @@ def create_resnet_basic_block(width_output_feature_map, height_output_feature_ma
 
 
 class ImplicitSupervisedModel(nn.Module):
-
     def __init__(
-            self,
-            nb_images_input,
-            nb_images_output,
-            hidden_size,
-            nb_class_segmentation,
-            nb_class_dist_to_tl,
-            crop_sky=False,
+        self,
+        nb_images_input,
+        nb_images_output,
+        hidden_size,
+        nb_class_segmentation,
+        nb_class_dist_to_tl,
+        crop_sky=False,
     ):
         super().__init__()
         if crop_sky:
@@ -162,7 +161,6 @@ class ImplicitSupervisedModel(nn.Module):
 
 # Factorised NoisyLinear layer with bias
 class NoisyLinear(nn.Module):
-
     def __init__(self, in_features, out_features, std_init=0.1):
         super(NoisyLinear, self).__init__()
         self.in_features = in_features
@@ -206,9 +204,8 @@ class NoisyLinear(nn.Module):
 
 
 class ImplicitDQN(nn.Module):
-
     def __init__(
-            self, action_space, history_length=4, quantile_embedding_dim=64, crop_sky=False, num_quantile_samples=32
+        self, action_space, history_length=4, quantile_embedding_dim=64, crop_sky=False, num_quantile_samples=32
     ):
         super().__init__()
         self.action_space = action_space

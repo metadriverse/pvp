@@ -1,10 +1,10 @@
 import os
 from functools import partial
 
-from pvp_iclr_release.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.policy import AutoPIDPolicy
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.data import CarlaBenchmarkCollector, BenchmarkDatasetSaver
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.policy import AutoPIDPolicy
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
@@ -18,15 +18,13 @@ config = dict(
                 type='behavior',
                 resolution=1,
             ),
-            obs=(
-                dict(
-                    name='birdview',
-                    type='bev',
-                    size=[320, 320],
-                    pixels_per_meter=5,
-                    pixels_ahead_vehicle=100,
-                ),
-            ),
+            obs=(dict(
+                name='birdview',
+                type='bev',
+                size=[320, 320],
+                pixels_per_meter=5,
+                pixels_ahead_vehicle=100,
+            ), ),
             verbose=False,
         ),
         col_is_failure=True,

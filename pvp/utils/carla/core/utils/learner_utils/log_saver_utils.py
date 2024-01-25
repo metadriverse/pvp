@@ -47,7 +47,6 @@ def _format(**kwargs):
 
 
 class Experiment(object):
-
     def __init__(self, log_dir):
         """
         This MUST be called.
@@ -77,7 +76,6 @@ class Experiment(object):
             return json.load(f)
 
     def save_config(self, config_dict):
-
         def _process(x):
             for key, val in x.items():
                 if isinstance(val, dict):

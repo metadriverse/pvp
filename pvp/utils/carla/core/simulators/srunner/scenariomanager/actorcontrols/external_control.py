@@ -12,7 +12,7 @@ Examples for external controls are: Autoware, CARLA manual_control, etc.
 This module is not intended for modification.
 """
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
 
 
 class ExternalControl(BasicControl):
@@ -23,7 +23,6 @@ class ExternalControl(BasicControl):
     Args:
         actor (carla.Actor): Actor that should be controlled by the agent.
     """
-
     def __init__(self, actor, args=None):
         super(ExternalControl, self).__init__(actor)
 

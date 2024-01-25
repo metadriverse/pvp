@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp_iclr_release.utils.carla.core.models import VehiclePIDController, SteerNoiseWrapper, MPCController
+from pvp.utils.carla.core.models import VehiclePIDController, SteerNoiseWrapper, MPCController
 from .base_carla_policy import BaseCarlaPolicy
 
 DEFAULT_LATERAL_DICT = {'K_P': 1, 'K_D': 0.1, 'K_I': 0, 'dt': 0.1}
@@ -54,8 +54,8 @@ class AutoPIDPolicy(BaseCarlaPolicy):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
+        self,
+        cfg: Dict,
     ) -> None:
         super().__init__(cfg, enable_field=set(['collect', 'eval']))
         self._controller_dict = dict()
@@ -240,8 +240,8 @@ class AutoMPCPolicy(BaseCarlaPolicy):
     )
 
     def __init__(
-            self,
-            cfg: Dict,
+        self,
+        cfg: Dict,
     ) -> None:
         super().__init__(cfg, enable_field=set(['collect', 'eval']))
         self._controller_dict = dict()

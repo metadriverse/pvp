@@ -1,12 +1,11 @@
 from typing import Any
 
 import numpy as np
-from pvp_iclr_release.utils.carla.core.envs import CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.utils.model_utils import common
+from pvp.utils.carla.core.envs import CarlaEnvWrapper
+from pvp.utils.carla.core.utils.model_utils import common
 
 
 class LBCEnvWrapper(CarlaEnvWrapper):
-
     def _get_obs(self, obs):
         new_obs = {
             'command': obs['command'],

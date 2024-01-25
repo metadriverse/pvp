@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp_iclr_release.utils.carla.core.utils.others.image_helper import GifMaker, VideoMaker, show_image
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.others.image_helper import GifMaker, VideoMaker, show_image
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -60,10 +60,15 @@ def draw_texts(data_dict, canvas, color=BLACK, thick=2):
         left_text_pos += 1
     if 'steer' in data_dict and 'throttle' in data_dict and 'brake' in data_dict:
         _write('Steer: {:.3f}'.format(data_dict['steer']), left_text_pos, left_text_horizontal_pos, fontsize=fontsize)
-        _write('Throttle: {:.3f}'.format(data_dict['throttle']), left_text_pos + 1, left_text_horizontal_pos,
-               fontsize=fontsize)
-        _write('Brake: {:.3f}'.format(data_dict['brake']), left_text_pos + 2, left_text_horizontal_pos,
-               fontsize=fontsize)
+        _write(
+            'Throttle: {:.3f}'.format(data_dict['throttle']),
+            left_text_pos + 1,
+            left_text_horizontal_pos,
+            fontsize=fontsize
+        )
+        _write(
+            'Brake: {:.3f}'.format(data_dict['brake']), left_text_pos + 2, left_text_horizontal_pos, fontsize=fontsize
+        )
         left_text_pos += 3
     if data_dict.get('takeover', False):
         if color == BLACK:
@@ -74,17 +79,23 @@ def draw_texts(data_dict, canvas, color=BLACK, thick=2):
 
     right_text_pos = 1
     if 'total_step' in data_dict:
-        _write('Total Step: {} ({:02d}:{:04.1f})'.format(
-            data_dict["total_step"], int(data_dict["total_time"] // 60), data_dict["total_time"] % 60
-        ), right_text_pos, 9, fontsize=fontsize)
+        _write(
+            'Total Step: {} ({:02d}:{:04.1f})'.format(
+                data_dict["total_step"], int(data_dict["total_time"] // 60), data_dict["total_time"] % 60
+            ),
+            right_text_pos,
+            9,
+            fontsize=fontsize
+        )
         right_text_pos += 1
     # if 'total_lights' in data_dict and 'total_lights_ran' in data_dict:
     #     text = 'Lights Ran: %d/%d' % (data_dict['total_lights_ran'], data_dict['total_lights'])
     #     _write(text, right_text_pos, 9, fontsize=fontsize)
     #     right_text_pos += 1
     if 'takeover_rate' in data_dict:
-        _write('Takeover Rate: {:04.1f} %'.format(100 * data_dict["takeover_rate"]), right_text_pos, 9,
-               fontsize=fontsize)
+        _write(
+            'Takeover Rate: {:04.1f} %'.format(100 * data_dict["takeover_rate"]), right_text_pos, 9, fontsize=fontsize
+        )
         right_text_pos += 1
     if 'distance_to_go' in data_dict:
         text = 'Distance to go: %.1f' % data_dict['distance_to_go']
@@ -270,16 +281,13 @@ def move_window(name, location, image_x, image_y, monitor_index=1):
         cv2.moveWindow(name, current_monitor.x, current_monitor.y)
     elif location == "lower right":
         cv2.moveWindow(
-            name,
-            current_monitor.x + current_monitor.width - image_x,
+            name, current_monitor.x + current_monitor.width - image_x,
             current_monitor.y + current_monitor.height - image_y
         )
     elif (location is None) or (location == "center"):
         cv2.moveWindow(
-            name,
-            int(current_monitor.x + (current_monitor.width - image_x) / 2),
+            name, int(current_monitor.x + (current_monitor.width - image_x) / 2),
             int(current_monitor.y + (current_monitor.height - image_y) / 2)
         )
     else:
         raise ValueError("Unknown location: {}".format(location))
-

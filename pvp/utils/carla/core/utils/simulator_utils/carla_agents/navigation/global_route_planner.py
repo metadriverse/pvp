@@ -12,8 +12,8 @@ import carla
 import networkx as nx
 import numpy as np
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
 
 
 class GlobalRoutePlanner(object):
@@ -22,7 +22,6 @@ class GlobalRoutePlanner(object):
     Instantiate the class by passing a reference to
     A GlobalRoutePlannerDAO object.
     """
-
     def __init__(self, dao):
         """
         Constructor
@@ -119,7 +118,7 @@ class GlobalRoutePlanner(object):
             exit_xyz = segment['exitxyz']
             road_id, section_id, lane_id = end_wp.road_id, end_wp.section_id, end_wp.lane_id
             if road_id in self._road_id_to_edge and section_id in self._road_id_to_edge[
-                road_id] and lane_id in self._road_id_to_edge[road_id][section_id]:
+                    road_id] and lane_id in self._road_id_to_edge[road_id][section_id]:
                 pass
             else:
                 count_loose_ends += 1
@@ -133,7 +132,7 @@ class GlobalRoutePlanner(object):
                 next_wp = end_wp.next(hop_resolution)
                 path = []
                 while next_wp is not None and next_wp and next_wp[0].road_id == road_id and next_wp[
-                    0].section_id == section_id and next_wp[0].lane_id == lane_id:
+                        0].section_id == section_id and next_wp[0].lane_id == lane_id:
                     path.append(next_wp[0])
                     next_wp = next_wp[0].next(hop_resolution)
                 if path:

@@ -18,14 +18,13 @@ class BEVSpeedConvEncoder(nn.Module):
         - kernel_size (List, optional): Conv kernel size for each layer. Defaults to [8, 4, 3].
         - stride (List, optional): Conv stride for each layer. Defaults to [4, 2, 1].
     """
-
     def __init__(
-            self,
-            obs_shape: Tuple,
-            hidden_dim_list: List,
-            embedding_size: int,
-            kernel_size: List = [8, 4, 3],
-            stride: List = [4, 2, 1],
+        self,
+        obs_shape: Tuple,
+        hidden_dim_list: List,
+        embedding_size: int,
+        kernel_size: List = [8, 4, 3],
+        stride: List = [4, 2, 1],
     ) -> None:
         super().__init__()
         assert len(kernel_size) == len(stride), (kernel_size, stride)

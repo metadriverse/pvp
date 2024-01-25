@@ -4,8 +4,8 @@ from typing import Dict, Optional, Union
 import numpy as np
 from gym import Wrapper, spaces
 
-from pvp_iclr_release.stable_baseline3.common.vec_env.base_vec_env import VecEnv
-from pvp_iclr_release.stable_baseline3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
+from pvp.sb3.common.vec_env.base_vec_env import VecEnv
+from pvp.sb3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
 
 
 class FrameStack(Wrapper):
@@ -43,7 +43,7 @@ class FrameStack(Wrapper):
 
 if __name__ == '__main__':
     import gym
-    from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
+    from pvp.sb3.common.atari_wrappers import AtariWrapper
 
     env_name = "BreakoutNoFrameskip-v4"
     train_env = gym.make(env_name)

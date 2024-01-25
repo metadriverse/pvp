@@ -11,11 +11,10 @@ from PIL import Image
 from scipy.special import comb
 from torch.utils.data import Dataset
 
-from pvp_iclr_release.utils.carla.core.utils.data_utils import splitter
+from pvp.utils.carla.core.utils.data_utils import splitter
 
 
 class Bezier(object):
-
     def __init__(self, time_list, xy_list, v0, vf=(1e-6, 1e-6)):
         self.t0 = time_list[0]
         self.t_span = time_list[-1] - time_list[0]
@@ -46,7 +45,7 @@ class Bezier(object):
 
     @staticmethod
     def bernstein(t, i, n):
-        return comb(n, i) * t ** i * (1 - t) ** (n - i)
+        return comb(n, i) * t**i * (1 - t)**(n - i)
 
     @staticmethod
     def bezier_curve(t, point_array, bias=0):
@@ -57,7 +56,7 @@ class Bezier(object):
         p = np.zeros((2, size))
         new_point_array = np.diff(point_array, n=bias, axis=1)
         for i in range(n + 1 - bias):
-            p += new_point_array[:, i][:, np.newaxis] * Bezier.bernstein(t, i, n - bias) * n ** bias
+            p += new_point_array[:, i][:, np.newaxis] * Bezier.bernstein(t, i, n - bias) * n**bias
         return p
 
     def position(self, time, expand=True):
@@ -100,7 +99,6 @@ def parse_remove_configuration(configuration):
 
 class CictDataset(Dataset):
     """ The conditional imitation learning dataset"""
-
     def __init__(self, root_dir, cfg, img_transform=None, dest_transform=None, pm_transform=None):
         # Setting the root directory for this dataset
         self.root_dir = root_dir
@@ -243,12 +241,11 @@ class CictDataset(Dataset):
 
 class PathDataset(Dataset):
     """ The conditional imitation learning dataset"""
-
     def __init__(
-            self,
-            root_dir,
-            cfg,
-            transform=None,
+        self,
+        root_dir,
+        cfg,
+        transform=None,
     ):
         # Setting the root directory for this dataset
         self.root_dir = root_dir
@@ -355,7 +352,7 @@ class PathDataset(Dataset):
                         collision_id = i
                         # print(collision_id, collision_xy)
 
-                zero = np.zeros((2,))
+                zero = np.zeros((2, ))
                 if collision_flag:
                     xy_list.append(collision_xy)
                     v_xy_list.append(zero)
@@ -374,7 +371,7 @@ class PathDataset(Dataset):
                     theta_a = np.arctan2(rel_a[1], rel_a[0])
                     theta_v = np.arctan2(rel_v[1], rel_v[0])
                     sign = np.sign(np.cos(theta_a - theta_v))
-                    a = sign * np.sqrt(np.sum(rel_a ** 2))
+                    a = sign * np.sqrt(np.sum(rel_a**2))
                     a_list.append(a)
                     time_list.append(t)
 
@@ -385,10 +382,10 @@ class PathDataset(Dataset):
                 brake_id = collision_id - cur_id
                 for i in range(collision_id - cur_id):
                     xy = xy_list[brake_id]
-                    safe_dist = np.sqrt(np.sum((xy - collision_xy) ** 2))
+                    safe_dist = np.sqrt(np.sum((xy - collision_xy)**2))
                     v_xy = v_xy_list[brake_id]
                     # d = v ** 2 / (2 * a)
-                    brake_dist = np.sum(v_xy ** 2) / (2 * a_brake)
+                    brake_dist = np.sum(v_xy**2) / (2 * a_brake)
                     if brake_dist < safe_dist:
                         break
                     else:
@@ -409,7 +406,7 @@ class PathDataset(Dataset):
                         xy_list[i] = position[:, i - brake_id]
                         v_xy_list[i] = velocity[:, i - brake_id]
                         a_xy_list[i] = acceleration[:, i - brake_id]
-                        a_list[i] = -np.sqrt(np.sum((acceleration[:, i - brake_id]) ** 2))
+                        a_list[i] = -np.sqrt(np.sum((acceleration[:, i - brake_id])**2))
                         time_list[i] = time_array[i - brake_id]
 
             ###########
@@ -423,7 +420,7 @@ class PathDataset(Dataset):
         label_t = torch.FloatTensor(time_list) - cur_t / self.max_t
 
         cur_v = self.measurements[name][cur_id]['velocity'][:2]
-        cur_v = np.sqrt(np.sum(cur_v ** 2))
+        cur_v = np.sqrt(np.sum(cur_v**2))
         cur_v = torch.FloatTensor([cur_v])
 
         # label_xy = torch.from_numpy(xy_list[label_id]).float() / self.max_dist

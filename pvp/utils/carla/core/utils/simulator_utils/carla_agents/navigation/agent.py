@@ -12,7 +12,7 @@ from enum import Enum
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead, \
     is_within_distance, \
     compute_distance
 
@@ -28,7 +28,6 @@ class AgentState(Enum):
 
 class Agent(object):
     """Base class to define agents in CARLA"""
-
     def __init__(self, vehicle):
         """
         Constructor method.
@@ -112,7 +111,6 @@ class Agent(object):
         """
         Calculates the yaw of the waypoint that represents the trigger volume of the traffic light
         """
-
         def rotate_point(point, radians):
             """
             rotate a given point by a given angle
@@ -133,7 +131,7 @@ class Agent(object):
         return carla.Location(point_location.x, point_location.y, point_location.z)
 
     def _bh_is_vehicle_hazard(
-            self, ego_wpt, ego_loc, vehicle_list, proximity_th, up_angle_th, low_angle_th=0, lane_offset=0
+        self, ego_wpt, ego_loc, vehicle_list, proximity_th, up_angle_th, low_angle_th=0, lane_offset=0
     ):
         """
         Check if a given vehicle is an obstacle in our way. To this end we take

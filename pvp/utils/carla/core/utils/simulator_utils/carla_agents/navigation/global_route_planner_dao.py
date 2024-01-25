@@ -14,7 +14,6 @@ class GlobalRoutePlannerDAO(object):
     This class is the data access layer for fetching data
     from the Carla server instance for GlobalRoutePlanner
     """
-
     def __init__(self, wmap, sampling_resolution):
         """
         Constructor method.

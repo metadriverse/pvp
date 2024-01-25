@@ -1,8 +1,8 @@
 import argparse
-from pvp_iclr_release.eval_script.metadrive.eval_metadrive_utils import evaluate_metadrive_once
+from pvp.eval_script.metadrive.eval_metadrive_utils import evaluate_metadrive_once
 import os.path as osp
 
-if __name__=="__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", required=True, type=str)
     parser.add_argument("--ret_save_folder", required=True, type=str)
@@ -26,7 +26,9 @@ if __name__=="__main__":
             print("=====\nWe can't find checkpoint {}\n=====".format(ckpt_path))
             continue
 
-        print("===== Start evaluating checkpoint {}. Will be saved at {} =====".format(ckpt_index, args.ret_save_folder))
+        print(
+            "===== Start evaluating checkpoint {}. Will be saved at {} =====".format(ckpt_index, args.ret_save_folder)
+        )
         ret = evaluate_metadrive_once(
             ckpt_path=args.path,
             ckpt_index=ckpt_index,

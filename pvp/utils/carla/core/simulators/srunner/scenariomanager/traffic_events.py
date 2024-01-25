@@ -34,7 +34,6 @@ class TrafficEvent(object):
     """
     TrafficEvent definition
     """
-
     def __init__(self, event_type, message=None, dictionary=None):
         """
         Initialize object

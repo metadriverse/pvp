@@ -5,11 +5,10 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from pvp_iclr_release.utils.carla.core.utils.others.image_helper import read_image
+from pvp.utils.carla.core.utils.others.image_helper import read_image
 
 
 class CILRSDataset(Dataset):
-
     def __init__(self, root_dir: str, transform: bool = False, preloads: str = None) -> None:
         self._root_dir = root_dir
         self._transform = transform

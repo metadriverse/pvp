@@ -19,8 +19,7 @@ class SafeFallbackEncoder(json.JSONEncoder):
             if np.isnan(value):
                 return self.nan_str
 
-            if (type(value).__module__ == np.__name__
-                    and isinstance(value, np.ndarray)):
+            if (type(value).__module__ == np.__name__ and isinstance(value, np.ndarray)):
                 return value.tolist()
 
             if issubclass(type(value), numbers.Integral):
@@ -48,7 +47,7 @@ def pretty_print(result):
 
 
 def norm(a, b):
-    return math.sqrt(a ** 2 + b ** 2)
+    return math.sqrt(a**2 + b**2)
 
 
 def merge_dicts(d1, d2):
@@ -65,11 +64,9 @@ def merge_dicts(d1, d2):
     return merged
 
 
-def deep_update(original,
-                new_dict,
-                new_keys_allowed=False,
-                allow_new_subkey_list=None,
-                override_all_if_type_changes=None):
+def deep_update(
+    original, new_dict, new_keys_allowed=False, allow_new_subkey_list=None, override_all_if_type_changes=None
+):
     """Updates original dict with values from new_dict recursively.
 
     If new key is introduced in new_dict, then if new_keys_allowed is not

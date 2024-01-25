@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp_iclr_release.utils.carla.core.envs import BenchmarkEnvWrapper
+from pvp.utils.carla.core.envs import BenchmarkEnvWrapper
 
 DEFAULT_ACC_LIST = [
     (0, 1),
@@ -23,7 +23,6 @@ DEFAULT_STEER_LIST = [
 
 
 class DiscreteBenchmarkEnvWrapper(BenchmarkEnvWrapper):
-
     def __init__(self, env, cfg, acc_list=None, steer_list=None):
         super().__init__(env, cfg)
         if acc_list is not None:
@@ -67,7 +66,6 @@ class DiscreteBenchmarkEnvWrapper(BenchmarkEnvWrapper):
 
 
 class MultiDiscreteBenchmarkEnvWrapper(BenchmarkEnvWrapper):
-
     def __init__(self, env, cfg, acc_list=None, steer_list=None):
         super().__init__(env, cfg)
         if acc_list is not None:
@@ -112,7 +110,6 @@ class MultiDiscreteBenchmarkEnvWrapper(BenchmarkEnvWrapper):
 
 
 class ContinuousBenchmarkEnvWrapper(BenchmarkEnvWrapper):
-
     def reset(self, *args, **kwargs) -> Any:
         obs = super().reset(*args, **kwargs)
         return self.postprocess_obs(obs, in_reset=True)

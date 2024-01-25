@@ -2,9 +2,9 @@ import os
 
 import torch
 import torchvision.utils as vutils
-from pvp_iclr_release.utils.carla.core.data import BeVVAEDataset
-from pvp_iclr_release.utils.carla.core.models import VanillaVAE
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.utils.carla.core.data import BeVVAEDataset
+from pvp.utils.carla.core.models import VanillaVAE
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 from torch import optim
@@ -14,12 +14,8 @@ from tqdm import tqdm
 config = dict(
     exp_name='vae_naive_train',
     data=dict(
-        train=dict(
-            root_dir='naive_bev_train',
-        ),
-        val=dict(
-            root_dir='naive_bev_val',
-        ),
+        train=dict(root_dir='naive_bev_train', ),
+        val=dict(root_dir='naive_bev_val', ),
     ),
     learn=dict(
         batch_size=128,
@@ -61,8 +57,9 @@ def main(cfg):
     train_dataset = BeVVAEDataset(**cfg.data.train)
     train_dataloader = DataLoader(train_dataset, batch_size=cfg.learn.batch_size, num_workers=12, pin_memory=True)
     val_dataset = BeVVAEDataset(**cfg.data.val)
-    val_dataloader = DataLoader(val_dataset, batch_size=cfg.learn.batch_size, num_workers=12, pin_memory=True,
-                                drop_last=True, shuffle=True)
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=cfg.learn.batch_size, num_workers=12, pin_memory=True, drop_last=True, shuffle=True
+    )
 
     model = VanillaVAE(**cfg.model)
     model.cuda()

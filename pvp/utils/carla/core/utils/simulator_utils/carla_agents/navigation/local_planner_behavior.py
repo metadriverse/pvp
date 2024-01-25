@@ -12,8 +12,8 @@ from collections import deque
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.controller import VehiclePIDController
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import distance_vehicle, \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.controller import VehiclePIDController
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import distance_vehicle, \
     draw_waypoints
 from .local_planner import RoadOption
 

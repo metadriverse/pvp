@@ -5,15 +5,15 @@ import gym
 import numpy as np
 import pandas as pd
 
-from pvp_iclr_release.stable_baseline3.common.atari_wrappers import AtariWrapper
-from pvp_iclr_release.stable_baseline3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-from pvp_iclr_release.stable_baseline3.dqn.policies import CnnPolicy
-# from pvp_iclr_release.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
-from pvp_iclr_release.utils.print_dict_utils import pretty_print
-from pvp_iclr_release.pvp.pvp_dqn.pvp_dqn import pvpDQN
-from pvp_iclr_release.training_script.atari.train_atari_dqn import DQN
-from pvp_iclr_release.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
-from pvp_iclr_release.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
+from pvp.sb3.common.atari_wrappers import AtariWrapper
+from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.sb3.dqn.policies import CnnPolicy
+# from pvp.utils.expert_human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.utils.print_dict_utils import pretty_print
+from pvp.pvp.pvp_dqn.pvp_dqn import pvpDQN
+from pvp.training_script.atari.train_atari_dqn import DQN
+from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.utils.atari.atari_env_wrapper import HumanInTheLoopAtariWrapper
 
 EVAL_ENV_START = 0
 
@@ -24,18 +24,16 @@ class AtariPolicyFunction:
             policy=CnnPolicy,
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256
-                ),
+                features_extractor_kwargs=dict(features_dim=256),
                 # share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             env=env,
             learning_rate=1e-4,
             optimize_memory_usage=True,
             buffer_size=100000,
-
             batch_size=2,  # Reduce the batch size for real-time copilot
             train_freq=4,
             gradient_steps=1,
@@ -45,8 +43,6 @@ class AtariPolicyFunction:
             verbose=2,
             # seed=0,
             device="auto",
-
-
             learning_starts=0,
             exploration_fraction=0.0,
             exploration_final_eps=0.0,
@@ -56,29 +52,25 @@ class AtariPolicyFunction:
 
     def __call__(self, o, deterministic=False):
         assert deterministic
-        action, state =  self.algo.predict(o, deterministic=deterministic)
+        action, state = self.algo.predict(o, deterministic=deterministic)
         return action
 
 
 def evaluate_atari_once(
-        ckpt_path,
-        ckpt_index,
-        folder_name,
-        use_render=False,
-        num_ep_in_one_env=5,
-        env_name="BreakoutNoFrameskip-v4",
+    ckpt_path,
+    ckpt_index,
+    folder_name,
+    use_render=False,
+    num_ep_in_one_env=5,
+    env_name="BreakoutNoFrameskip-v4",
 ):
     ckpt_name = "checkpoint_{}".format(ckpt_index)
     # ===== Evaluate populations =====
     os.makedirs("evaluate_results", exist_ok=True)
     saved_results = []
 
-
-
-    from pvp_iclr_release.stable_baseline3.common.monitor import Monitor
+    from pvp.sb3.common.monitor import Monitor
     from gym.wrappers.time_limit import TimeLimit
-
-
 
     def _make_env():
         env = gym.make(env_name)
@@ -200,7 +192,6 @@ def evaluate_atari_once(
                     if ep_count >= num_ep_in_one_env:
                         need_break = True
 
-
     except Exception as e:
         raise e
     finally:
@@ -208,7 +199,12 @@ def evaluate_atari_once(
 
     df = pd.DataFrame(saved_results)
     print("===== Result =====")
-    print("Checkpoint {} results (Total {} episodes): \n{}".format(ckpt_name, len(df), {k: np.round(df[k].mean(), 3) for k in df}))
+    print(
+        "Checkpoint {} results (Total {} episodes): \n{}".format(
+            ckpt_name, len(df), {k: np.round(df[k].mean(), 3)
+                                 for k in df}
+        )
+    )
     print("===== Result =====")
     path = "{}/{}.csv".format(folder_name, ckpt_name)
     print("Final data is saved at: ", path)

@@ -17,13 +17,12 @@ class VanillaVAE(nn.Module):
         - hidden_dims (List): the hidden dimensions of each layer in the MLP architecture in encoder and decoder
         - kld_weight(float): the weight of KLD loss
     """
-
     def __init__(
-            self,
-            in_channels: int,
-            latent_dim: int,
-            hidden_dims: List = None,
-            kld_weight: float = 0.1,
+        self,
+        in_channels: int,
+        latent_dim: int,
+        hidden_dims: List = None,
+        kld_weight: float = 0.1,
     ) -> None:
         super(VanillaVAE, self).__init__()
         self.latent_dim = latent_dim
@@ -173,7 +172,7 @@ class VanillaVAE(nn.Module):
         if recons_loss < 0.05:
             recons_loss = F.l1_loss(recons, input)
 
-        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
+        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu**2 - log_var.exp(), dim=1), dim=0)
 
         loss = recons_loss + kld_weight * kld_loss
 

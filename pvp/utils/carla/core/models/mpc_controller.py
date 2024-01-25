@@ -5,7 +5,6 @@ from scipy.optimize import minimize
 
 
 class FollowState:
-
     def __init__(self, x=0, y=0, th=0, v=0, cte=0, eth=0) -> None:
         self.x = x
         self.y = y
@@ -16,7 +15,6 @@ class FollowState:
 
 
 class ControlInput:
-
     def __init__(self, steer_angle: float = 0, acceleration: float = 0) -> None:
         self.steer_angle = steer_angle
         self.acceleration = acceleration
@@ -42,7 +40,6 @@ class MPCController(object):
         - horizon (int, optional): Steps MPC model predicts in calculating objective function. Defaults to 10.
         - fps (int, optional): FPS of predictive model. Defaults to 5.
     """
-
     def __init__(self, args_objective: Dict = None, horizon: int = 10, fps: int = 5) -> None:
         self._current_x = 0
         self._current_y = 0
@@ -79,7 +76,7 @@ class MPCController(object):
         output_state.th = input_state.th + (input_state.v / L) * steer * self._dt
         output_state.v = input_state.v + acc * self._dt
 
-        th_des = np.arctan(coeff[2] + 2 * coeff[1] * input_state.x + 3 * coeff[0] * input_state.x ** 2)
+        th_des = np.arctan(coeff[2] + 2 * coeff[1] * input_state.x + 3 * coeff[0] * input_state.x**2)
         output_state.cte = np.polyval(coeff, input_state.x
                                       ) - input_state.y + (input_state.v * np.sin(input_state.eth) * self._dt)
         output_state.eth = input_state.th - th_des + ((input_state.v / L) * steer * self._dt)
@@ -95,11 +92,11 @@ class MPCController(object):
             control_input.acceleration = u[i * 2]
             control_input.steer_angle = u[i * 2 + 1]
             state = self._model(control_input, state, coeff)
-            cost += self._cte_w * state.cte ** 2
-            cost += self._eth_w * state.eth ** 2
-            cost += self._v_w * (state.v - self._target_speed) ** 2
-            cost += self._st_w * u[i * 2 + 1] ** 2
-            cost += self._acc_w * u[i * 2] ** 2
+            cost += self._cte_w * state.cte**2
+            cost += self._eth_w * state.eth**2
+            cost += self._v_w * (state.v - self._target_speed)**2
+            cost += self._st_w * u[i * 2 + 1]**2
+            cost += self._acc_w * u[i * 2]**2
         return cost
 
     def _map_waypoints_to_car_coord(self, waypoints):

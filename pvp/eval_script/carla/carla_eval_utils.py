@@ -1,35 +1,38 @@
 import argparse
 import os
 import os.path as osp
-import time
 from collections import defaultdict
 
 import pandas as pd
 
+from pvp.pvp_td3 import pvpTD3
+from pvp.utils.carla.pvp_carla_env import PVPEnv
+from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
+from pvp.sb3.td3.policies import TD3Policy
+from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
+from pvp.sb3 import TD3
+from pvp.sb3.td3.policies import MultiInputPolicy
 
-from pvp_iclr_release.pvp.pvp_td3.pvp_td3 import pvpTD3
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
-from pvp_iclr_release.stable_baseline3.old.old_buffer import oldReplayBuffer
-from pvp_iclr_release.stable_baseline3.sac.our_features_extractor import OurFeaturesExtractor
-from pvp_iclr_release.stable_baseline3.td3.policies import TD3Policy
-from pvp_iclr_release.stable_baseline3.old import oldPolicy, oldReplayBuffer, old
-from pvp_iclr_release.stable_baseline3 import TD3
-from pvp_iclr_release.stable_baseline3.td3.policies import MultiInputPolicy
+
 def set_up_env(port, obs_mode, debug_vis=False, disable_vis=False, disable_takeover=True, force_fps=10):
-    eval_env = PVPEnv(dict(
-        obs_mode=obs_mode,
-        force_fps=force_fps,
-        disable_vis=disable_vis,
-        debug_vis=debug_vis,
-        port=port,
-        disable_takeover=disable_takeover,
-        show_text=False,
-        normalize_obs=True,
-
-        env={"visualize": {"location": "upper left"}}
-    ))
+    eval_env = PVPEnv(
+        dict(
+            obs_mode=obs_mode,
+            force_fps=force_fps,
+            disable_vis=disable_vis,
+            debug_vis=debug_vis,
+            port=port,
+            disable_takeover=disable_takeover,
+            show_text=False,
+            normalize_obs=True,
+            env={"visualize": {
+                "location": "upper left"
+            }}
+        )
+    )
     eval_env.seed(10)
     return eval_env
+
 
 def setup_model_old(eval_env, seed, obs_mode):
     if obs_mode.endswith("stack"):
@@ -43,18 +46,16 @@ def setup_model_old(eval_env, seed, obs_mode):
         algo=dict(
             policy=oldPolicy,
             replay_buffer_class=oldReplayBuffer,  ###
-            replay_buffer_kwargs=dict(
-                discard_reward=True  # xxx: We run in reward-free manner!
-            ),
+            replay_buffer_kwargs=dict(discard_reward=True  # xxx: We run in reward-free manner!
+                                      ),
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256 + other_feat_dim
-                ),
+                features_extractor_kwargs=dict(features_dim=256 + other_feat_dim),
                 share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             env=eval_env,
             learning_rate=dict(
                 actor=3e-4,
@@ -62,35 +63,31 @@ def setup_model_old(eval_env, seed, obs_mode):
                 entropy=3e-4,
             ),
             # learning_rate=1e-4,
-
             optimize_memory_usage=True,
-
             buffer_size=50_000,  # We only conduct experiment less than 50K steps
-
             learning_starts=100,  ###
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
             train_freq=1,
             gradient_steps=1,
-
             action_noise=None,
             ent_coef="auto",
             target_update_interval=1,
             target_entropy="auto",
             # tensorboard_log=log_dir,
             create_eval_env=False,
-
             verbose=2,
             # seed=seed,
             device="auto",
         ),
-
     )
 
     # ===== Setup the training algorithm =====
     model = old(**config["algo"])
     return model
+
+
 def setup_model(eval_env, seed, obs_mode):
     if obs_mode.endswith("stack"):
         other_feat_dim = 0
@@ -103,52 +100,45 @@ def setup_model(eval_env, seed, obs_mode):
         algo=dict(
             policy=TD3Policy,
             replay_buffer_class=oldReplayBuffer,  ###
-            replay_buffer_kwargs=dict(
-                discard_reward=True  # xxx: We run in reward-free manner!
-            ),
+            replay_buffer_kwargs=dict(discard_reward=True  # xxx: We run in reward-free manner!
+                                      ),
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256 + other_feat_dim
-                ),
+                features_extractor_kwargs=dict(features_dim=256 + other_feat_dim),
                 share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             env=eval_env,
             # learning_rate=dict(
             #     actor=3e-4,
             #     critic=3e-4,
             #     entropy=3e-4,
             # ),
-
             optimize_memory_usage=True,
-
             buffer_size=10,  # 0.3e6
-
             learning_starts=10,  ###
             batch_size=220,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
             train_freq=1,
             gradient_steps=1,
-
             action_noise=None,
             # ent_coef="auto",
             # target_update_interval=1,
             # target_entropy="auto",
             create_eval_env=False,
-
             verbose=2,
             seed=seed,
             device="auto",
         ),
-
     )
 
     # ===== Setup the training algorithm =====
     model = pvpTD3(**config["algo"])
     return model
+
 
 def setup_model_td3(eval_env, seed, obs_mode):
     if obs_mode.endswith("stack"):
@@ -163,20 +153,16 @@ def setup_model_td3(eval_env, seed, obs_mode):
             policy=MultiInputPolicy,
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
-                features_extractor_kwargs=dict(
-                    features_dim=256 + other_feat_dim,
-                ),
+                features_extractor_kwargs=dict(features_dim=256 + other_feat_dim, ),
                 share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
-                net_arch=[256, ]
+                net_arch=[
+                    256,
+                ]
             ),
-
             env=eval_env,
             learning_rate=1e-4,
-
             buffer_size=500_000,  # 0.5e6
-
             learning_starts=10_000,
-
             batch_size=200,
             tau=0.005,
             gamma=0.99,
@@ -190,17 +176,17 @@ def setup_model_td3(eval_env, seed, obs_mode):
             # target_entropy="auto",
             # tensorboard_log=log_dir,
             create_eval_env=False,
-
             verbose=2,
             # seed=seed,
             device="auto",
         ),
-
     )
 
     # ===== Setup the training algorithm =====
     model = TD3(**config["algo"])
     return model
+
+
 def update_model_if_needed(last_model, model, log_dir):
 
     possible_log_dirs = sorted(os.listdir(log_dir))
@@ -248,8 +234,12 @@ if __name__ == '__main__':
     parser.add_argument("--exp-name", default="TEST", type=str, help="The experiment name.")
     parser.add_argument("--port", default=10000, type=int, help="Carla server port.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    parser.add_argument("--obs-mode", default="birdview", choices=["birdview", "first", "birdview42", "firststack"],
-                        help="Set to True to upload stats to wandb.")
+    parser.add_argument(
+        "--obs-mode",
+        default="birdview",
+        choices=["birdview", "first", "birdview42", "firststack"],
+        help="Set to True to upload stats to wandb."
+    )
     args = parser.parse_args()
 
     exp_name = args.exp_name

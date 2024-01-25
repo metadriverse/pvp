@@ -12,10 +12,10 @@ import math
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import LocalPlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import LocalPlanner
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 
 class NpcVehicleControl(BasicControl):
@@ -93,7 +93,7 @@ class NpcVehicleControl(BasicControl):
         self._actor.apply_control(control)
 
         if self._init_speed:
-            current_speed = math.sqrt(self._actor.get_velocity().x ** 2 + self._actor.get_velocity().y ** 2)
+            current_speed = math.sqrt(self._actor.get_velocity().x**2 + self._actor.get_velocity().y**2)
 
             # If _init_speed is set, and the PID controller is not yet up to the point to take over,
             # we manually set the vehicle to drive with the correct velocity

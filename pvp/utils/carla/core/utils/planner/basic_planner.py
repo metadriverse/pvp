@@ -7,14 +7,14 @@ import carla
 import numpy as np
 from easydict import EasyDict
 
-from pvp_iclr_release.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp_iclr_release.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
+from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
 
 
 class AgentState(Enum):
@@ -93,7 +93,7 @@ class BasicPlanner(object):
         self._grp.setup()
 
     def set_destination(
-            self, start_location: carla.Location, end_location: carla.Location, clean: bool = False
+        self, start_location: carla.Location, end_location: carla.Location, clean: bool = False
     ) -> None:
         """
         This method creates a route of a list of waypoints from start location to destination location

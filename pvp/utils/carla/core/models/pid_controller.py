@@ -14,7 +14,6 @@ class PIDController(object):
 
     :Interfaces: forward, clear
     """
-
     def __init__(self, K_P=1.0, K_I=0.0, K_D=0.0, fps=10, n=30, **kwargs):
         self._K_P = K_P
         self._K_I = K_I
@@ -61,7 +60,6 @@ class CustomController():
     """
     Controller used by LBC.
     """
-
     def __init__(self, controller_args, k=0.5, n=2, wheelbase=2.89, dt=0.1):
         self._wheelbase = wheelbase
         self._k = k

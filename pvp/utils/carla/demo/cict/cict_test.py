@@ -3,11 +3,11 @@ Copyright 2021 OpenDILab. All Rights Reserved:
 Description:
 '''
 
-from pvp_iclr_release.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp_iclr_release.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp_iclr_release.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.utils.carla.core.eval import SingleCarlaEvaluator
+from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.utils import set_pkg_seed
-from pvp_iclr_release.utils.carla.demo.cict_demo.cict_policy import CICTPolicy
+from pvp.utils.carla.demo.cict_demo.cict_policy import CICTPolicy
 from easydict import EasyDict
 
 autoeval_config = dict(
@@ -42,21 +42,13 @@ autoeval_config = dict(
         col_is_failure=True,
         stuck_is_failure=True,
         visualize=dict(type='rgb', outputs=['show']),
-        wrapper=dict(
-            suite='FullTown02-v1',
-        ),
+        wrapper=dict(suite='FullTown02-v1', ),
     ),
-    server=[
-        dict(carla_host='localhost', carla_ports=[9000, 9002, 2])
-    ],
-    policy=dict(
-        eval=dict(
-            evaluator=dict(
-                render=True,
-                transform_obs=True,
-            ),
-        ),
-    ),
+    server=[dict(carla_host='localhost', carla_ports=[9000, 9002, 2])],
+    policy=dict(eval=dict(evaluator=dict(
+        render=True,
+        transform_obs=True,
+    ), ), ),
 )
 
 policy_config = dict(
@@ -103,7 +95,11 @@ def main(cfg, seed=0):
     assert len(tcp_list) > 0, "No Carla server found!"
     host, port = tcp_list[0]
 
-    carla_env = CarlaEnvWrapper(SimpleCarlaEnv(cfg.env, host, port, ), cfg.env.wrapper)
+    carla_env = CarlaEnvWrapper(SimpleCarlaEnv(
+        cfg.env,
+        host,
+        port,
+    ), cfg.env.wrapper)
     carla_env.seed(seed)
     set_pkg_seed(seed)
     policy = CICTPolicy(cfg.policy)

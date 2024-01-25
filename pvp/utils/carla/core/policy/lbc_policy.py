@@ -6,10 +6,10 @@ from ding.torch_utils.data_helper import to_dtype
 from ding.utils.data import default_collate
 from torchvision import transforms
 
-from pvp_iclr_release.utils.carla.core.models import PIDController, CustomController
-from pvp_iclr_release.utils.carla.core.models.lbc_model import LBCBirdviewModel, LBCImageModel
-from pvp_iclr_release.utils.carla.core.utils.learner_utils.loss_utils import LocationLoss
-from pvp_iclr_release.utils.carla.core.utils.model_utils import common
+from pvp.utils.carla.core.models import PIDController, CustomController
+from pvp.utils.carla.core.models.lbc_model import LBCBirdviewModel, LBCImageModel
+from pvp.utils.carla.core.utils.learner_utils.loss_utils import LocationLoss
+from pvp.utils.carla.core.utils.model_utils import common
 from .base_carla_policy import BaseCarlaPolicy
 
 STEPS = 5
@@ -545,12 +545,12 @@ def ls_circle(points):
     us = xs - np.mean(xs)
     vs = ys - np.mean(ys)
 
-    Suu = np.sum(us ** 2)
+    Suu = np.sum(us**2)
     Suv = np.sum(us * vs)
-    Svv = np.sum(vs ** 2)
-    Suuu = np.sum(us ** 3)
+    Svv = np.sum(vs**2)
+    Suuu = np.sum(us**3)
     Suvv = np.sum(us * vs * vs)
-    Svvv = np.sum(vs ** 3)
+    Svvv = np.sum(vs**3)
     Svuu = np.sum(vs * us * us)
 
     A = np.array([[Suu, Suv], [Suv, Svv]])

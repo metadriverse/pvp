@@ -91,7 +91,6 @@ sensor_config = {'rgb': {'img_height': 360, 'img_width': 640, 'fov': 120, 'locat
 
 
 class Param(object):
-
     def __init__(self):
         self.traj_length = float(TRAJ_LENGTH)
         self.target_speed = float(MAX_SPEED)
@@ -243,7 +242,6 @@ def destination(save_dir, episode_path):
 
 
 class Sensor(object):
-
     def __init__(self, config):
         self.type_id = 'sensor.camera.rgb'
         self.transform = carla.Transform(

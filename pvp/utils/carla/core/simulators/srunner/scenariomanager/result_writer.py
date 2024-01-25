@@ -21,7 +21,6 @@ class ResultOutputProvider(object):
     This module contains the _result gatherer and write for CARLA scenarios.
     It shall be used from the ScenarioManager only.
     """
-
     def __init__(self, data, result, stdout=True, filename=None, junit=None):
         """
         Setup all parameters
@@ -151,17 +150,17 @@ class ResultOutputProvider(object):
         junit_file.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 
         test_suites_string = (
-                "<testsuites tests=\"%d\" failures=\"%d\" disabled=\"0\" "
-                "errors=\"0\" timestamp=\"%s\" time=\"%5.2f\" "
-                "name=\"Simulation\" package=\"Scenarios\">\n" %
-                (test_count, failure_count, self._start_time, self._data.scenario_duration_system)
+            "<testsuites tests=\"%d\" failures=\"%d\" disabled=\"0\" "
+            "errors=\"0\" timestamp=\"%s\" time=\"%5.2f\" "
+            "name=\"Simulation\" package=\"Scenarios\">\n" %
+            (test_count, failure_count, self._start_time, self._data.scenario_duration_system)
         )
         junit_file.write(test_suites_string)
 
         test_suite_string = (
-                "  <testsuite name=\"%s\" tests=\"%d\" failures=\"%d\" "
-                "disabled=\"0\" errors=\"0\" time=\"%5.2f\">\n" %
-                (self._data.scenario_tree.name, test_count, failure_count, self._data.scenario_duration_system)
+            "  <testsuite name=\"%s\" tests=\"%d\" failures=\"%d\" "
+            "disabled=\"0\" errors=\"0\" time=\"%5.2f\">\n" %
+            (self._data.scenario_tree.name, test_count, failure_count, self._data.scenario_duration_system)
         )
         junit_file.write(test_suite_string)
 

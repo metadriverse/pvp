@@ -138,12 +138,12 @@ def draw_msra_gaussian(heatmap, center, sigma):
     x = np.arange(0, size, 1, np.float32)
     y = x[:, np.newaxis]
     x0 = y0 = size // 2
-    g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+    g = np.exp(-((x - x0)**2 + (y - y0)**2) / (2 * sigma**2))
     g_x = max(0, -ul[0]), min(br[0], h) - ul[0]
     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
     img_x = max(0, ul[0]), min(br[0], h)
     img_y = max(0, ul[1]), min(br[1], w)
     heatmap[
-    img_y[0]:img_y[1],
-    img_x[0]:img_x[1]] = np.maximum(heatmap[img_y[0]:img_y[1], img_x[0]:img_x[1]], g[g_y[0]:g_y[1], g_x[0]:g_x[1]])
+        img_y[0]:img_y[1],
+        img_x[0]:img_x[1]] = np.maximum(heatmap[img_y[0]:img_y[1], img_x[0]:img_x[1]], g[g_y[0]:g_y[1], g_x[0]:g_x[1]])
     return heatmap

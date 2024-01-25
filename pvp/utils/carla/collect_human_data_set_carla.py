@@ -1,7 +1,7 @@
 import json
 
 import numpy as np
-from pvp_iclr_release.utils.carla.pvp_carla_env import PVPEnv
+from pvp.utils.carla.pvp_carla_env import PVPEnv
 from ray.rllib.policy.sample_batch import SampleBatch
 
 
@@ -29,7 +29,9 @@ if __name__ == '__main__':
         port=9000,
         disable_takeover=False,  ###
         controller="keyboard",
-        env={"visualize": {"location": "lower right"}}
+        env={"visualize": {
+            "location": "lower right"
+        }}
     )
 
     env = PVPEnv(config=env_config)  # for carla
@@ -50,11 +52,16 @@ if __name__ == '__main__':
         new_obs, reward, done, info = env.step([0, 0, 1, 0, 0])
         action = info["raw_action"]
         total_cost += info["cost"]
-        pool.append({SampleBatch.OBS: obs['image'].tolist(), SampleBatch.ACTIONS: action,
-                     SampleBatch.NEXT_OBS: new_obs['image'].tolist(),
-                     SampleBatch.DONES: done,
-                     SampleBatch.REWARDS: reward, SampleBatch.INFOS: process_info(info),
-                     })
+        pool.append(
+            {
+                SampleBatch.OBS: obs['image'].tolist(),
+                SampleBatch.ACTIONS: action,
+                SampleBatch.NEXT_OBS: new_obs['image'].tolist(),
+                SampleBatch.DONES: done,
+                SampleBatch.REWARDS: reward,
+                SampleBatch.INFOS: process_info(info),
+            }
+        )
         obs = new_obs
         total_reward += reward
         if done:
@@ -66,15 +73,22 @@ if __name__ == '__main__':
             total_reward = 0
             total_cost = 0
             episode_len.append(last)
-            print('reset:', episode_num, "this_episode_len:", last, "total_success_rate:", success / episode_num,
-                  "mean_episode_reward:{}({})".format(np.mean(episode_reward), np.std(episode_reward)),
-                  "mean_episode_cost:{}({})".format(np.mean(episode_cost), np.std(episode_cost)))
+            print(
+                'reset:', episode_num, "this_episode_len:", last, "total_success_rate:", success / episode_num,
+                "mean_episode_reward:{}({})".format(np.mean(episode_reward), np.std(episode_reward)),
+                "mean_episode_cost:{}({})".format(np.mean(episode_cost), np.std(episode_cost))
+            )
             obs = env.reset()
             last = 0
             print('finish {}'.format(episode_num))
 
-    data_set = {"data": pool, "episode_reward": episode_reward, "episode_cost": episode_cost,
-                "success_rate": success / episode_num, "episode_len": episode_len}
+    data_set = {
+        "data": pool,
+        "episode_reward": episode_reward,
+        "episode_cost": episode_cost,
+        "success_rate": success / episode_num,
+        "episode_len": episode_len
+    }
     try:
         with open('human_traj_' + str(num) + '.json', 'w') as f:
             json.dump(data_set, f)

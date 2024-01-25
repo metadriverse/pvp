@@ -12,7 +12,7 @@ import math
 
 import carla
 
-from pvp_iclr_release.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
 
 
 class VehicleLongitudinalControl(BasicControl):
@@ -24,7 +24,6 @@ class VehicleLongitudinalControl(BasicControl):
     Args:
         actor (carla.Actor): Vehicle actor that should be controlled.
     """
-
     def __init__(self, actor, args=None):
         super(VehicleLongitudinalControl, self).__init__(actor)
 
@@ -51,7 +50,7 @@ class VehicleLongitudinalControl(BasicControl):
         control = self._actor.get_control()
 
         velocity = self._actor.get_velocity()
-        current_speed = math.sqrt(velocity.x ** 2 + velocity.y ** 2)
+        current_speed = math.sqrt(velocity.x**2 + velocity.y**2)
         if current_speed < self._target_speed:
             control.throttle = 1.0
         else:

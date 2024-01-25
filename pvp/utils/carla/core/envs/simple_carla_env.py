@@ -5,15 +5,16 @@ import carla
 import numpy as np
 from gym import spaces
 
-from pvp_iclr_release.utils.carla.core.simulators import CarlaSimulator
-from pvp_iclr_release.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
-from pvp_iclr_release.utils.carla.core.utils.others.visualizer import Visualizer
-from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.utils.carla.core.simulators import CarlaSimulator
+from pvp.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
+from pvp.utils.carla.core.utils.others.visualizer import Visualizer
+from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from .base_carla_env import BaseCarlaEnv
-from collections import  deque
+from collections import deque
+
 
 def dist(loc1, loc2):
-    return ((loc1[0] - loc2[0]) ** 2 + (loc1[1] - loc2[1]) ** 2) ** 0.5
+    return ((loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)**0.5
 
 
 class SimpleCarlaEnv(BaseCarlaEnv):
@@ -62,17 +63,16 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         off_route_is_failure=False,
         col_is_failure=True,
         off_road_is_failure=True,
-
     )
 
     def __init__(
-            self,
-            cfg: Dict,
-            host: str = 'localhost',
-            port: int = 9000,
-            tm_port: Optional[int] = None,
-            carla_timeout: Optional[int] = 60.0,
-            **kwargs,
+        self,
+        cfg: Dict,
+        host: str = 'localhost',
+        port: int = 9000,
+        tm_port: Optional[int] = None,
+        carla_timeout: Optional[int] = 60.0,
+        **kwargs,
     ) -> None:
         """
         Initialize environment with config and Carla TCP host & port.
@@ -248,7 +248,6 @@ class SimpleCarlaEnv(BaseCarlaEnv):
                 'off_route': self._off_route,
                 'timeout': self._tick > self._timeout,
                 'success': self.is_success(),
-
                 "route_completion": 1 - self._simulator.distance_to_go / self._simulator.total_diatance,
                 "distance_total": self._simulator.total_diatance,
                 "distance_current": self._simulator.total_diatance - self._simulator.distance_to_go,
@@ -290,9 +289,11 @@ class SimpleCarlaEnv(BaseCarlaEnv):
             bool: Whether success.
         """
         if self._simulator.distance_to_go < self._success_distance:
-            print("Yes! Current distance_to_go {} and success_distance {}, so you success!".format(
-                self._simulator.distance_to_go, self._success_distance
-            ))
+            print(
+                "Yes! Current distance_to_go {} and success_distance {}, so you success!".format(
+                    self._simulator.distance_to_go, self._success_distance
+                )
+            )
             return True
         return False
 
@@ -361,10 +362,8 @@ class SimpleCarlaEnv(BaseCarlaEnv):
                 'command': navigation['command'],
                 'speed': np.float32(state['speed']),  # in m/s
                 'speed_limit': np.float32(navigation['speed_limit']),  # in m/s
-
                 'speed_kmh': np.float32(state['speed']) * 3.6,  # in m/s
                 'speed_limit_kmh': np.float32(navigation['speed_limit']) * 3.6,  # in m/s
-
                 'location': np.float32(state['location']),
                 'forward_vector': np.float32(state['forward_vector']),
                 'acceleration': np.float32(state['acceleration']),
@@ -381,9 +380,9 @@ class SimpleCarlaEnv(BaseCarlaEnv):
 
         if self._visualizer is not None:
             if self._visualize_cfg.type not in sensor_data:
-                raise ValueError("visualize type {} not in sensor data! {}".format(
-                    self._visualize_cfg.type, sensor_data.keys()
-                ))
+                raise ValueError(
+                    "visualize type {} not in sensor data! {}".format(self._visualize_cfg.type, sensor_data.keys())
+                )
             self._render_buffer = sensor_data[self._visualize_cfg.type].copy()
             if self._visualize_cfg.type == 'birdview':
                 self._render_buffer = visualize_birdview(self._render_buffer)
@@ -405,7 +404,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         # xxx: Compute a lateral factor, it should be 1 if agent is in the center of lane. We temporarily ignore it
         # for simplicity of the reward function
         lateral_factor = 1
-        # from pvp_iclr_release.utils.carla.core.utils.simulator_utils.carla_utils import lane_mid_distance
+        # from pvp.utils.carla.core.utils.simulator_utils.carla_utils import lane_mid_distance
         # waypoint_list = self._simulator_databuffer['navigation']['waypoint_list']
         # lane_mid_dis = lane_mid_distance(waypoint_list, location)
         # lane_reward = max(0, 1 - lane_mid_dis)
@@ -437,14 +436,11 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         termination_reward = 0
         if self.is_success():
             termination_reward = total_reward = self._success_reward
-        elif (
-                (self._col_is_failure and self._collided) or
-                (self._stuck_is_failure and self._stuck) or
-                (self._off_road_is_failure and self._off_road) or
-                (self._ran_light_is_failure and ((not self._ignore_light) and self._ran_light)) or
-                (self._wrong_direction_is_failure and self._wrong_direction) or
-                (self._off_route_is_failure and self._off_route)
-        ):
+        elif ((self._col_is_failure and self._collided) or (self._stuck_is_failure and self._stuck)
+              or (self._off_road_is_failure and self._off_road)
+              or (self._ran_light_is_failure and ((not self._ignore_light) and self._ran_light))
+              or (self._wrong_direction_is_failure and self._wrong_direction)
+              or (self._off_route_is_failure and self._off_route)):
             termination_reward = total_reward = -self._cfg.fail_penalty
 
         reward_info = {
