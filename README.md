@@ -1,12 +1,6 @@
-TODO LIST:
-* [ ] rename HACO.. to PVPReplayBuffer
-* [ ] remove all useless files
-* [ ] is it wandb supported for all experiments?
-* [ ] metadrive exp check
-
 # Proxy Value Propagation (PVP)
 
-<h3>***NeurIPS 2023 Spotlight***</h3>
+<h3><b>NeurIPS 2023 Spotlight</b></h3>
 
 Official release for the code used in paper: *Learning from Active Human Involvement through Proxy Value Propagation*
 
@@ -163,6 +157,15 @@ Coming soon!
 Coming soon!
 
 
-## Reference
 
-WIP
+## 📎 References
+
+```latex
+@inproceedings{peng2023learning,
+  title={Learning from Active Human Involvement through Proxy Value Propagation},
+  author={Peng, Zhenghao and Mo, Wenjie and Duan, Chenda and Li, Quanyi and Zhou, Bolei},
+  booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+  year={2023}
+}
+```
+
