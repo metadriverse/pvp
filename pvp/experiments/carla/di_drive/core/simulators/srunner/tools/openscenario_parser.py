@@ -17,26 +17,27 @@ from distutils.util import strtobool
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     TrafficLightStateSetter, ActorTransformSetterToOSCPosition, RunScript, ChangeWeather, ChangeAutoPilot,
     ChangeRoadFriction, ChangeActorTargetSpeed, ChangeActorControl, ChangeActorWaypoints,
     ChangeActorWaypointsToReachPosition, ChangeActorLateralMotion, Idle
 )
 # pylint: disable=unused-import
 # For the following includes the pylint check is disabled, as these are accessed via globals()
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import (
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import (
     CollisionTest, OffRoadTest, EndofRoadTest
 )
 # pylint: enable=unused-import
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
     InTriggerDistanceToVehicle, InTriggerDistanceToOSCPosition, InTimeToArrivalToOSCPosition, InTimeToArrivalToVehicle,
     DriveDistance, StandStill, OSCStartEndCondition, TriggerAcceleration, RelativeVelocityToOtherActor,
     TimeOfDayComparison, TriggerVelocity, WaitForTrafficLightState
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut, SimulationTimeCondition
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.weather_sim import Weather
-from pvp.utils.carla.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import TimeOut, \
+    SimulationTimeCondition
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.weather_sim import Weather
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
 
 
 class OpenScenarioParser(object):

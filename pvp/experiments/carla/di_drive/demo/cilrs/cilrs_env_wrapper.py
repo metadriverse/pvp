@@ -2,7 +2,8 @@ from typing import Any
 
 import PIL
 import numpy as np
-from pvp.utils.carla.core.envs import CarlaEnvWrapper
+
+from pvp.experiments.carla.di_drive.core.envs import CarlaEnvWrapper
 
 
 class CILRSEnvWrapper(CarlaEnvWrapper):

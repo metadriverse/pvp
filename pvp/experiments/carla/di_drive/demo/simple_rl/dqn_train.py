@@ -1,11 +1,6 @@
 import copy
 from functools import partial
 
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.eval import SerialEvaluator
-from pvp.utils.carla.core.utils.data_utils.bev_utils import unpack_birdview
-from pvp.utils.carla.core.utils.others.ding_utils import compile_config
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager, BaseEnvManager
 from ding.policy import DQNPolicy
 from ding.rl_utils import get_epsilon_greedy_fn
@@ -14,8 +9,13 @@ from ding.worker import BaseLearner, SampleSerialCollector, AdvancedReplayBuffer
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 
-from pvp.utils.carla.demo.simple_rl.env_wrapper import DiscreteBenchmarkEnvWrapper
-from pvp.utils.carla.demo.simple_rl.model import DQNRLModel
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.eval import SerialEvaluator
+from pvp.experiments.carla.di_drive.core.utils.data_utils.bev_utils import unpack_birdview
+from pvp.experiments.carla.di_drive.core.utils.others.ding_utils import compile_config
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.simple_rl.env_wrapper import DiscreteBenchmarkEnvWrapper
+from pvp.experiments.carla.di_drive.demo.simple_rl.model import DQNRLModel
 
 train_config = dict(
     # Experiment name. The logs and saved ckpt will be stored in this folder

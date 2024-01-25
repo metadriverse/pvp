@@ -2,8 +2,9 @@ from typing import List, Tuple, Union, Dict, Optional
 
 import torch
 import torch.nn as nn
-from pvp.utils.carla.core.models import BEVSpeedConvEncoder
 from ding.model.common.head import DuelingHead, RegressionHead, ReparameterizationHead, MultiHead, DiscreteHead
+
+from pvp.experiments.carla.di_drive.core.models import BEVSpeedConvEncoder
 
 
 class DQNRLModel(nn.Module):

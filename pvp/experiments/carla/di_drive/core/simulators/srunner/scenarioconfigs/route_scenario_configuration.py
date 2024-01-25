@@ -10,7 +10,7 @@ This module provides the key configuration parameters for a route-based scenario
 
 import carla
 
-from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ScenarioConfiguration
 
 

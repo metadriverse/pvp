@@ -1,4 +1,4 @@
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
 
 
 def get_next_until_junction(start_waypoint, max_dis=float('inf')):

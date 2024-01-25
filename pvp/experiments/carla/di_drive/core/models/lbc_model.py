@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from pvp.utils.carla.core.utils.model_utils import common
+from pvp.experiments.carla.di_drive.core.utils.model_utils import common
 
 STEPS = 5
 COMMANDS = 4

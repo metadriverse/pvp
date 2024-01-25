@@ -8,8 +8,8 @@
 """ This module implements an agent that roams around a track following random waypoints and avoiding other vehicles.
 The agent also responds to traffic lights. """
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
 
 
 class RoamingAgent(Agent):

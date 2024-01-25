@@ -1,16 +1,16 @@
 import time
+from collections import deque
 from typing import Any, Dict, Optional, Tuple
 
 import carla
 import numpy as np
 from gym import spaces
 
-from pvp.utils.carla.core.simulators import CarlaSimulator
-from pvp.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
-from pvp.utils.carla.core.utils.others.visualizer import Visualizer
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.experiments.carla.di_drive.core.simulators import CarlaSimulator
+from pvp.experiments.carla.di_drive.core.utils.env_utils.stuck_detector import StuckDetector
+from pvp.experiments.carla.di_drive.core.utils.others.visualizer import Visualizer
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import visualize_birdview
 from .base_carla_env import BaseCarlaEnv
-from collections import deque
 
 
 def dist(loc1, loc2):
@@ -404,7 +404,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         # xxx: Compute a lateral factor, it should be 1 if agent is in the center of lane. We temporarily ignore it
         # for simplicity of the reward function
         lateral_factor = 1
-        # from pvp.utils.carla.core.utils.simulator_utils.carla_utils import lane_mid_distance
+        # from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import lane_mid_distance
         # waypoint_list = self._simulator_databuffer['navigation']['waypoint_list']
         # lane_mid_dis = lane_mid_distance(waypoint_list, location)
         # lane_reward = max(0, 1 - lane_mid_dis)
@@ -452,7 +452,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
 
         return float(total_reward), reward_info
 
-    def render(self, mode='rgb_array', takeover=None) -> None:
+    def render(self, mode='rgb_array', takeover=None, monitor_index=0) -> None:
         """
         Render a runtime visualization on screen, save a gif or video according to visualizer config.
         The main canvas is from a specific sensor data. It only works when 'visualize' is set in config dict.
@@ -488,7 +488,7 @@ class SimpleCarlaEnv(BaseCarlaEnv):
         render_info.update(self._simulator_databuffer['information'])
         render_info.update(self._simulator_databuffer['action'])
 
-        self._visualizer.paint(self._render_buffer, render_info)
+        self._visualizer.paint(self._render_buffer, render_info, monitor_index=monitor_index)
         self._visualizer.run_visualize()
         return self._visualizer.canvas
 

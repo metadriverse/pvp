@@ -19,11 +19,11 @@ import sys
 
 import carla
 
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.external_control import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.external_control import \
     ExternalControl
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.npc_vehicle_control import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.npc_vehicle_control import \
     NpcVehicleControl
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.pedestrian_control import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.pedestrian_control import \
     PedestrianControl
 
 

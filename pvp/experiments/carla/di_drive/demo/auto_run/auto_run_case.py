@@ -1,12 +1,13 @@
 import argparse
 from argparse import RawTextHelpFormatter
 
-from pvp.utils.carla.core.envs import CarlaEnvWrapper, ScenarioCarlaEnv
-from pvp.utils.carla.core.policy import AutoPIDPolicy
-from pvp.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_parser import ScenarioConfigurationParser
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
+
+from pvp.experiments.carla.di_drive.core.envs import CarlaEnvWrapper, ScenarioCarlaEnv
+from pvp.experiments.carla.di_drive.core.policy import AutoPIDPolicy
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.route_parser import RouteParser
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_parser import ScenarioConfigurationParser
 
 casezoo_config = dict(
     env=dict(

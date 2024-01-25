@@ -12,7 +12,7 @@ Examples for external controls are: Autoware, CARLA manual_control, etc.
 This module is not intended for modification.
 """
 
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
 
 
 class ExternalControl(BasicControl):

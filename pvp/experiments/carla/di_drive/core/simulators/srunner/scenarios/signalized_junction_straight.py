@@ -13,17 +13,17 @@ from __future__ import print_function
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, ActorDestroy, WaypointFollower, TrafficLightStateSetter
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
     DriveDistance
-from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import (generate_target_waypoint)
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import (generate_target_waypoint)
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
 
 
 class SignalizedJunctionStraight(BasicScenario):

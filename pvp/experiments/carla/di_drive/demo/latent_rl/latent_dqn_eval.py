@@ -1,17 +1,17 @@
 from functools import partial
 
 import torch
-from pvp.utils.carla.core.envs import CarlaEnvWrapper
-from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import AsyncSubprocessEnvManager
 from ding.policy import DQNPolicy
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
 
-from pvp.utils.carla.demo.latent_rl.latent_rl_env import CarlaLatentEvalEnv
-from pvp.utils.carla.demo.latent_rl.model import LatentDQNRLModel
+from pvp.experiments.carla.di_drive.core.envs import CarlaEnvWrapper
+from pvp.experiments.carla.di_drive.core.eval import CarlaBenchmarkEvaluator
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.latent_rl.latent_rl_env import CarlaLatentEvalEnv
+from pvp.experiments.carla.di_drive.demo.latent_rl.model import LatentDQNRLModel
 
 eval_config = dict(
     env=dict(

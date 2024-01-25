@@ -19,48 +19,50 @@ import numpy.random as random
 import py_trees
 
 # pylint: enable=line-too-long
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
 # # pylint: disable=line-too-long
-from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ScenarioConfiguration, ActorConfigurationData
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import Idle, \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
+    Idle, \
     ScenarioTriggerer
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     (CollisionTest,
      InRouteTest,
      RouteCompletionTest,
      OutsideRouteLanesTest,
      RunningRedLightTest,
      ActorSpeedAboveThresholdTest)
-from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp.utils.carla.core.simulators.srunner.scenarios.change_lane import ChangeLane
-from pvp.utils.carla.core.simulators.srunner.scenarios.control_loss import ControlLoss
-from pvp.utils.carla.core.simulators.srunner.scenarios.control_loss_new import ControlLossNew
-from pvp.utils.carla.core.simulators.srunner.scenarios.cut_in import CutIn
-from pvp.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle import FollowLeadingVehicle
-from pvp.utils.carla.core.simulators.srunner.scenarios.follow_leading_vehicle_new import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.change_lane import ChangeLane
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.control_loss import ControlLoss
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.control_loss_new import ControlLossNew
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.cut_in import CutIn
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.follow_leading_vehicle import FollowLeadingVehicle
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.follow_leading_vehicle_new import \
     FollowLeadingVehicleNew
-from pvp.utils.carla.core.simulators.srunner.scenarios.junction_crossing_route import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.junction_crossing_route import \
     NoSignalJunctionCrossingRoute
-from pvp.utils.carla.core.simulators.srunner.scenarios.maneuver_opposite_direction import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.maneuver_opposite_direction import \
     ManeuverOppositeDirection
-from pvp.utils.carla.core.simulators.srunner.scenarios.object_crash_intersection import VehicleTurningRoute
-from pvp.utils.carla.core.simulators.srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
-from pvp.utils.carla.core.simulators.srunner.scenarios.opposite_direction import OppositeDirection
-from pvp.utils.carla.core.simulators.srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
-from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_left_turn import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.object_crash_intersection import \
+    VehicleTurningRoute
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.object_crash_vehicle import DynamicObjectCrossing
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.opposite_direction import OppositeDirection
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.other_leading_vehicle import OtherLeadingVehicle
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.signalized_junction_left_turn import \
     SignalizedJunctionLeftTurn
-from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_right_turn import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.signalized_junction_right_turn import \
     SignalizedJunctionRightTurn
-from pvp.utils.carla.core.simulators.srunner.scenarios.signalized_junction_straight import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.signalized_junction_straight import \
     SignalizedJunctionStraight
-from pvp.utils.carla.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
-from pvp.utils.carla.core.simulators.srunner.tools.route_manipulation import interpolate_trajectory, \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.py_trees_port import oneshot_behavior
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.route_manipulation import interpolate_trajectory, \
     downsample_route
-from pvp.utils.carla.core.simulators.srunner.tools.route_parser import RouteParser, TRIGGER_THRESHOLD, \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.route_parser import RouteParser, TRIGGER_THRESHOLD, \
     TRIGGER_ANGLE_THRESHOLD
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import convert_waypoint_to_transform
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import convert_waypoint_to_transform
 
 SECONDS_GIVEN_PER_METERS = 0.5
 

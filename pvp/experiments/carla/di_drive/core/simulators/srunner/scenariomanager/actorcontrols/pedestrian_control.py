@@ -12,7 +12,8 @@ import math
 
 import carla
 
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import \
+    BasicControl
 
 
 class PedestrianControl(BasicControl):

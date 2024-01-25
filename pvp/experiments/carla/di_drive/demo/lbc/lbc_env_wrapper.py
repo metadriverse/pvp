@@ -1,8 +1,9 @@
 from typing import Any
 
 import numpy as np
-from pvp.utils.carla.core.envs import CarlaEnvWrapper
-from pvp.utils.carla.core.utils.model_utils import common
+
+from pvp.experiments.carla.di_drive.core.envs import CarlaEnvWrapper
+from pvp.experiments.carla.di_drive.core.utils.model_utils import common
 
 
 class LBCEnvWrapper(CarlaEnvWrapper):

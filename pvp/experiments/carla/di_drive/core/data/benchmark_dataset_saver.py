@@ -6,8 +6,8 @@ from typing import Callable, List, Dict, Optional
 import lmdb
 import numpy as np
 
-from pvp.utils.carla.core.utils.data_utils.data_writter import write_json, write_episode_lmdb
-from pvp.utils.carla.core.utils.others.image_helper import save_image, is_image
+from pvp.experiments.carla.di_drive.core.utils.data_utils.data_writter import write_json, write_episode_lmdb
+from pvp.experiments.carla.di_drive.core.utils.others.image_helper import save_image, is_image
 
 
 def default_post_process_fn(observations):

@@ -3,12 +3,13 @@ Copyright 2021 OpenDILab. All Rights Reserved:
 Description:
 '''
 
-from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp.utils.carla.core.policy import AutoPIDPolicy
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
+
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.experiments.carla.di_drive.core.eval import SingleCarlaEvaluator
+from pvp.experiments.carla.di_drive.core.policy import AutoPIDPolicy
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
 
 autorun_config = dict(
     env=dict(

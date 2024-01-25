@@ -1,15 +1,15 @@
 import argparse
 from functools import partial
 
-from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
 
 from eval_policy import ImplicitPolicy
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.experiments.carla.di_drive.core.eval import CarlaBenchmarkEvaluator
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
 
 eval_config = dict(
     env=dict(

@@ -7,14 +7,14 @@ import carla
 import numpy as np
 from easydict import EasyDict
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
 
 
 class AgentState(Enum):

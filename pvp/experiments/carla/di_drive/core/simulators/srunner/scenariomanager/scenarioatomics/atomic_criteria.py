@@ -22,9 +22,9 @@ import numpy as np
 import py_trees
 import shapely
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.traffic_events import TrafficEvent, \
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.traffic_events import TrafficEvent, \
     TrafficEventType
 
 

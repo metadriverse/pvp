@@ -1,14 +1,14 @@
 import torch
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.policy import PPOPolicy
 from ding.utils import set_pkg_seed
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
 
-from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
-from pvp.utils.carla.demo.simple_rl.model import PPORLModel
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.eval import SingleCarlaEvaluator
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
+from pvp.experiments.carla.di_drive.demo.simple_rl.model import PPORLModel
 
 eval_config = dict(
     env=dict(

@@ -20,9 +20,10 @@ import carla
 import cv2
 import numpy as np
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import \
+    BasicControl
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import GameTime
 
 
 class SimpleVehicleControl(BasicControl):

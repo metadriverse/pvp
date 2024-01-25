@@ -8,12 +8,12 @@ The agent also responds to traffic lights. """
 
 import carla
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.agent import Agent, AgentState
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import LocalPlanner
 
 
 class BasicAgent(Agent):

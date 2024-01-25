@@ -12,7 +12,7 @@ from enum import Enum
 
 import carla
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead, \
     is_within_distance, \
     compute_distance
 

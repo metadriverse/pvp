@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp.utils.carla.core.envs import BenchmarkEnvWrapper
+from pvp.experiments.carla.di_drive.core.envs import BenchmarkEnvWrapper
 
 DEFAULT_ACC_LIST = [
     (0, 1),

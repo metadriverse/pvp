@@ -1,8 +1,9 @@
 from typing import Dict, Tuple, Any, Optional
 
 import numpy as np
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.utils.model_utils import common
+
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.utils.model_utils import common
 
 
 class CarlaLatentRLEnv(SimpleCarlaEnv):

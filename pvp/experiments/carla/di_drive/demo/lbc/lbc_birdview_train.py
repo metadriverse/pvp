@@ -3,13 +3,14 @@ import time
 import cv2
 import numpy as np
 import torch
-from pvp.utils.carla.core.data import LBCBirdViewDataset
-from pvp.utils.carla.core.policy import LBCBirdviewPolicy
-from pvp.utils.carla.core.utils.learner_utils.log_saver_utils import Experiment
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from easydict import EasyDict
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from pvp.experiments.carla.di_drive.core.data import LBCBirdViewDataset
+from pvp.experiments.carla.di_drive.core.policy import LBCBirdviewPolicy
+from pvp.experiments.carla.di_drive.core.utils.learner_utils.log_saver_utils import Experiment
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import visualize_birdview
 
 lbc_config = dict(
     exp_name='lbc_bev_train',

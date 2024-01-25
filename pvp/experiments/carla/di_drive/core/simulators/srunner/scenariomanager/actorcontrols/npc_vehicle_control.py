@@ -12,10 +12,11 @@ import math
 
 import carla
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import BasicControl
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import LocalPlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.basic_control import \
+    BasicControl
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.basic_agent import LocalPlanner
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 
 class NpcVehicleControl(BasicControl):

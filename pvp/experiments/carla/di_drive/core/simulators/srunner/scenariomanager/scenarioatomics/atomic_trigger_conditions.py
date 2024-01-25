@@ -26,13 +26,13 @@ import operator
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators import srunner
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_distance_along_route
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.simulators import srunner
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import get_distance_along_route
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
 from .atomic_behaviors import calculate_distance
 

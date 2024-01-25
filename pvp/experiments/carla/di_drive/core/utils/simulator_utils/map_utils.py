@@ -13,7 +13,7 @@ import pygame
 from carla import TrafficLightState as tls
 from easydict import EasyDict
 
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
 
 # ==============================================================================
 # -- Constants -----------------------------------------------------------------

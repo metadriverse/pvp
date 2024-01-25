@@ -12,9 +12,9 @@ import xml.etree.ElementTree as ET
 
 import carla
 
-from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarioconfigs.route_scenario_configuration import \
     RouteScenarioConfiguration
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 # TODO  check this threshold, it could be a bit larger but not so large that we cluster scenarios.
 TRIGGER_THRESHOLD = 10.0  # Threshold to say if a trigger position is new or repeated, works for matching positions

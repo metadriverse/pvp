@@ -3,9 +3,9 @@ from typing import Dict
 import carla
 import numpy as np
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints
 from .basic_planner import AgentState, BasicPlanner
 
 

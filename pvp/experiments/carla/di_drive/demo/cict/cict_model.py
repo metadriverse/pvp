@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-from pvp.utils.carla.demo.cict_demo.collect_pm import InversePerspectiveMapping
-from pvp.utils.carla.demo.cict_demo.post import Sensor, params
+from pvp.experiments.carla.di_drive.demo.cict_demo.collect_pm import InversePerspectiveMapping
+from pvp.experiments.carla.di_drive.demo.cict_demo.post import Sensor, params
 from torch.autograd import grad
 
 

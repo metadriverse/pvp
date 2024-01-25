@@ -15,9 +15,9 @@ import numpy as np
 import shapely.affinity
 import shapely.geometry
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import vector
 
 
 def get_distance_along_route(route, target_location):

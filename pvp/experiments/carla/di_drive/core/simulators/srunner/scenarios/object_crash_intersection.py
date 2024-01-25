@@ -16,18 +16,18 @@ import math
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, ActorDestroy, KeepVelocity, HandBrakeVehicle
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
     InTriggerDistanceToLocationAlongRoute, InTriggerDistanceToVehicle, DriveDistance
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut
-from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import generate_target_waypoint, \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import TimeOut
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import generate_target_waypoint, \
     generate_target_waypoint_in_route
 
 

@@ -13,15 +13,15 @@ And encounters another vehicle passing across the junction.
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, ActorDestroy, SyncArrival, KeepVelocity, StopVehicle
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import \
     InTriggerRegion
-from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
 
 
 class NoSignalJunctionCrossing(BasicScenario):

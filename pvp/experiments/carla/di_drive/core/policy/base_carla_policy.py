@@ -3,7 +3,7 @@ from typing import List, Dict, Optional, Any, NamedTuple
 
 from ding.policy import Policy
 
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
 
 
 class BaseCarlaPolicy(Policy):

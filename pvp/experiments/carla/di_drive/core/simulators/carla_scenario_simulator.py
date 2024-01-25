@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Optional
 
 import carla
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.carla_simulator import CarlaSimulator
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.carla_simulator import CarlaSimulator
 from .srunner.scenariomanager.scenario_manager import ScenarioManager
 from .srunner.scenarios.route_scenario import RouteScenario, SCENARIO_CLASS_DICT
 

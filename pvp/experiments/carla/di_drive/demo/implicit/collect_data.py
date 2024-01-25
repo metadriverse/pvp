@@ -5,13 +5,14 @@ from pathlib import Path
 import lmdb
 import numpy as np
 from PIL import Image
-from pvp.utils.carla.core.data import CarlaBenchmarkCollector
-from pvp.utils.carla.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
-from pvp.utils.carla.core.policy import AutoPIDPolicy
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.utils.default_helper import deep_merge_dicts
 from easydict import EasyDict
+
+from pvp.experiments.carla.di_drive.core.data import CarlaBenchmarkCollector
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv, CarlaEnvWrapper
+from pvp.experiments.carla.di_drive.core.policy import AutoPIDPolicy
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
 
 config = dict(
     env=dict(

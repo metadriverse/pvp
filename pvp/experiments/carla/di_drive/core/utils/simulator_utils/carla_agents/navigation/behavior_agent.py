@@ -11,16 +11,16 @@ import random
 import carla
 import numpy as np
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.agent import Agent
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.agent import Agent
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner_behavior import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner_behavior import \
     LocalPlanner, RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
     Aggressive, Normal
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import get_speed, positive
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import get_speed, positive
 
 
 class BehaviorAgent(Agent):

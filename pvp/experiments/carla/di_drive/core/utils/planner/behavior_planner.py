@@ -3,12 +3,12 @@ from typing import Dict, List, Tuple
 import carla
 import numpy as np
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.planner.planner_utils import get_next_until_junction, \
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.planner.planner_utils import get_next_until_junction, \
     generate_change_lane_route
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.types_behavior import Cautious, \
     Aggressive, Normal
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance, \
     compute_distance, positive
 from .basic_planner import AgentState, BasicPlanner, RoadOption
 

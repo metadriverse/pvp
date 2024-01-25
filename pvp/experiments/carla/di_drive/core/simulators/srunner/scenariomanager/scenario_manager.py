@@ -16,11 +16,11 @@ import time
 
 import py_trees
 
-# from pvp.utils.carla.core.simulators.srunner.autoagents.agent_wrapper import AgentWrapper
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.result_writer import ResultOutputProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.watchdog import Watchdog
+# from pvp.experiments.carla.di_drive.core.simulators.srunner.autoagents.agent_wrapper import AgentWrapper
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.result_writer import ResultOutputProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.watchdog import Watchdog
 
 
 class ScenarioManager(object):

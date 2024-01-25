@@ -1,5 +1,3 @@
-import numpy as np
-from collections import defaultdict
 from collections import defaultdict
 from typing import Dict, Any, Optional, Callable, Tuple
 

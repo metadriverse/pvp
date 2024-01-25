@@ -5,13 +5,14 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from pvp.utils.carla.core.data.cict_dataset import CictDataset
-from pvp.utils.carla.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
-from pvp.utils.carla.demo.cict_demo.cict_model import GeneratorUNet
-from pvp.utils.carla.demo.cict_demo.post import Sensor, params, InversePerspectiveMapping
 from easydict import EasyDict
+from pvp.experiments.carla.di_drive.demo.cict_demo.cict_model import GeneratorUNet
+from pvp.experiments.carla.di_drive.demo.cict_demo.post import Sensor, params, InversePerspectiveMapping
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
+
+from pvp.experiments.carla.di_drive.core.data.cict_dataset import CictDataset
+from pvp.experiments.carla.di_drive.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
 
 eval_config = dict(
     NUMBER_OF_LOADING_WORKERS=1,

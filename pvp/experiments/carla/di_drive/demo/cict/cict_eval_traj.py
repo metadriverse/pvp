@@ -4,12 +4,13 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-from pvp.utils.carla.core.data.cict_dataset import PathDataset
-from pvp.utils.carla.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
-from pvp.utils.carla.demo.cict_demo.cict_model import ModelGRU
 from easydict import EasyDict
+from pvp.experiments.carla.di_drive.demo.cict_demo.cict_model import ModelGRU
 from torch.autograd import grad
 from torch.utils.data import DataLoader
+
+from pvp.experiments.carla.di_drive.core.data.cict_dataset import PathDataset
+from pvp.experiments.carla.di_drive.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
 
 # sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../'))
 

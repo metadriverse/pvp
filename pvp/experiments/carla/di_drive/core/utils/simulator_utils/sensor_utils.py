@@ -12,8 +12,8 @@ import numpy as np
 import shapely.geometry
 from easydict import EasyDict
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
 
 DEFAULT_CAMERA_CONFIG = {
     'size': [384, 160],

@@ -12,8 +12,8 @@ import carla
 import networkx as nx
 import numpy as np
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import vector
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import vector
 
 
 class GlobalRoutePlanner(object):

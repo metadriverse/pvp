@@ -15,13 +15,13 @@ import operator
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics import \
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics import \
     atomic_trigger_conditions as conditions
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import \
     UpdateAllActorControls
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.weather_sim import WeatherBehavior
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import TimeOut
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.weather_sim import WeatherBehavior
 
 
 class BasicScenario(object):

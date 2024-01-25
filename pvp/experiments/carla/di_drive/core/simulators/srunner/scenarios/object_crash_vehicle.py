@@ -14,18 +14,19 @@ import math
 import carla
 import py_trees
 
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
     ActorTransformSetter, ActorDestroy, AccelerateToVelocity, HandBrakeVehicle, KeepVelocity, StopVehicle
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_criteria import \
     CollisionTest
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.scenarioatomics.atomic_trigger_conditions import (
     InTriggerDistanceToLocationAlongRoute, InTimeToArrivalToVehicle, DriveDistance
 )
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import TimeOut
-from pvp.utils.carla.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import get_location_in_distance_from_wp
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import TimeOut
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarios.basic_scenario import BasicScenario
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import \
+    get_location_in_distance_from_wp
 
 
 class StationaryObjectCrossing(BasicScenario):

@@ -12,11 +12,11 @@ It also contains functions to convert the CARLA world location do GPS coordinate
 import math
 import xml.etree.ElementTree as ET
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 
 def _location_to_gps(lat_ref, lon_ref, location):

@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Union
 from ding.envs import BaseEnvManager
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp.utils.carla.core.data.benchmark import ALL_SUITES
-from pvp.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, read_pose_txt, \
+from pvp.experiments.carla.di_drive.core.data.benchmark import ALL_SUITES
+from pvp.experiments.carla.di_drive.core.data.benchmark.benchmark_utils import get_suites_list, read_pose_txt, \
     get_benchmark_dir
 from .base_collector import BaseCollector
 

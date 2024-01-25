@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from pvp.utils.carla.core.utils.others.image_helper import read_image
+from pvp.experiments.carla.di_drive.core.utils.others.image_helper import read_image
 
 
 class CILRSDataset(Dataset):

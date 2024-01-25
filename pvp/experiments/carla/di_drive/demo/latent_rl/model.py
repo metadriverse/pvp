@@ -2,8 +2,9 @@ from typing import List, Dict, Optional
 
 import torch
 import torch.nn as nn
-from pvp.utils.carla.core.models import VanillaVAE
 from ding.model.common import DiscreteHead, DuelingHead, MultiHead
+
+from pvp.experiments.carla.di_drive.core.models import VanillaVAE
 
 
 class LatentDQNRLModel(nn.Module):

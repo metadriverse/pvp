@@ -6,12 +6,12 @@ from enum import Enum
 import carla
 import numpy as np
 import torch
-from pvp.utils.carla.core.envs.base_carla_env import BaseCarlaEnv
-from pvp.utils.carla.core.simulators import CarlaSimulator
 from ding.envs import BaseEnvTimestep
 from ding.torch_utils import to_ndarray, to_tensor
 
 from models import ImplicitSupervisedModel
+from pvp.experiments.carla.di_drive.core.envs.base_carla_env import BaseCarlaEnv
+from pvp.experiments.carla.di_drive.core.simulators import CarlaSimulator
 from utils import adapt_order, compute_angle, compute_point_line_dis, compute_cirle, compute_speed
 
 Orders = Enum("Order", "Follow_Lane Straight Right Left ChangelaneLeft ChangelaneRight")

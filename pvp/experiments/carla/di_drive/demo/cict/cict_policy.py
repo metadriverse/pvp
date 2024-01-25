@@ -5,12 +5,14 @@ import PIL.Image as Image
 import numpy as np
 import torch
 import torchvision.transforms as transforms
-from pvp.utils.carla.core.models import VehicleCapacController
-from pvp.utils.carla.core.policy.base_carla_policy import BaseCarlaPolicy
-from pvp.utils.carla.demo.cict_demo.cict_model import CICTModel
-from pvp.utils.carla.demo.cict_demo.post import get_map, get_nav, draw_destination, CollectPerspectiveImage, \
+from pvp.experiments.carla.di_drive.demo.cict_demo.cict_model import CICTModel
+from pvp.experiments.carla.di_drive.demo.cict_demo.post import get_map, get_nav, draw_destination, \
+    CollectPerspectiveImage, \
     params, Sensor, \
     find_dest_with_fix_length
+
+from pvp.experiments.carla.di_drive.core.models import VehicleCapacController
+from pvp.experiments.carla.di_drive.core.policy.base_carla_policy import BaseCarlaPolicy
 
 
 class CICTPolicy(BaseCarlaPolicy):

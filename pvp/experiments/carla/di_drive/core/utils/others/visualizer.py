@@ -6,8 +6,8 @@ import cv2
 import numpy as np
 from easydict import EasyDict
 
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp.utils.carla.core.utils.others.image_helper import GifMaker, VideoMaker, show_image
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.image_helper import GifMaker, VideoMaker, show_image
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -16,7 +16,7 @@ BLACK = (0, 0, 0)
 def draw_texts(data_dict, canvas, color=BLACK, thick=2):
     def _write(text, i, j, fontsize=0.4, choose_color=color):
         rows = [x * (canvas.shape[0] // 30) for x in range(10 + 1)]
-        cols = [x * (canvas.shape[1] // 15) for x in range(9 + 1)]
+        cols = [x * (canvas.shape[1] // 15) for x in range(10 + 1)]
         cv2.putText(
             canvas, text, (cols[j], rows[i]), cv2.FONT_HERSHEY_SIMPLEX, fontsize, choose_color, thick, cv2.LINE_AA
         )
@@ -28,6 +28,10 @@ def draw_texts(data_dict, canvas, color=BLACK, thick=2):
 
     left_text_pos = 1
     left_text_horizontal_pos = 3
+
+    _write('Exit: Press X Button', left_text_pos, left_text_horizontal_pos, fontsize=fontsize)
+    left_text_pos += 1
+
     if 'command' in data_dict:
         _command = {
             -1: 'VOID',
@@ -78,6 +82,10 @@ def draw_texts(data_dict, canvas, color=BLACK, thick=2):
         left_text_pos += 1
 
     right_text_pos = 1
+
+    _write('Pause: Press TRIANGLE Button', right_text_pos, 9, fontsize=fontsize)
+    right_text_pos += 1
+
     if 'total_step' in data_dict:
         _write(
             'Total Step: {} ({:02d}:{:04.1f})'.format(
@@ -193,7 +201,7 @@ class Visualizer(object):
             self._video_maker = VideoMaker()
             self._video_maker.init(self._save_dir, self._name)
 
-    def paint(self, image: Any, data_dict: Optional[Dict] = None) -> None:
+    def paint(self, image: Any, data_dict: Optional[Dict] = None, monitor_index=0) -> None:
         """
         Paint canvas with observation images and data.
 
@@ -211,7 +219,13 @@ class Visualizer(object):
             self._canvas = resize_birdview(self._canvas, rate)
 
         if not self._already_show_window:
-            move_window(self._name, self._cfg["location"], image_x=self._canvas.shape[1], image_y=self._canvas.shape[0])
+            move_window(
+                self._name,
+                self._cfg["location"],
+                image_x=self._canvas.shape[1],
+                image_y=self._canvas.shape[0],
+                monitor_index=monitor_index
+            )
             self._already_show_window = True
 
         if not self._text:
@@ -270,7 +284,7 @@ def resize_birdview(img, rate):
     return img_res
 
 
-def move_window(name, location, image_x, image_y, monitor_index=1):
+def move_window(name, location, image_x, image_y, monitor_index=0):
     """monitor_index starts by 0."""
     from screeninfo import get_monitors
     monitors = get_monitors()

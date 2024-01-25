@@ -11,7 +11,7 @@ from PIL import Image
 from scipy.special import comb
 from torch.utils.data import Dataset
 
-from pvp.utils.carla.core.utils.data_utils import splitter
+from pvp.experiments.carla.di_drive.core.utils.data_utils import splitter
 
 
 class Bezier(object):

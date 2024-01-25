@@ -16,11 +16,11 @@ import carla
 import xmlschema
 
 # pylint: enable=line-too-long
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider  # workaround
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider  # workaround
 # pylint: disable=line-too-long
-from pvp.utils.carla.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenarioconfigs.scenario_configuration import \
     ActorConfigurationData, ScenarioConfiguration
-from pvp.utils.carla.core.simulators.srunner.tools.openscenario_parser import OpenScenarioParser
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.openscenario_parser import OpenScenarioParser
 
 
 class OpenScenarioConfiguration(ScenarioConfiguration):

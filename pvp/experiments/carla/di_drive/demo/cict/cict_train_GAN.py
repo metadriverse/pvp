@@ -7,13 +7,15 @@ import torch
 import torch.optim as optim
 import torchvision.transforms as transforms
 from PIL import Image
-from pvp.utils.carla.core.data.cict_dataset import CictDataset
-# from pvp.utils.carla.core.utils.learner_utils.optim_utils import adjust_learning_rate_auto
-from pvp.utils.carla.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
-from pvp.utils.carla.core.utils.others.general_helper import create_log_folder, create_exp_path, erase_logs
-from pvp.utils.carla.demo.cict_demo.cict_model import GeneratorUNet, Discriminator
 from easydict import EasyDict
+from pvp.experiments.carla.di_drive.demo.cict_demo.cict_model import GeneratorUNet, Discriminator
 from torch.utils.data import DataLoader, WeightedRandomSampler
+
+from pvp.experiments.carla.di_drive.core.data.cict_dataset import CictDataset
+# from pvp.experiments.carla.di_drive.core.utils.learner_utils.optim_utils import adjust_learning_rate_auto
+from pvp.experiments.carla.di_drive.core.utils.others.checkpoint_helper import get_latest_saved_checkpoint
+from pvp.experiments.carla.di_drive.core.utils.others.general_helper import create_log_folder, create_exp_path, \
+    erase_logs
 
 train_config = dict(
     NUMBER_OF_LOADING_WORKERS=4,

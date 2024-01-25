@@ -1,11 +1,6 @@
 import copy
 from functools import partial
 
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.eval import SerialEvaluator
-from pvp.utils.carla.core.utils.data_utils.bev_utils import unpack_birdview
-from pvp.utils.carla.core.utils.others.ding_utils import compile_config
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager, BaseEnvManager
 from ding.policy import TD3Policy
 from ding.utils import set_pkg_seed
@@ -13,8 +8,13 @@ from ding.worker import BaseLearner, SampleSerialCollector, NaiveReplayBuffer
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 
-from pvp.utils.carla.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
-from pvp.utils.carla.demo.simple_rl.model import TD3RLModel
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.eval import SerialEvaluator
+from pvp.experiments.carla.di_drive.core.utils.data_utils.bev_utils import unpack_birdview
+from pvp.experiments.carla.di_drive.core.utils.others.ding_utils import compile_config
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.simple_rl.env_wrapper import ContinuousBenchmarkEnvWrapper
+from pvp.experiments.carla.di_drive.demo.simple_rl.model import TD3RLModel
 
 train_config = dict(
     exp_name='td32_bev32_buf4e5_lr1e4_bs128_ns3000_update4_train_ft',

@@ -2,7 +2,7 @@ from typing import List, Dict, Optional
 
 from ding.torch_utils.data_helper import to_ndarray
 
-from pvp.utils.carla.core.models import VehiclePIDController, SteerNoiseWrapper, MPCController
+from pvp.experiments.carla.di_drive.core.models import VehiclePIDController, SteerNoiseWrapper, MPCController
 from .base_carla_policy import BaseCarlaPolicy
 
 DEFAULT_LATERAL_DICT = {'K_P': 1, 'K_D': 0.1, 'K_I': 0, 'dt': 0.1}

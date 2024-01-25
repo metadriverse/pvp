@@ -6,10 +6,10 @@ from ding.torch_utils.data_helper import to_dtype
 from ding.utils.data import default_collate
 from torchvision import transforms
 
-from pvp.utils.carla.core.models import PIDController, CustomController
-from pvp.utils.carla.core.models.lbc_model import LBCBirdviewModel, LBCImageModel
-from pvp.utils.carla.core.utils.learner_utils.loss_utils import LocationLoss
-from pvp.utils.carla.core.utils.model_utils import common
+from pvp.experiments.carla.di_drive.core.models import PIDController, CustomController
+from pvp.experiments.carla.di_drive.core.models.lbc_model import LBCBirdviewModel, LBCImageModel
+from pvp.experiments.carla.di_drive.core.utils.learner_utils.loss_utils import LocationLoss
+from pvp.experiments.carla.di_drive.core.utils.model_utils import common
 from .base_carla_policy import BaseCarlaPolicy
 
 STEPS = 5

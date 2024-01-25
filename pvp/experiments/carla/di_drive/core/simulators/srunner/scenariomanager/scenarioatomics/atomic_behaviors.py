@@ -27,20 +27,21 @@ import numpy as np
 import py_trees
 from py_trees.blackboard import Blackboard
 
-from pvp.utils.carla.core.simulators import srunner
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.actorcontrols.actor_control import ActorControl
-from pvp.utils.carla.core.simulators.srunner.scenariomanager.timer import GameTime
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import detect_lane_obstacle
-from pvp.utils.carla.core.simulators.srunner.tools.scenario_helper import \
+from pvp.experiments.carla.di_drive.core.simulators import srunner
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.actorcontrols.actor_control import \
+    ActorControl
+from pvp.experiments.carla.di_drive.core.simulators.srunner.scenariomanager.timer import GameTime
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import detect_lane_obstacle
+from pvp.experiments.carla.di_drive.core.simulators.srunner.tools.scenario_helper import \
     generate_target_waypoint_list_multilane
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.basic_agent import BasicAgent, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.basic_agent import BasicAgent, \
     LocalPlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner import \
     GlobalRoutePlanner
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.global_route_planner_dao import \
     GlobalRoutePlannerDAO
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation.local_planner import RoadOption
 
 is_0_9_10_version_carla = "0.9.10" in carla.__file__
 

@@ -8,10 +8,10 @@ from ding.envs.env.base_env import BaseEnvTimestep, BaseEnvInfo
 from ding.torch_utils.data_helper import to_ndarray
 from easydict import EasyDict
 
-from pvp.utils.carla.core.data.benchmark import ALL_SUITES
-from pvp.utils.carla.core.eval.carla_benchmark_evaluator import get_suites_list, read_pose_txt, \
+from pvp.experiments.carla.di_drive.core.data.benchmark import ALL_SUITES
+from pvp.experiments.carla.di_drive.core.eval.carla_benchmark_evaluator import get_suites_list, read_pose_txt, \
     get_benchmark_dir
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
 from .base_carla_env import BaseCarlaEnv
 
 

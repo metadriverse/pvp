@@ -11,13 +11,14 @@ import carla
 import numpy as np
 import pkg_resources
 from carla import WeatherParameters
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints_new
-from pvp.utils.carla.core.simulators.carla_data_provider import CarlaDataProvider
-from pvp.utils.carla.core.utils.others.tcp_helper import find_traffic_manager_port
-from pvp.utils.carla.core.utils.planner import BasicPlanner, BehaviorPlanner, LBCPlannerNew
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import control_to_signal, get_birdview
-from pvp.utils.carla.core.utils.simulator_utils.map_utils import BeVWrapper
-from pvp.utils.carla.core.utils.simulator_utils.sensor_utils import SensorHelper, CollisionSensor, \
+
+from pvp.experiments.carla.di_drive.core.simulators.carla_data_provider import CarlaDataProvider
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import find_traffic_manager_port
+from pvp.experiments.carla.di_drive.core.utils.planner import BasicPlanner, BehaviorPlanner, LBCPlannerNew
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import draw_waypoints_new
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import control_to_signal, get_birdview
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.map_utils import BeVWrapper
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.sensor_utils import SensorHelper, CollisionSensor, \
     TrafficLightHelper
 from .base_simulator import BaseSimulator
 

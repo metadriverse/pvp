@@ -3,13 +3,14 @@ from collections import defaultdict
 
 import numpy as np
 import torch
-from pvp.utils.carla.core.data import CILRSDataset
-from pvp.utils.carla.core.policy import CILRSPolicy
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from pvp.experiments.carla.di_drive.core.data import CILRSDataset
+from pvp.experiments.carla.di_drive.core.policy import CILRSPolicy
 
 config = dict(
     exp_name='cilrs_train',

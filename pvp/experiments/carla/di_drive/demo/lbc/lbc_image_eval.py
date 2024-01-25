@@ -1,16 +1,16 @@
 from functools import partial
 
 import torch
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.eval import CarlaBenchmarkEvaluator
-from pvp.utils.carla.core.policy import LBCImagePolicy
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import AsyncSubprocessEnvManager
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
-from pvp.utils.carla.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.eval import CarlaBenchmarkEvaluator
+from pvp.experiments.carla.di_drive.core.policy import LBCImagePolicy
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.lbc.lbc_env_wrapper import LBCEnvWrapper
 
 lbc_config = dict(
     env=dict(

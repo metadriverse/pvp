@@ -6,9 +6,9 @@ from typing import Any, Dict
 import numpy as np
 from gym import spaces
 
-from pvp.utils.carla.core.simulators import CarlaScenarioSimulator
-from pvp.utils.carla.core.utils.others.visualizer import Visualizer
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
+from pvp.experiments.carla.di_drive.core.simulators import CarlaScenarioSimulator
+from pvp.experiments.carla.di_drive.core.utils.others.visualizer import Visualizer
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import visualize_birdview
 from .base_carla_env import BaseCarlaEnv
 
 
@@ -114,7 +114,7 @@ class ScenarioCarlaEnv(BaseCarlaEnv):
         self._last_steer = 0
         self._last_distance = None
 
-        from pvp.utils.carla.core.utils.env_utils.stuck_detector import StuckDetector
+        from pvp.experiments.carla.di_drive.core.utils.env_utils.stuck_detector import StuckDetector
         self._stuck_detector = StuckDetector(self._cfg.stuck_len)
 
         self._tick = 0

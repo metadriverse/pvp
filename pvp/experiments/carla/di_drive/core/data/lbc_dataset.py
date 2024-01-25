@@ -8,8 +8,8 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from pvp.utils.carla.core.utils.data_utils import augmenter
-from pvp.utils.carla.core.utils.others.image_helper import read_image, draw_msra_gaussian
+from pvp.experiments.carla.di_drive.core.utils.data_utils import augmenter
+from pvp.experiments.carla.di_drive.core.utils.others.image_helper import read_image, draw_msra_gaussian
 
 PIXEL_OFFSET = 10
 PIXELS_PER_METER = 5

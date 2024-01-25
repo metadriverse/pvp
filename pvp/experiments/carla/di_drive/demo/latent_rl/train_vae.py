@@ -2,14 +2,15 @@ import os
 
 import torch
 import torchvision.utils as vutils
-from pvp.utils.carla.core.data import BeVVAEDataset
-from pvp.utils.carla.core.models import VanillaVAE
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import visualize_birdview
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 from torch import optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from pvp.experiments.carla.di_drive.core.data import BeVVAEDataset
+from pvp.experiments.carla.di_drive.core.models import VanillaVAE
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import visualize_birdview
 
 config = dict(
     exp_name='vae_naive_train',

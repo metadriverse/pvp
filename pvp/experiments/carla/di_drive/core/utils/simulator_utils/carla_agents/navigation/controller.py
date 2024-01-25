@@ -10,7 +10,7 @@ from collections import deque
 import carla
 import numpy as np
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import get_speed
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import get_speed
 
 
 class VehiclePIDController():

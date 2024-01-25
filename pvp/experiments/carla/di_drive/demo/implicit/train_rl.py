@@ -2,8 +2,6 @@ import argparse
 import copy
 from functools import partial
 
-from pvp.utils.carla.core.utils.others.ding_utils import compile_config
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.envs import SyncSubprocessEnvManager
 from ding.policy import DQNPolicy
 from ding.rl_utils import get_epsilon_greedy_fn
@@ -14,6 +12,8 @@ from tensorboardX import SummaryWriter
 
 from carla_env import ImplicitCarlaEnv
 from models import ImplicitDQN
+from pvp.experiments.carla.di_drive.core.utils.others.ding_utils import compile_config
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
 
 
 def get_args():

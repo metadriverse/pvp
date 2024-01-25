@@ -11,8 +11,8 @@ from ding.torch_utils.data_helper import to_tensor
 from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
-from pvp.utils.carla.core.data.benchmark import ALL_SUITES
-from pvp.utils.carla.core.data.benchmark.benchmark_utils import get_suites_list, gather_results, \
+from pvp.experiments.carla.di_drive.core.data.benchmark import ALL_SUITES
+from pvp.experiments.carla.di_drive.core.data.benchmark.benchmark_utils import get_suites_list, gather_results, \
     read_pose_txt, get_benchmark_dir
 from .base_evaluator import BaseEvaluator
 

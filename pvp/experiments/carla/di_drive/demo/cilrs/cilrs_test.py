@@ -1,12 +1,12 @@
 import torch
-from pvp.utils.carla.core.envs import SimpleCarlaEnv
-from pvp.utils.carla.core.eval import SingleCarlaEvaluator
-from pvp.utils.carla.core.policy import CILRSPolicy
-from pvp.utils.carla.core.utils.others.tcp_helper import parse_carla_tcp
 from ding.utils import set_pkg_seed
 from easydict import EasyDict
 
-from pvp.utils.carla.demo.cilrs.cilrs_env_wrapper import CILRSEnvWrapper
+from pvp.experiments.carla.di_drive.core.envs import SimpleCarlaEnv
+from pvp.experiments.carla.di_drive.core.eval import SingleCarlaEvaluator
+from pvp.experiments.carla.di_drive.core.policy import CILRSPolicy
+from pvp.experiments.carla.di_drive.core.utils.others.tcp_helper import parse_carla_tcp
+from pvp.experiments.carla.di_drive.demo.cilrs.cilrs_env_wrapper import CILRSEnvWrapper
 
 cilrs_config = dict(
     env=dict(

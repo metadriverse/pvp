@@ -7,9 +7,9 @@ import numpy as np
 import shapely
 from six import iteritems
 
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.navigation import RoadOption
-from pvp.utils.carla.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead
-from pvp.utils.carla.core.utils.simulator_utils.carla_utils import calculate_speed, \
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.navigation import RoadOption
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_agents.tools.misc import is_within_distance_ahead
+from pvp.experiments.carla.di_drive.core.utils.simulator_utils.carla_utils import calculate_speed, \
     convert_waypoint_to_transform
 
 

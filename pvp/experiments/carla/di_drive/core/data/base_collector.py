@@ -5,7 +5,7 @@ from typing import Any, Dict
 from ding.utils import EasyTimer
 from easydict import EasyDict
 
-from pvp.utils.carla.core.utils.others.config_helper import deep_merge_dicts
+from pvp.experiments.carla.di_drive.core.utils.others.config_helper import deep_merge_dicts
 
 
 class BaseCollector(object):

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from ding.torch_utils import to_device
 from ding.utils.data import default_collate, default_decollate
 
-from pvp.utils.carla.core.models import CILRSModel
+from pvp.experiments.carla.di_drive.core.models import CILRSModel
 from .base_carla_policy import BaseCarlaPolicy
 
 
