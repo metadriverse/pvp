@@ -8,7 +8,7 @@ import pandas as pd
 
 from pvp.sb3.common.monitor import Monitor
 from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_td3
-from pvp.utils.carla.pvp_carla_env import PVPEnv
+from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 
 
 def eval_one_checkpoint(model_path, model, eval_env, log_dir, num_episodes):
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     obs_mode = "birdview"
 
     # ===== Setup the training environment =====
-    train_env = PVPEnv(
+    train_env = HumanInTheLoopCARLAEnv(
         config=dict(
             obs_mode=obs_mode,
             force_fps=0,

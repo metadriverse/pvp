@@ -6,7 +6,7 @@ from collections import defaultdict
 import pandas as pd
 
 from pvp.pvp_td3 import pvpTD3
-from pvp.utils.carla.pvp_carla_env import PVPEnv
+from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
 from pvp.sb3.td3.policies import TD3Policy
 from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
@@ -15,7 +15,7 @@ from pvp.sb3.td3.policies import MultiInputPolicy
 
 
 def set_up_env(port, obs_mode, debug_vis=False, disable_vis=False, disable_takeover=True, force_fps=10):
-    eval_env = PVPEnv(
+    eval_env = HumanInTheLoopCARLAEnv(
         dict(
             obs_mode=obs_mode,
             force_fps=force_fps,

@@ -19,7 +19,6 @@ screeninfo
 keyboard
 gym==0.19.0
 gym[atari]==0.19.0
-ray==1.0.0
 dm-tree
 tabulate
 pickle5
@@ -31,3 +30,4 @@ pyglet
 minigrid==2.3.1
 easydict
 metadrive-simulator==0.4.2.2  # Use latest MetaDrive at the time of release.
+markupsafe==2.0.1
