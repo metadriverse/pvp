@@ -280,13 +280,19 @@ class HumanInTheLoopCARLAEnv(ContinuousBenchmarkEnvWrapper):
         self.normalize_obs = self.main_config["normalize_obs"]
 
     def step(self, action):
+
+        # Get control signal from human
         if self.controller is not None:
             human_action = self.controller.process_input(self.env._simulator_databuffer['state']['speed_kmh'])
             takeover = self.controller.left_shift_paddle or self.controller.right_shift_paddle
         else:
             human_action = [0, 0]
             takeover = False
+
+        # Step the environment
         o, r, d, info = super(HumanInTheLoopCARLAEnv, self).step(human_action if takeover else action)
+
+        # Postprocess the environment return
         self.episode_recorder["reward"].append(r)
         info["takeover_start"] = True if not self.last_takeover and takeover else False
         info["takeover"] = takeover and not info["takeover_start"]
@@ -316,9 +322,12 @@ class HumanInTheLoopCARLAEnv(ContinuousBenchmarkEnvWrapper):
         info["episode_average_velocity"] = (
             sum(self.episode_recorder["velocity"]) / len(self.episode_recorder["velocity"])
         )
+
+        # Render
         if not self.main_config["disable_vis"]:
             self.render()
         self.force_fps.sleep_if_needed()
+
         return o, float(r[0]), d, info
 
     def native_cost(self, info):
