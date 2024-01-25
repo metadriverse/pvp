@@ -19,7 +19,6 @@ screeninfo
 keyboard
 gym==0.19.0
 gym[atari]==0.19.0
-ray==1.0.0
 dm-tree
 tabulate
 pickle5
