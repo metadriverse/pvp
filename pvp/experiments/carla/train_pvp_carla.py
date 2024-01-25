@@ -5,28 +5,16 @@ import argparse
 import os
 from pathlib import Path
 
+from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 from pvp.pvp_td3 import PVPTD3
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.haco import HACOReplayBuffer
+from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
 from pvp.sb3.td3.policies import TD3Policy
 from pvp.utils.shared_control_monitor import SharedControlMonitor
 from pvp.utils.utils import get_time_str
-
-import argparse
-import os
-import os.path as osp
-
-# from drivingforce.new_haco.utils.haco_carla_env import HACOEnv
-# from drivingforce.haco_2022.sb3.common.callbacks import CallbackList, CheckpointCallback
-# from drivingforce.haco_2022.sb3.common.monitor import Monitor
-# from drivingforce.haco_2022.sb3.common.wandb_callback import WandbCallback
-# from drivingforce.new_haco.haco_td3.haco_td3 import HACOTD3
-# from drivingforce.haco_2022.sb3.td3.policies import TD3Policy
-# from drivingforce.haco_2022.sb3.haco.haco_buffer import HACOReplayBuffer
-# from drivingforce.haco_2022.sb3.sac.our_features_extractor import OurFeaturesExtractor
-# from drivingforce.haco_2022.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -35,10 +23,24 @@ if __name__ == '__main__':
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+
+    parser.add_argument(
+        "--obs_mode",
+        default="birdview",
+        choices=["birdview", "first", "birdview42", "firststack"],
+        help="The observation mode."
+    )
+    parser.add_argument("--port", default=9000, type=int, help="Carla server port.")
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
-    control_device = args.device
+    port = args.port
+    obs_mode = args.obs_mode
+    if obs_mode.endswith("stack"):
+        other_feat_dim = 0
+    else:
+        other_feat_dim = 1
+
     experiment_batch_name = args.exp_name
     seed = args.seed
     trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
@@ -61,15 +63,11 @@ if __name__ == '__main__':
         # Environment config
         env_config=dict(
             obs_mode=obs_mode,
-            force_fps=30,  ###
-            disable_vis=False,  ###
-            debug_vis=False,
+            force_fps=10,
+            disable_vis=False,
             port=port,
-            disable_takeover=False,  ###
-            controller="keyboard",
-            env={"visualize": {
-                "location": "lower right"
-            }}
+            enable_takeover=True,
+            env=dict(visualize=dict(location="center"))
         ),
 
         # Algorithm config
@@ -118,7 +116,7 @@ if __name__ == '__main__':
     )
 
     # ===== Setup the training environment =====
-    train_env = HACOEnv(config=config["env_config"], )
+    train_env = HumanInTheLoopCARLAEnv(external_config=config["env_config"], )
     train_env = Monitor(env=train_env, filename=str(trial_dir))
     train_env = SharedControlMonitor(env=train_env, folder=trial_dir / "data", prefix=trial_name)
     config["algo"]["env"] = train_env
