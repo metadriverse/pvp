@@ -1,6 +1,8 @@
 """
 Borrowed part of the code from:
 https://github.com/Farama-Foundation/Minigrid/blob/master/minigrid/manual_control.py
+
+We change the renderer to print text indicating agent's actions.
 """
 # import gym
 import gymnasium as gym
@@ -10,9 +12,12 @@ import numpy as np
 import pygame
 
 from minigrid.envs import EmptyEnv as NativeEmptyEnv
+from minigrid.envs import MultiRoomEnv as NativeMultiRoomEnv
 
 ADDITIONAL_HEIGHT = 200
 RULE_WIDTH = 5
+SCREEN_SIZE = 2000
+DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X\n"
 
 
 def new_render(self):
@@ -25,9 +30,7 @@ def new_render(self):
         if self.window is None:
             pygame.init()
             pygame.display.init()
-            self.window = pygame.display.set_mode(
-                (self.screen_size, self.screen_size + ADDITIONAL_HEIGHT)
-            )
+            self.window = pygame.display.set_mode((self.screen_size, self.screen_size + ADDITIONAL_HEIGHT))
             pygame.display.set_caption("minigrid")
         if self.clock is None:
             self.clock = pygame.time.Clock()
@@ -36,34 +39,40 @@ def new_render(self):
         # Create background with mission description
         offset = surf.get_size()[0] * 0.1
         # offset = 32 if self.agent_pov else 64
-        bg = pygame.Surface(
-            (int(surf.get_size()[0] + offset), int(surf.get_size()[1] + offset))
-        )
+        bg = pygame.Surface((int(surf.get_size()[0] + offset), int(surf.get_size()[1] + offset)))
         bg.convert()
         bg.fill((255, 255, 255))
         bg.blit(surf, (offset / 2, 0))
 
         bg = pygame.transform.smoothscale(bg, (self.screen_size, self.screen_size))
 
-        # PZH: Larger font size
-        # font_size = 22
-        font_size = 50
-
-        text = self.mission
+        # ===== PZH: We additionally print something here. =====
+        font_size = 40
+        text = "Mission: {}\n{}".format(self.mission, DEFAULT_TEXT)
         font = pygame.freetype.SysFont(pygame.font.get_default_font(), font_size)
-        text_rect = font.get_rect(text, size=font_size)
-        text_rect.center = bg.get_rect().center
-        text_rect.y = bg.get_height() - font_size * 1.3
-        font.render_to(bg, text_rect, text, size=font_size)
+        lines = text.split('\n')
+        # Calculate the starting y position
+        start_y = bg.get_height() - font_size * 1.5 * (len(lines) - 1)
+        for i, line in enumerate(lines):
+            # Calculate the y position for each line
+            y_position = start_y + (font_size * 1.5 * i)
+            # Create a rectangle for the line
+            text_rect = font.get_rect(line, size=font_size)
+            text_rect.centerx = bg.get_rect().centerx
+            text_rect.y = y_position
+            # Render the line to the background surface
+            font.render_to(bg, text_rect, line, size=font_size)
+
+        # text_rect = font.get_rect(text, size=font_size)
+        # text_rect.center = bg.get_rect().center
+        # text_rect.y = bg.get_height() - font_size * 1.3
+        # font.render_to(bg, text_rect, text, size=font_size)
         # self.window.fill((255, 255, 0))
 
         self.window.blit(bg, (0, 0))
-
-        # ===== PZH: We additionally print something here. =====
+        font_size = 80
         if self.additional_text:
-            additional_text_bg = pygame.Surface(
-                (self.screen_size, ADDITIONAL_HEIGHT)
-            )
+            additional_text_bg = pygame.Surface((self.screen_size, ADDITIONAL_HEIGHT))
             additional_text_bg.fill((255, 255, 255))
             # Split the text into lines
             lines = self.additional_text.split('\n')
@@ -79,7 +88,7 @@ def new_render(self):
                 # Render the line to the background surface
                 font.render_to(additional_text_bg, text_rect, line, size=font_size)
             self.window.blit(additional_text_bg, (0, self.screen_size + RULE_WIDTH))
-        # ===== PZH: We additionally print something here. =====
+        # ===== PZH: We additionally print something here DONE. =====
 
         pygame.event.pump()
         self.clock.tick(self.metadata["render_fps"])
@@ -99,8 +108,18 @@ class EmptyEnv(NativeEmptyEnv):
         return new_render(self)
 
 
+class MultiRoomEnv(NativeMultiRoomEnv):
+    additional_text = ""
+
+    def update_additional_text(self, text):
+        self.additional_text = text
+
+    def render(self):
+        return new_render(self)
+
+
 class MiniGridEmpty6x6(EmptyEnv):
-    """
+    """Empty Room.
     Following:
         register(
             id="MiniGrid-Empty-6x6-v0",
@@ -108,9 +127,38 @@ class MiniGridEmpty6x6(EmptyEnv):
             kwargs={"size": 6},
         )
     """
-
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, size=6, render_mode="human", screen_size=1000, **kwargs)
+        super().__init__(*args, size=6, render_mode="human", screen_size=SCREEN_SIZE, **kwargs)
+
+
+class MiniGridMultiRoomN2S4(MultiRoomEnv):
+    """Two Room.
+    Following:
+        register(
+            id="MiniGrid-MultiRoom-N2-S4-v0",
+            entry_point="minigrid.envs:MultiRoomEnv",
+            kwargs={"minNumRooms": 2, "maxNumRooms": 2, "maxRoomSize": 4},
+        )
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args, minNumRooms=2, maxNumRooms=2, maxRoomSize=4, render_mode="human", screen_size=SCREEN_SIZE, **kwargs
+        )
+
+
+class MiniGridMultiRoomN4S5(MultiRoomEnv):
+    """Four Room.
+    Following:
+        register(
+            id="MiniGrid-MultiRoom-N4-S5-v0",
+            entry_point="minigrid.envs:MultiRoomEnv",
+            kwargs={"minNumRooms": 6, "maxNumRooms": 6, "maxRoomSize": 5},
+        )
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args, minNumRooms=6, maxNumRooms=6, maxRoomSize=5, render_mode="human", screen_size=SCREEN_SIZE, **kwargs
+        )
 
 
 class MinigridWrapper(gym.Wrapper):
@@ -139,6 +187,7 @@ class MinigridWrapper(gym.Wrapper):
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             self.close()
+                            raise KeyboardInterrupt()
                         else:
                             event.key = pygame.key.name(int(event.key))
                             self.discrete_key_detect(event)
@@ -234,11 +283,11 @@ class MinigridWrapper(gym.Wrapper):
     def close(self):
         self.env.close()
         pygame.quit()
-        raise KeyboardInterrupt()
 
 
 if __name__ == '__main__':
-    env = MinigridWrapper(MiniGridEmpty6x6())
+    # env = MinigridWrapper(MiniGridEmpty6x6())
+    env = MinigridWrapper(MiniGridMultiRoomN4S5())
     env.reset()
     while True:
         o, r, d, i = env.step(env.action_space.sample())
