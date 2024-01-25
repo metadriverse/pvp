@@ -104,14 +104,13 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         if self.config["use_render"]:  # and self.config["main_exp"]: #and not self.config["in_replay"]:
             super(HumanInTheLoopEnv, self).render(
                 text={
-                    "Total Cost": round(self.total_cost, 3),
-                    "Takeover Cost": round(self.total_takeover_cost, 3),
-                    "Takeover": self.takeover,
-                    "COST": ret[-1]["takeover_cost"],
+                    "Total Cost": round(self.total_cost, 2),
+                    "Takeover Cost": round(self.total_takeover_cost, 2),
+                    "Takeover": "TAKEOVER" if self.takeover else "NO",
                     "Total Step": self.total_steps,
                     "Total Time": time.strftime("%M:%S", time.gmtime(time.time() - self.start_time)),
-                    "Takeover Rate": "{:.3f}%".format(np.mean(np.array(self.takeover_recorder) * 100)),
-                    "Pause (Press E)": "",
+                    "Takeover Rate": "{:.2f}%".format(np.mean(np.array(self.takeover_recorder) * 100)),
+                    "Pause": "Press E",
                 }
             )
 
