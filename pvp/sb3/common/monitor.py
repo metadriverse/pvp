@@ -13,6 +13,9 @@ import pandas
 
 from pvp.sb3.common.type_aliases import GymObs, GymStepReturn
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__file__)
 
 
 class Monitor(gym.Wrapper):
@@ -46,7 +49,7 @@ class Monitor(gym.Wrapper):
         reset_keywords = tuple(reset_keywords)
         ep_info_keywords = tuple("ep_" + k for k in info_keywords)
         record_keys = reset_keywords + info_keywords + ep_info_keywords
-        print("In Monitor, we auto detect the record keys: ", record_keys)
+        logger.info("In Monitor, we auto detect the record keys: {}".format(record_keys))
 
         self.t_start = time.time()
         if filename is not None:

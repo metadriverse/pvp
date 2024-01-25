@@ -98,11 +98,10 @@ class WandbCallback(BaseCallback):
         os.environ[WANDB_ENV_VAR] = key
 
         # PZH: A weird bug here and don't know why this fixes
-        if os.environ["PYTHONUTF8"] == 'on':
+        if "PYTHONUTF8" in os.environ and os.environ["PYTHONUTF8"] == 'on':
             os.environ["PYTHONUTF8"] = '1'
 
         self.run = wandb.init(
-
             # Names
             project=project_name,
             id=trial_name,
