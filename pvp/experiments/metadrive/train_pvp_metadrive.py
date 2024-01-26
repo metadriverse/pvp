@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     # ===== Set up some arguments =====
     control_device = args.device
-    experiment_batch_name = args.exp_name
+    experiment_batch_name = "{}_{}".format(args.exp_name, control_device)
     seed = args.seed
     trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 

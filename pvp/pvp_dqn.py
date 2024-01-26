@@ -16,19 +16,8 @@ from pvp.sb3.haco.haco_buffer import HACOReplayBuffer, concat_samples
 class PVPDQN(DQN):
     def __init__(self, q_value_bound=1., *args, **kwargs):
         kwargs["replay_buffer_class"] = HACOReplayBuffer
-        if "cql_coefficient" in kwargs:
-            self.cql_coefficient = kwargs["cql_coefficient"]
-            kwargs.pop("cql_coefficient")
-        else:
-            self.cql_coefficient = 1
         if "replay_buffer_class" not in kwargs:
             kwargs["replay_buffer_class"] = HACOReplayBuffer
-
-        if "intervention_start_stop_td" in kwargs:
-            assert kwargs["intervention_start_stop_td"]
-            kwargs.pop("intervention_start_stop_td")
-        else:
-            self.intervention_start_stop_td = True
         super(PVPDQN, self).__init__(*args, **kwargs)
         self.q_value_bound = q_value_bound
 
@@ -51,9 +40,12 @@ class PVPDQN(DQN):
                 replay_data_agent = self.replay_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
                 replay_data_human = self.human_data_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
                 replay_data = concat_samples(replay_data_agent, replay_data_human)
-            else:
-                assert self.human_data_buffer.pos > 0, "We expect human intervenes in the beginning!"
+            elif self.human_data_buffer.pos > batch_size:
                 replay_data = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
+            elif self.replay_buffer.pos > batch_size:
+                replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+            else:
+                break
 
             with th.no_grad():
                 # Compute the next Q-values using the target network
@@ -74,17 +66,7 @@ class PVPDQN(DQN):
             # Retrieve the q-values for the actions from the replay buffer
             current_behavior_q_values = th.gather(current_q_values, dim=1, index=replay_data.actions_behavior.long())
 
-            # Method 1: Use the novice action stored in buffer to compute Q novice
             current_novice_q_value_method1 = th.gather(current_q_values, dim=1, index=replay_data.actions_novice.long())
-            # stat_recorder["q_value_novice_method1"].append(current_novice_q_value_method1.mean().item())
-
-            # Method 2: Use current novice policy's Q values, that is the maximum one
-            # current_novice_q_value_method2, _ = current_q_values.max(dim=1)
-            # stat_recorder["q_value_novice_method2"].append(current_novice_q_value_method2.mean().item())
-
-            # Method 3: Set all non-human action to have Q value -1
-            # method3_mask = th.ones_like(current_q_values, dtype=th.long).scatter(1, replay_data.actions_behavior.long(), 0)
-            # current_novice_q_value_method3 = th.gather(current_q_values, dim=1, index=method3_mask)
 
             current_novice_q_value = current_novice_q_value_method1
 
@@ -95,7 +77,7 @@ class PVPDQN(DQN):
             stat_recorder["no_overlap_rate"].append(no_overlap.float().mean().item())
             stat_recorder["masked_no_overlap_rate"].append((mask * no_overlap).float().mean().item())
 
-            cql_loss = \
+            pvp_loss = \
                 F.mse_loss(
                     mask * current_behavior_q_values,
                     mask * self.q_value_bound * th.ones_like(current_behavior_q_values)
@@ -106,10 +88,9 @@ class PVPDQN(DQN):
                 )
 
             # Compute Huber loss (less sensitive to outliers)
-            # loss_td = F.smooth_l1_loss(current_behavior_q_values * replay_data.stop_td,
-            #                            target_q_values * replay_data.stop_td)
-            loss_td = F.smooth_l1_loss(current_behavior_q_values, target_q_values)  # remove stop-td
-            loss = loss_td.mean() + cql_loss.mean() * self.cql_coefficient
+            loss_td = F.smooth_l1_loss(current_behavior_q_values, target_q_values)
+
+            loss = loss_td.mean() + pvp_loss.mean()
             losses.append(loss.item())
 
             # Optimize the policy

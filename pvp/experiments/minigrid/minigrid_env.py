@@ -27,7 +27,7 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 logger = logging.getLogger(__file__)
 
-ADDITIONAL_HEIGHT = 200
+ADDITIONAL_HEIGHT = 300
 RULE_WIDTH = 5
 SCREEN_SIZE = 2000
 DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X | Quit: Esc \n"
@@ -123,6 +123,7 @@ class OldGymWrapper(old_gym.Wrapper):
 
 class ConcatenateChannel(gym.ObservationWrapper):
     """Convert the observation from shape (4, 7, 7, 3) to (12, 7, 7), in channel-first manner."""
+
     def __init__(self, env):
         super(ConcatenateChannel, self).__init__(env)
         old_shape = self.observation_space.shape
@@ -166,6 +167,7 @@ class MiniGridEmpty6x6(EmptyEnv):
             kwargs={"size": 6},
         )
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, size=6, **kwargs)
 
@@ -179,6 +181,7 @@ class MiniGridMultiRoomN2S4(MultiRoomEnv):
             kwargs={"minNumRooms": 2, "maxNumRooms": 2, "maxRoomSize": 4},
         )
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, minNumRooms=2, maxNumRooms=2, maxRoomSize=4, **kwargs)
 
@@ -192,6 +195,7 @@ class MiniGridMultiRoomN4S5(MultiRoomEnv):
             kwargs={"minNumRooms": 6, "maxNumRooms": 6, "maxRoomSize": 5},
         )
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, minNumRooms=6, maxNumRooms=6, maxRoomSize=5, **kwargs)
 
@@ -199,15 +203,15 @@ class MiniGridMultiRoomN4S5(MultiRoomEnv):
 class MinigridWrapper(gym.Wrapper):
     def __init__(self, env):
         super(MinigridWrapper, self).__init__(env=env)
-        self.total_cost = 0
+        self.total_takeover = 0
+        self.total_steps = 0
         self.takeover = False
         self.use_render = self.enable_human = env.render_mode == "human"
         self.keyboard_action = None
         self.valid_key_press = False
-        # TODO(PZH): We can simply leave only three useful action dimensions here.
-        # self.action_space = gym.spaces.Discrete(3)
 
     def step(self, a):
+        self.total_steps += 1
         self.update_caption(a)
 
         if self.enable_human:
@@ -232,16 +236,14 @@ class MinigridWrapper(gym.Wrapper):
                                 should_break = False
                         break
 
-        # TODO: Check all here.
         should_takeover = self.keyboard_action is not None
         cost = 0
         behavior_action = self.keyboard_action if should_takeover else a
         o, r, tm, tc, i = super(MinigridWrapper, self).step(behavior_action)
         takeover_start = should_takeover and not self.takeover
         i["cost"] = cost
-        i["total_cost"] = self.total_cost
+        i["total_takeover"] = self.total_takeover
         i["takeover_cost"] = cost
-        i["total_takeover_cost"] = self.total_cost
         i["raw_action"] = int(behavior_action)
         i["takeover_start"] = True if takeover_start else False
         i["takeover"] = True if should_takeover and self.takeover else False
@@ -249,10 +251,10 @@ class MinigridWrapper(gym.Wrapper):
         self.takeover = should_takeover
         self.valid_key_press = False  # refresh
         self.update_caption(None)  # Set caption to "waiting"
+        self.total_takeover += 1 if self.takeover else 0
         return o, r, tm, tc, i
 
     def reset(self, *args, **kwargs):
-        self.total_cost = 0
         self.takeover = False
         self.keyboard_action = None
         ret = self.env.reset(*args, **kwargs)
@@ -295,10 +297,13 @@ class MinigridWrapper(gym.Wrapper):
             logger.warning("Find unknown key press event: {}! Please press again!".format(event.key))
 
     def update_caption(self, agent_action=None):
+        suffix = "Human: {}, Total: {} ({:.1f}%)".format(
+            self.total_takeover, self.total_steps, self.total_takeover / self.total_steps * 100
+        )
         if not self.use_render:
             return
         if agent_action is None:
-            self.update_additional_text("Waiting agent action...".format(agent_action))
+            self.update_additional_text("Waiting agent action...\n{}".format(suffix))
         else:
             if agent_action < 7:
                 agent_action = {
@@ -312,7 +317,7 @@ class MinigridWrapper(gym.Wrapper):
                 }[agent_action]
             else:
                 agent_action = "Invalid action: {}".format(agent_action)
-            self.update_additional_text("Agent action: {}".format(agent_action))
+            self.update_additional_text("Agent action: {}\n{}".format(agent_action, suffix))
         if self.use_render:
             self.env.render()
 

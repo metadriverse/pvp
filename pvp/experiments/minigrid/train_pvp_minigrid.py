@@ -37,14 +37,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
-    experiment_batch_name = args.exp_name
+    env_name = args.env
+    experiment_batch_name = "{}_{}".format(args.exp_name, env_name)
     seed = args.seed
-    trial_name = "{}_{}_{}".format(experiment_batch_name, 'keyboard', get_time_str())
+    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 
     use_wandb = args.wandb
     project_name = args.wandb_project
     team_name = args.wandb_team
-    env_name = args.env
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
 
@@ -68,9 +68,8 @@ if __name__ == '__main__':
                 64,
             ]),
 
-            # === HACO setting ===
-            replay_buffer_kwargs=dict(discard_reward=True  # PZH: We run in reward-free manner!
-                                      ),
+            # === PVP setting ===
+            replay_buffer_kwargs=dict(discard_reward=True),  # PZH: We run in reward-free manner!
             exploration_fraction=0.0,  # 1% * 100k = 1k
             exploration_initial_eps=0.0,
             exploration_final_eps=0.0,
@@ -84,18 +83,10 @@ if __name__ == '__main__':
 
             # === New hypers ===
             learning_starts=10,  # PZH: Original DQN has 100K warmup steps
-            batch_size=256,  # or 32?
-            train_freq=1,  # or 4?
+            batch_size=32,
+            train_freq=(1, 'step'),
             tau=0.005,
             target_update_interval=1,
-            # target_update_interval=50,
-
-            # === Old DQN hypers ===
-            # learning_starts=1000,  # PZH: Original DQN has 100K warmup steps
-            # batch_size=32,  # Reduce the batch size for real-time copilot
-            # train_freq=4,
-            # tau=1.0,
-            # target_update_interval=1000,
             gradient_steps=32,
             tensorboard_log=trial_dir,
             create_eval_env=False,
@@ -104,9 +95,7 @@ if __name__ == '__main__':
             device="auto",
         ),
 
-        # Meta data
-        project_name=project_name,
-        team_name=team_name,
+        # Experiment log
         exp_name=experiment_batch_name,
         seed=seed,
         use_wandb=use_wandb,
@@ -125,7 +114,7 @@ if __name__ == '__main__':
         raise ValueError("Unknown environment: {}".format(env_name))
     env = wrap_minigrid_env(env_class, enable_takeover=True)
     env = Monitor(env=env, filename=str(trial_dir))
-    train_env = SharedControlMonitor(env=env, folder=trial_dir / "data", prefix=trial_name, save_freq=10)
+    train_env = SharedControlMonitor(env=env, folder=trial_dir / "data", prefix=trial_name, save_freq=100)
 
     # ===== Also build the eval env =====
     def _make_eval_env():
@@ -155,7 +144,6 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
-    # TODO: Do we have similar 'stop td at intervention start' thing here?
     model = PVPDQN(**config["algo"])
 
     # ===== Launch training =====
@@ -167,9 +155,9 @@ if __name__ == '__main__':
 
         # eval
         eval_env=eval_env,
-        eval_freq=20,
+        eval_freq=20,  # Evaluate every 20 steps in training.
         n_eval_episodes=10,
-        eval_log_path=trial_dir,
+        eval_log_path=str(trial_dir),
 
         # logging
         tb_log_name=experiment_batch_name,
