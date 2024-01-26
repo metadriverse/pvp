@@ -123,7 +123,6 @@ class OldGymWrapper(old_gym.Wrapper):
 
 class ConcatenateChannel(gym.ObservationWrapper):
     """Convert the observation from shape (4, 7, 7, 3) to (12, 7, 7), in channel-first manner."""
-
     def __init__(self, env):
         super(ConcatenateChannel, self).__init__(env)
         old_shape = self.observation_space.shape
@@ -167,7 +166,6 @@ class MiniGridEmpty6x6(EmptyEnv):
             kwargs={"size": 6},
         )
     """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, size=6, **kwargs)
 
@@ -181,7 +179,6 @@ class MiniGridMultiRoomN2S4(MultiRoomEnv):
             kwargs={"minNumRooms": 2, "maxNumRooms": 2, "maxRoomSize": 4},
         )
     """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, minNumRooms=2, maxNumRooms=2, maxRoomSize=4, **kwargs)
 
@@ -195,7 +192,6 @@ class MiniGridMultiRoomN4S5(MultiRoomEnv):
             kwargs={"minNumRooms": 6, "maxNumRooms": 6, "maxRoomSize": 5},
         )
     """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, minNumRooms=6, maxNumRooms=6, maxRoomSize=5, **kwargs)
 
