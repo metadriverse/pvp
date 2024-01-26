@@ -5,51 +5,46 @@ import argparse
 import os
 from pathlib import Path
 
-# import gym
-import gymnasium as gym
+# import gymnasium as gym
 import torch
-from minigrid.wrappers import ImgObsWrapper
 
-from pvp.experiments.minigrid.minigrid_env import MinigridWrapper
+from pvp.experiments.minigrid.minigrid_env import MiniGridMultiRoomN2S4, MiniGridMultiRoomN4S5, \
+    MiniGridEmpty6x6, wrap_minigrid_env
 from pvp.experiments.minigrid.minigrid_model import MinigridCNN
 from pvp.pvp_dqn import PVPDQN
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
-from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.dqn.policies import CnnPolicy
+from pvp.utils.shared_control_monitor import SharedControlMonitor
 from pvp.utils.utils import get_time_str
-import minigrid
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="pvp_minigrid", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
-    # parser.add_argument(
-    #     "--device",
-    #     required=True,
-    #     choices=['wheel', 'gamepad', 'keyboard'],
-    #     type=str,
-    #     help="The control device, selected from [wheel, gamepad, keyboard]."
-    # )
-
-    parser.add_argument("--env_name", default="MiniGrid-Empty-Random-6x6-v0", type=str, help="Name of Gym environment")
-    # Or use environment: --env-name MiniGrid-MultiRoom-N6-v0
-
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+
+    parser.add_argument(
+        "--env",
+        default="emptyroom",
+        type=str,
+        help="Nick name of the environment.",
+        choices=["emptyroom", "tworoom", "fourroom"]
+    )
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
-    experiment_batch_name = args.exp_name
+    env_name = args.env
+    experiment_batch_name = "{}_{}".format(args.exp_name, env_name)
     seed = args.seed
-    trial_name = "{}_{}_{}".format(experiment_batch_name, 'keyboard', get_time_str())
+    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 
     use_wandb = args.wandb
     project_name = args.wandb_project
     team_name = args.wandb_team
-    env_name = args.env_name
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
 
@@ -73,9 +68,8 @@ if __name__ == '__main__':
                 64,
             ]),
 
-            # === HACO setting ===
-            replay_buffer_kwargs=dict(discard_reward=True  # PZH: We run in reward-free manner!
-                                      ),
+            # === PVP setting ===
+            replay_buffer_kwargs=dict(discard_reward=True),  # PZH: We run in reward-free manner!
             exploration_fraction=0.0,  # 1% * 100k = 1k
             exploration_initial_eps=0.0,
             exploration_final_eps=0.0,
@@ -88,19 +82,11 @@ if __name__ == '__main__':
             learning_rate=1e-4,
 
             # === New hypers ===
-            learning_starts=50,  # PZH: Original DQN has 100K warmup steps
-            batch_size=256,  # or 32?
-            train_freq=1,  # or 4?
+            learning_starts=10,  # PZH: Original DQN has 100K warmup steps
+            batch_size=32,
+            train_freq=(1, 'step'),
             tau=0.005,
             target_update_interval=1,
-            # target_update_interval=50,
-
-            # === Old DQN hypers ===
-            # learning_starts=1000,  # PZH: Original DQN has 100K warmup steps
-            # batch_size=32,  # Reduce the batch size for real-time copilot
-            # train_freq=4,
-            # tau=1.0,
-            # target_update_interval=1000,
             gradient_steps=32,
             tensorboard_log=trial_dir,
             create_eval_env=False,
@@ -109,9 +95,7 @@ if __name__ == '__main__':
             device="auto",
         ),
 
-        # Meta data
-        project_name=project_name,
-        team_name=team_name,
+        # Experiment log
         exp_name=experiment_batch_name,
         seed=seed,
         use_wandb=use_wandb,
@@ -120,22 +104,25 @@ if __name__ == '__main__':
     )
 
     # ===== Setup the training environment =====
-    minigrid.register_minigrid_envs()
-    env = gym.make(env_name)
-    env = MinigridWrapper(env, enable_render=True, enable_human=True)
+    if env_name == "emptyroom":
+        env_class = MiniGridEmpty6x6
+    elif env_name == "tworoom":
+        env_class = MiniGridMultiRoomN2S4
+    elif env_name == "fourroom":
+        env_class = MiniGridMultiRoomN4S5
+    else:
+        raise ValueError("Unknown environment: {}".format(env_name))
+    env = wrap_minigrid_env(env_class, enable_takeover=True)
     env = Monitor(env=env, filename=str(trial_dir))
-    env = ImgObsWrapper(env)
-    train_env = VecFrameStack(DummyVecEnv([lambda: env]), n_stack=4)
+    train_env = SharedControlMonitor(env=env, folder=trial_dir / "data", prefix=trial_name, save_freq=100)
 
     # ===== Also build the eval env =====
     def _make_eval_env():
-        env = gym.make(env_name)
-        env = MinigridWrapper(env, enable_render=False, enable_human=False)
-        env = Monitor(env=env, filename=eval_log_dir)
-        env = ImgObsWrapper(env)
+        env = wrap_minigrid_env(env_class, enable_takeover=False)
+        env = Monitor(env=env, filename=str(trial_dir))
         return env
 
-    eval_env = VecFrameStack(DummyVecEnv([_make_eval_env]), n_stack=4)
+    eval_env = _make_eval_env()
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
@@ -157,7 +144,6 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
-    # TODO: Do we have similar 'stop td at intervention start' thing here?
     model = PVPDQN(**config["algo"])
 
     # ===== Launch training =====
@@ -169,9 +155,9 @@ if __name__ == '__main__':
 
         # eval
         eval_env=eval_env,
-        eval_freq=20,
+        eval_freq=20,  # Evaluate every 20 steps in training.
         n_eval_episodes=10,
-        eval_log_path=trial_dir,
+        eval_log_path=str(trial_dir),
 
         # logging
         tb_log_name=experiment_batch_name,

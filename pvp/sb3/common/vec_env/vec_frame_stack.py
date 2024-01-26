@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from gym import spaces
+from gymnasium import spaces as new_spaces
 
 from pvp.sb3.common.vec_env.base_vec_env import VecEnv, VecEnvWrapper
 from pvp.sb3.common.vec_env.stacked_observations import StackedDictObservations, StackedObservations
@@ -25,13 +26,13 @@ class VecFrameStack(VecEnvWrapper):
 
         wrapped_obs_space = venv.observation_space
 
-        if isinstance(wrapped_obs_space, spaces.Box):
+        if isinstance(wrapped_obs_space, (spaces.Box, new_spaces.Box)):
             assert not isinstance(
                 channels_order, dict
             ), f"Expected None or string for channels_order but received {channels_order}"
             self.stackedobs = StackedObservations(venv.num_envs, n_stack, wrapped_obs_space, channels_order)
 
-        elif isinstance(wrapped_obs_space, spaces.Dict):
+        elif isinstance(wrapped_obs_space, (spaces.Dict, new_spaces.Dict)):
             self.stackedobs = StackedDictObservations(venv.num_envs, n_stack, wrapped_obs_space, channels_order)
 
         else:

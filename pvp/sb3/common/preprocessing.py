@@ -19,12 +19,16 @@ def is_image_space_channels_first(observation_space: spaces.Box) -> bool:
     :param observation_space:
     :return: True if observation space is channels-first image, False if channels-last.
     """
+
+    # PZH: A little hack here. Might cause problem in the future.
     if observation_space.shape[0] == observation_space.shape[1]:  # PZH: little hack
         return False
-    smallest_dimension = np.argmin(observation_space.shape).item()
-    if smallest_dimension == 1:
-        warnings.warn("Treating image space as channels-last, while second dimension was smallest of the three.")
-    return smallest_dimension == 0
+    else:
+        return True
+    # smallest_dimension = np.argmin(observation_space.shape).item()
+    # if smallest_dimension == 1:
+    #     warnings.warn("Treating image space as channels-last, while second dimension was smallest of the three.")
+    # return smallest_dimension == 0
 
 
 def is_image_space(
@@ -43,7 +47,7 @@ def is_image_space(
         e.g., with frame-stacking, the observation space may have more channels than expected.
     :return:
     """
-    if isinstance(observation_space, spaces.Box) and len(observation_space.shape) == 3:
+    if isinstance(observation_space, (spaces.Box, new_spaces.Box)) and len(observation_space.shape) == 3:
         # Check the type
         if observation_space.dtype != np.uint8:
             return False

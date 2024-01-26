@@ -121,7 +121,8 @@ class DQN(OffPolicyAlgorithm):
             seed=seed,
             sde_support=False,
             optimize_memory_usage=optimize_memory_usage,
-            supported_action_spaces=(gym.spaces.Discrete, ),
+            # supported_action_spaces=(gym.spaces.Discrete, ),
+            supported_action_spaces=None,
             support_multi_env=True,
         )
 

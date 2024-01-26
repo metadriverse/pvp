@@ -46,8 +46,6 @@ class SharedControlMonitor(gym.Wrapper):
         self.last_observation = observation
         if done or truncated:
             self.episode_count += 1
-            observation = self.env.reset()  # Reset when episode is truncated
-            self.last_observation = observation
         return observation, reward, done, info
 
     def reset(self, **kwargs):
@@ -69,7 +67,7 @@ class SharedControlMonitor(gym.Wrapper):
 
         assert 'raw_action' in info, info.keys()
         action_behavior = np.asarray(info['raw_action'])
-        assert action.shape == action_behavior.shape
+        assert np.shape(action) == np.shape(action_behavior)
         self.data['action_agent'].append(action)
         self.data['action_behavior'].append(action_behavior)
 

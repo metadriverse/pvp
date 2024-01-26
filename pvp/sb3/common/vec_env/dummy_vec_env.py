@@ -60,6 +60,11 @@ class DummyVecEnv(VecEnv):
     def reset(self) -> VecEnvObs:
         for env_idx in range(self.num_envs):
             obs = self.envs[env_idx].reset()
+
+            # For compatibility with gymnasium
+            if isinstance(obs, tuple):
+                obs = obs[0]
+
             self._save_obs(env_idx, obs)
         return self._obs_from_buf()
 

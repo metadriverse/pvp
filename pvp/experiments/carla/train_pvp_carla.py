@@ -41,7 +41,7 @@ if __name__ == '__main__':
     else:
         other_feat_dim = 1
 
-    experiment_batch_name = args.exp_name
+    experiment_batch_name = "{}_{}".format(args.exp_name, obs_mode)
     seed = args.seed
     trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 
