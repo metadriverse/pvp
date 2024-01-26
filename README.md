@@ -222,17 +222,48 @@ python pvp/experiments/metadrive/train_pvp_metadrive.py \
 
 
 
-
-
-
-
-
-
-
-
 ### Minigrid
 
-Coming soon!
+
+Click for the experiment details:
+
+<details>
+  <summary><b>MiniGrid - Keyboard</b></summary>
+
+Mapping between environment nick name `--env` and `env_id`:
+* `emptyroom` - `MiniGrid-Empty-6x6-v0`
+* `tworoom` - `MiniGrid-MultiRoom-N2-S4-v0`
+* `fourroom` - `MiniGrid-MultiRoom-N4-S5-v0`
+
+```bash
+# Go to the repo root
+cd ~/pvp
+
+# Run experiment without Wandb:
+python pvp/experiments/minigrid/train_pvp_minigrid.py --exp_name pvp_minigrid_test
+
+# Run full experiment
+# Choose --env from ["emptyroom", "tworoom", "fourroom"]
+python pvp/experiments/minigrid/train_pvp_minigrid.py \
+--env tworoom \
+--exp_name pvp_minigrid \
+--wandb \
+--wandb_project WADNB_PROJECT_NAME \
+--wandb_team WANDB_ENTITY_NAME
+```
+
+| Action               | Control      |
+|----------------------|--------------|
+| Turn Left            | Left         |
+| Turn Right           | Right        |
+| Gown Straight        | Up           |
+| Approve Agent Action | Space / Down |
+| Open Door / Toggle   | T            |
+| Pickup               | P            |
+| Drop                 | D            |
+| Done Complete Task   | D            |
+</details>
+
 
 
 
