@@ -9,8 +9,8 @@ Official release for the code used in paper: *Learning from Active Human Involve
 [**Paper**](https://openreview.net/pdf?id=q8SukwaEBy)
 
 
-
-**TODO: A teaser figure here.**
+> [!NOTE]
+>  The release is not finished yet and the repo is working in progress. Please check our [roadmap](https://github.com/metadriverse/pvp/issues/5).
 
 
 ## Installation
