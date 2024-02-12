@@ -1,4 +1,4 @@
-# Proxy Value Propagation (PVP)
+# [Proxy Value Propagation (PVP)](https://metadriverse.github.io/pvp/)
 
 <h3><b>NeurIPS 2023 Spotlight</b></h3>
 
@@ -6,12 +6,11 @@ Official release for the code used in paper: *Learning from Active Human Involve
 
 [**Webpage**](https://metadriverse.github.io/pvp/) | 
 [**Code**](https://github.com/metadriverse/pvp) |
+[**Poster**](https://metadriverse.github.io/assets/img/pvp/PVP-Poster.pdf) |
 [**Paper**](https://openreview.net/pdf?id=q8SukwaEBy)
 
 
-> [!NOTE]
->  The release is not finished yet and the repo is working in progress. Please check our [roadmap](https://github.com/metadriverse/pvp/issues/5).
-
+[![](https://metadriverse.github.io/assets/img/pvp/MainExp.jpg)](https://metadriverse.github.io/pvp/)
 
 ## Installation
 
