@@ -10,7 +10,7 @@ Official release for the code used in paper: *Learning from Active Human Involve
 [**Paper**](https://openreview.net/pdf?id=q8SukwaEBy)
 
 
-[![](repo_teaser.png)](https://metadriverse.github.io/pvp/)
+[![](https://metadriverse.github.io/assets/img/pvp/MainExp.jpg)](https://metadriverse.github.io/pvp/)
 
 ## Installation
 
