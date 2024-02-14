@@ -174,7 +174,7 @@ if __name__ == '__main__':
 
         # logging
         tb_log_name=experiment_batch_name,
-        log_interval=1_000,
+        log_interval=1,
         # save_buffer=False,
         # load_buffer=False,
     )
