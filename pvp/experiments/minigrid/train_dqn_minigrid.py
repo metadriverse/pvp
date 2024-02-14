@@ -21,7 +21,7 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_minigrid", type=str, help="The name for this batch of experiments.")
+    parser.add_argument("--exp_name", default="dqn_minigrid", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -72,17 +72,11 @@ if __name__ == '__main__':
             env=None,
             optimize_memory_usage=True,
             buffer_size=10_000,
-            learning_rate=get_linear_fn(
-                start=1e-4,
-                end=1e-7,
-                end_fraction=1.0,
-            ),
+            learning_rate=1e-4,
             exploration_fraction=0.30,  # Reach minimal exploration rate at 30% Total Steps
             exploration_final_eps=0.05,
-
-            # === New hypers ===
             learning_starts=50,  # PZH: Original DQN has 100K warmup steps
-            batch_size=32,
+            batch_size=256,
             train_freq=(1, 'step'),
             tau=0.005,
             target_update_interval=1,

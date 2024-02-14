@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import gym
 import torch as th
 from gym import spaces
+from gymnasium import spaces as new_spaces
 from torch import nn
 from torch.distributions import Bernoulli, Categorical, Normal
 
@@ -669,11 +670,24 @@ def make_proba_distribution(
     elif isinstance(action_space, spaces.MultiBinary):
         return BernoulliDistribution(action_space.n, **dist_kwargs)
     else:
-        raise NotImplementedError(
-            "Error: probability distribution, not implemented for action space"
-            f"of type {type(action_space)}."
-            " Must be of type Gym Spaces: Box, Discrete, MultiDiscrete or MultiBinary."
-        )
+
+        if isinstance(action_space, new_spaces.Box, ):
+            assert len(action_space.shape) == 1, "Error: the action space must be a vector"
+            cls = StateDependentNoiseDistribution if use_sde else DiagGaussianDistribution
+            return cls(get_action_dim(action_space), **dist_kwargs)
+        elif isinstance(action_space, new_spaces.Discrete):
+            return CategoricalDistribution(action_space.n, **dist_kwargs)
+        elif isinstance(action_space, new_spaces.MultiDiscrete):
+            return MultiCategoricalDistribution(action_space.nvec, **dist_kwargs)
+        elif isinstance(action_space, new_spaces.MultiBinary):
+            return BernoulliDistribution(action_space.n, **dist_kwargs)
+        else:
+
+            raise NotImplementedError(
+                "Error: probability distribution, not implemented for action space"
+                f"of type {type(action_space)}."
+                " Must be of type Gym Spaces: Box, Discrete, MultiDiscrete or MultiBinary."
+            )
 
 
 def kl_divergence(dist_true: Distribution, dist_pred: Distribution) -> th.Tensor:
