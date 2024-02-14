@@ -72,7 +72,7 @@ if __name__ == '__main__':
             start_seed=1000,
             horizon=1500,
         ),
-        num_eval_envs=10,
+        num_eval_envs=1,
 
         # ===== Training =====
         algo=dict(
