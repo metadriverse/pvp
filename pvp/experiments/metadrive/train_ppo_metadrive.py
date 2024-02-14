@@ -72,7 +72,7 @@ if __name__ == '__main__':
             start_seed=1000,
             horizon=1500,
         ),
-        num_eval_envs=1,
+        num_eval_envs=10,
 
         # ===== Training =====
         algo=dict(
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     eval_env = make_vec_env(_make_eval_env, n_envs=config["num_eval_envs"], vec_env_cls=vec_env_cls)
 
     # ===== Setup the callbacks =====
-    save_freq = 500  # Number of steps per model checkpoint
+    save_freq = 100_000  # Number of steps per model checkpoint
     callbacks = [
         CheckpointCallback(name_prefix="rl_model", verbose=1, save_freq=save_freq, save_path=str(trial_dir / "models"))
     ]
