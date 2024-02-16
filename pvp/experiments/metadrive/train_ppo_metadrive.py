@@ -163,7 +163,11 @@ if __name__ == '__main__':
     if args.ckpt:
         ckpt = Path(args.ckpt)
         print(f"Loading checkpoint from {ckpt}!")
-        model = model.load(path=args.ckpt)
+        from pvp.sb3.common.save_util import load_from_zip_file
+        data, params, pytorch_variables = load_from_zip_file(
+            ckpt, device=model.device, print_system_info=True
+        )
+        model.set_parameters(params, exact_match=True, device=model.device)
 
     # ===== Launch training =====
     model.learn(
