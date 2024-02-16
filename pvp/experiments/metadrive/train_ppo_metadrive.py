@@ -161,7 +161,9 @@ if __name__ == '__main__':
     model = PPO(**config["algo"])
 
     if args.ckpt:
-        model.load(path=args.ckpt)
+        ckpt = Path(args.ckpt)
+        print(f"Loading checkpoint from {ckpt}!")
+        model = model.load(path=args.ckpt)
 
     # ===== Launch training =====
     model.learn(
