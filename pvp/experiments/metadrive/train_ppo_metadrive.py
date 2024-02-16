@@ -165,7 +165,7 @@ if __name__ == '__main__':
         print(f"Loading checkpoint from {ckpt}!")
         from pvp.sb3.common.save_util import load_from_zip_file
         data, params, pytorch_variables = load_from_zip_file(
-            ckpt, device=model.device, print_system_info=True
+            ckpt, device=model.device, print_system_info=False
         )
         model.set_parameters(params, exact_match=True, device=model.device)
 
