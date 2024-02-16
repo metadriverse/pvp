@@ -23,6 +23,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_name", default="ppo_metadrive", type=str, help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
+    parser.add_argument("--ckpt", default=None, type=str, help="Path to previous checkpoint.")
     parser.add_argument("--debug", action="store_true", help="Set to True when debugging.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -158,6 +159,9 @@ if __name__ == '__main__':
 
     # ===== Setup the training algorithm =====
     model = PPO(**config["algo"])
+
+    if args.ckpt:
+        model.load(path=args.ckpt)
 
     # ===== Launch training =====
     model.learn(
