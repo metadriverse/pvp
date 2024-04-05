@@ -13,7 +13,7 @@ except ImportError:
     psutil = None
 
 import numpy as np
-# from pvp.sb3.haco.haco_buffer import HACOReplayBuffer, concat_samples
+from pvp.sb3.haco.haco_buffer import concat_samples, HACOReplayBuffer
 import torch
 import torch as th
 from gym import spaces
@@ -62,7 +62,7 @@ class HACODictReplayBufferSamples(NamedTuple):
     actions_novice: th.Tensor
 
 
-class HACOReplayBuffer(ReplayBuffer):
+class HACOReplayBufferNew(ReplayBuffer):
     def __init__(
         self,
         buffer_size: int,
@@ -376,6 +376,7 @@ class PVPDQNCPL(DQN):
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
 
         if self.replay_buffer.pos == 0:
+        # if self.replay_buffer.episode_pos== 0:
             return
 
         # Switch to train mode (this affects batch norm / dropout)
@@ -384,154 +385,91 @@ class PVPDQNCPL(DQN):
         self._update_learning_rate(self.policy.optimizer)
         stat_recorder = defaultdict(list)
 
-        losses = []
-        entropies = []
+        bc_loss_weight = 1.0  # TODO: Config
+
         for _ in range(gradient_steps):
             # Sample replay buffer
-            # if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
-            #     replay_data_agent = self.replay_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
-            #     replay_data_human = self.human_data_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
-            #     replay_data = concat_samples(replay_data_agent, replay_data_human)
-            # elif self.human_data_buffer.pos > batch_size:
-            #     replay_data = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
-            if self.replay_buffer.pos > batch_size:
-                # TODO: How to descriminate between human and agent data?
-                replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+            replay_data_human = None
+            replay_data_agent = None
+            if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
+                replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+                replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
+            elif self.human_data_buffer.pos > batch_size:
+                replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
+            elif self.replay_buffer.pos > batch_size:
+                replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
             else:
+                loss = None
                 break
 
-            # ========================== PVP LOSS ==========================
-            # with th.no_grad():
-            #     # Compute the next Q-values using the target network
-            #     next_q_values = self.q_net_target(replay_data.next_observations)
-            #     # Follow greedy policy: use the one with the highest value
-            #     next_q_values, _ = next_q_values.max(dim=1)
-            #     # Avoid potential broadcast issue
-            #     next_q_values = next_q_values.reshape(-1, 1)
-            #     # 1-step TD target
-            #     assert replay_data.rewards.mean().item() == 0.0
-            #     target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
-            #
-            # # Get current Q-values estimates
-            # current_q_values = self.q_net(replay_data.observations)
-            #
-            # entropies.append(compute_entropy(current_q_values))
-            #
-            # # Retrieve the q-values for the actions from the replay buffer
-            # current_behavior_q_values = th.gather(current_q_values, dim=1, index=replay_data.actions_behavior.long())
-            #
-            # current_novice_q_value_method1 = th.gather(current_q_values, dim=1, index=replay_data.actions_novice.long())
-            #
-            # current_novice_q_value = current_novice_q_value_method1
-            #
-            # mask = replay_data.interventions
-            # stat_recorder["no_intervention_rate"].append(mask.float().mean().item())
-            #
-            # no_overlap = replay_data.actions_behavior != replay_data.actions_novice
-            # stat_recorder["no_overlap_rate"].append(no_overlap.float().mean().item())
-            # stat_recorder["masked_no_overlap_rate"].append((mask * no_overlap).float().mean().item())
-            #
-            # pvp_loss = \
-            #     F.mse_loss(
-            #         mask * current_behavior_q_values,
-            #         mask * self.q_value_bound * th.ones_like(current_behavior_q_values)
-            #     ) + \
-            #     F.mse_loss(
-            #         mask * no_overlap * current_novice_q_value,
-            #         mask * no_overlap * (-self.q_value_bound) * th.ones_like(current_novice_q_value)
-            #     )
-            #
-            # # Compute Huber loss (less sensitive to outliers)
-            # loss_td = F.smooth_l1_loss(current_behavior_q_values, target_q_values)
-            #
-            # loss = loss_td.mean() + pvp_loss.mean()
-            # ========================== PVP LOSS ==========================
+            alpha = 0.1  # TODO: Config
+            accuracy = cpl_loss = bc_loss = None
 
-            # def _get_cpl_loss(self, batch):
-            #     if isinstance(batch, dict) and "label" in batch:
-            #         obs = torch.cat((batch["obs_1"], batch["obs_2"]), dim=0)
-            #         action = torch.cat((batch["action_1"], batch["action_2"]), dim=0)
-            #     else:
-            #         assert "score" in batch
-            #         obs, action = batch["obs"], batch["action"]
+            if replay_data_human is not None:
+                human_action = replay_data_human.actions_behavior
+                agent_action = replay_data_human.actions_novice
+                policy_logit = self.policy.q_net(replay_data_human.observations)
+                dist = torch.distributions.Categorical(logits=policy_logit)
+                log_prob_human = dist.log_prob(human_action.flatten()).sum(dim=-1)
+                log_prob_agent = dist.log_prob(agent_action.flatten()).sum(dim=-1)
+                adv_human = alpha * log_prob_human
+                adv_agent = alpha * log_prob_agent
+                # If label = 1, then adv_human > adv_agent
+                label = torch.ones_like(adv_human)
+                cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
 
-            # Step 1: Compute the log probabilities
-            # obs = self.network.encoder(obs)
-            # dist = self.network.actor(obs)
-            # if isinstance(dist, torch.distributions.Distribution):
-            #     lp = dist.log_prob(action)
-            # else:
-            #     assert dist.shape == action.shape
-            #     # For independent gaussian with unit var, logprob reduces to MSE.
-            #     lp = -torch.square(dist - action).sum(dim=-1)
+            if replay_data_agent is not None:
+                # BC Loss for agent trajectory:
+                policy_logit_bc = self.policy.q_net(replay_data_agent.observations)
+                dist_bc = torch.distributions.Categorical(logits=policy_logit_bc)
+                log_prob_bc = dist_bc.log_prob(replay_data_agent.actions_behavior.flatten())
+                bc_loss = -log_prob_bc.mean()
 
-            # TODO: Need to compute action log prob here.
+            # Aggregate losses
+            if bc_loss is None and cpl_loss is None:
+                break
 
-            # Step 2: Compute the advantages.
-
-            action = replay_data.actions_behavior[:, 0]
-            agent_logit = self.policy.q_net(replay_data.observations)
-            lp = torch.distributions.Categorical(logits=agent_logit).log_prob(action)
-
-
-            alpha = 0.1
-            adv = alpha * lp
-
-            # TODO: How to deal with this?
-            segment_adv = adv.sum(dim=-1)  # Some over a trajectory.
-
-            # Step 3: Compute the Loss.
-            # if "score" in batch:
-            #     cpl_loss, accuracy = biased_bce_with_scores(segment_adv, batch["score"].float(),
-            #                                                 bias=self.contrastive_bias)
-            # else:
-            # Otherwise we update directly on the preference data with the standard CE loss
-            adv1, adv2 = torch.chunk(segment_adv, 2, dim=0)
-
-            # label = adv1 < adv2
-            # TODO: deal label
-            cpl_loss, accuracy = biased_bce_with_logits(adv1, adv2, label.float(), bias=0.5)
-            # return cpl_loss, bc_loss, accuracy
-            loss = cpl_loss
-
-            # losses.append(loss.item())
+            loss = bc_loss_weight * (bc_loss if bc_loss is not None else 0.0) + (cpl_loss if cpl_loss is not None else 0.0)
 
             # Optimize the policy
             self.policy.optimizer.zero_grad()
             loss.backward()
+
             # Clip gradient norm
             th.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
             self.policy.optimizer.step()
 
-            # stat_recorder["q_value_behavior"].append(current_behavior_q_values.mean().item())
-            # stat_recorder["q_value_novice"].append(current_novice_q_value.mean().item())
+            # Stats
+            stat_recorder["bc_loss"].append(bc_loss.item() if bc_loss is not None else float('nan'))
+            stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
+            stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy is not None else float('nan'))
 
         # Increase update counter
         self._n_updates += gradient_steps
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-        self.logger.record("train/loss", np.mean(losses))
+        self.logger.record("train/loss", loss.item() if loss is not None else float('nan'))
 
         self.logger.record("train/agent_buffer_size", self.replay_buffer.get_buffer_size())
         # self.logger.record("train/human_buffer_size", self.human_data_buffer.get_buffer_size())
 
-        for key, values in stat_recorder.items():
-            self.logger.record("train/{}".format(key), np.mean(values))
+        for key in ['bc_loss', 'cpl_loss', 'cpl_accuracy']:
+            self.logger.record("train/{}".format(key), np.mean(stat_recorder[key]))
 
         # Compute entropy (copied from RLlib TF dist)
-        self.logger.record("train/entropy", np.mean(entropies))
+        # self.logger.record("train/entropy", np.mean(entropies))
 
     def _setup_model(self) -> None:
         super()._setup_model()
-        # self.human_data_buffer = HACOReplayBuffer(
-        #     self.buffer_size,
-        #     self.observation_space,
-        #     self.action_space,
-        #     self.device,
-        #     n_envs=self.n_envs,
-        #     optimize_memory_usage=self.optimize_memory_usage,
-        #     **self.replay_buffer_kwargs
-        # )
+        self.human_data_buffer = HACOReplayBuffer(
+            self.buffer_size,
+            self.observation_space,
+            self.action_space,
+            self.device,
+            n_envs=self.n_envs,
+            optimize_memory_usage=self.optimize_memory_usage,
+            **self.replay_buffer_kwargs
+        )
         # self.human_data_buffer = self.replay_buffer
 
     def _store_transition(
@@ -543,8 +481,8 @@ class PVPDQNCPL(DQN):
         dones: np.ndarray,
         infos: List[Dict[str, Any]],
     ) -> None:
-        # if infos[0]["takeover"] or infos[0]["takeover_start"]:
-        #     replay_buffer = self.human_data_buffer
+        if infos[0]["takeover"] or infos[0]["takeover_start"]:
+            replay_buffer = self.human_data_buffer
         super()._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save(

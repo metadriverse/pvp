@@ -85,7 +85,7 @@ if __name__ == '__main__':
             learning_rate=1e-4,
 
             # === New hypers ===
-            learning_starts=10,  # PZH: Original DQN has 100K warmup steps
+            learning_starts=0,  # PZH NOTE: We are using episode as tran_freq. So set this to 0 and start training immediately.
             batch_size=32,
             train_freq=(1, 'episode'),  # TODO: This might need double check.
             tau=0.005,
