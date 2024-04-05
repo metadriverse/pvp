@@ -410,8 +410,8 @@ class PVPDQNCPL(DQN):
                 agent_action = replay_data_human.actions_novice
                 policy_logit = self.policy.q_net(replay_data_human.observations)
                 dist = torch.distributions.Categorical(logits=policy_logit)
-                log_prob_human = dist.log_prob(human_action.flatten()).sum(dim=-1)
-                log_prob_agent = dist.log_prob(agent_action.flatten()).sum(dim=-1)
+                log_prob_human = dist.log_prob(human_action.flatten())#.sum(dim=-1)  # Don't do the sum...
+                log_prob_agent = dist.log_prob(agent_action.flatten())#.sum(dim=-1)
                 adv_human = alpha * log_prob_human
                 adv_agent = alpha * log_prob_agent
                 # If label = 1, then adv_human > adv_agent
