@@ -19,6 +19,7 @@ from minigrid.envs import MultiRoomEnv as NativeMultiRoomEnv
 from minigrid.wrappers import ImgObsWrapper
 
 from pvp.sb3.common.monitor import Monitor
+import dataclasses
 
 # Someone change the logging config. So we have to revert them here.
 logger = logging.getLogger()
@@ -31,6 +32,26 @@ ADDITIONAL_HEIGHT = 300
 RULE_WIDTH = 5
 SCREEN_SIZE = 2000
 DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X | Quit: Esc \n"
+
+@dataclasses.dataclass
+class ActionMap:
+    LEFT: int = 0
+    RIGHT: int = 1
+    FORWARD: int = 2
+    PICKUP: int = 3
+    DROP: int = 4
+    TOGGLE: int = 5
+    DONE: int = 6
+
+@dataclasses.dataclass
+class DirMap:
+    RIGHT: int = 0
+    DOWN: int = 1
+    LEFT: int = 2
+    UP: int = 3
+
+
+
 
 
 def new_render(self):
@@ -144,6 +165,7 @@ class EmptyEnv(NativeEmptyEnv):
         self.additional_text = text
 
     def render(self):
+        self.metadata["render_fps"] = 5
         return new_render(self)
 
 
@@ -168,6 +190,19 @@ class MiniGridEmpty6x6(EmptyEnv):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, size=6, **kwargs)
+
+
+class MiniGridEmpty16x16(EmptyEnv):
+    """Empty Room.
+    Following:
+        register(
+            id="MiniGrid-Empty-6x6-v0",
+            entry_point="minigrid.envs:EmptyEnv",
+            kwargs={"size": 6},
+        )
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, size=16, **kwargs)
 
 
 class MiniGridMultiRoomN2S4(MultiRoomEnv):
@@ -326,12 +361,221 @@ class MinigridWrapper(gym.Wrapper):
         self.env.reset(seed=seed)
 
 
-def wrap_minigrid_env(env_class, enable_takeover):
+
+class MinigridWrapperWithFakeHuman(gym.Wrapper):
+    def __init__(self, env):
+        super().__init__(env=env)
+        self.total_takeover = 0
+        self.total_steps = 0
+        self.takeover = False
+        # self.use_render = self.enable_human = env.render_mode == "human"
+        # self.keyboard_action = None
+        # self.valid_key_press = False
+
+    def get_expert_action(self):
+
+        # Make fake action:
+        x, y = self.env.agent_pos
+        dir = self.env.agent_dir
+        RIGHT_MOST = self.env.grid.width - 2
+
+        if x != RIGHT_MOST:
+            # Try to move to the right
+            if dir in [DirMap.LEFT, DirMap.UP]:
+                # Turn right
+                expert_action = ActionMap.RIGHT
+            elif dir == DirMap.RIGHT:
+                # Move forward
+                expert_action = ActionMap.FORWARD
+            else:
+                # Turn left
+                expert_action = ActionMap.LEFT
+        else:
+            # Try to move down
+            if dir in [DirMap.UP, DirMap.RIGHT]:
+                # Turn right
+                expert_action = ActionMap.RIGHT
+            elif dir == DirMap.DOWN:
+                # Move forward
+                expert_action = ActionMap.FORWARD
+            else:
+                # Turn left
+                expert_action = ActionMap.LEFT
+        return expert_action
+
+    def step(self, a):
+        self.total_steps += 1
+
+        expert_action = self.get_expert_action()
+        if a == expert_action:
+            behavior_action = a
+            should_takeover = False
+        else:
+            behavior_action = expert_action
+            should_takeover = True
+
+        cost = 0
+
+        o, r, tm, tc, i = super().step(behavior_action)
+        takeover_start = should_takeover and not self.takeover
+        i["cost"] = cost
+        i["total_takeover"] = self.total_takeover
+        i["takeover_cost"] = cost
+        i["raw_action"] = int(behavior_action)
+        i["takeover_start"] = True if takeover_start else False
+        i["takeover"] = True if should_takeover and self.takeover else False
+        i["is_success"] = i["success"] = True if r > 0.0 else False
+        self.takeover = should_takeover
+        # self.valid_key_press = False  # refresh
+        # self.update_caption(None)  # Set caption to "waiting"
+        self.total_takeover += 1 if self.takeover else 0
+        return o, r, tm, tc, i
+
+    def reset(self, *args, **kwargs):
+        self.takeover = False
+        # self.keyboard_action = None
+        ret = self.env.reset(*args, **kwargs)
+        # if self.use_render:
+        #     pygame.display.set_caption("Reset!")
+        #     self.env.render()
+        return ret
+
+    def close(self):
+        self.env.close()
+        pygame.quit()
+
+    def seed(self, seed):
+        """Forward compatibility to gymnasium"""
+        self.env.reset(seed=seed)
+
+
+
+
+class MinigridWrapperWithFakeHumanAndHumanFailureDemo(gym.Wrapper):
+    def __init__(self, env, failed_step=50, failed_prob=0.1):
+        super().__init__(env=env)
+
+        self.total_takeover = 0
+        self.total_steps = 0
+        self.takeover = False
+
+        self.episode_step = 0
+        self.failed_step = failed_step
+        self.failed_prob = failed_prob
+        self.start_failed = False
+        self.in_failed_step = 0
+
+    def close(self):
+        self.env.close()
+        pygame.quit()
+
+    def seed(self, seed):
+        """Forward compatibility to gymnasium"""
+        self.env.reset(seed=seed)
+
+    def get_expert_action(self):
+
+        # Make fake action:
+        x, y = self.env.agent_pos
+        dir = self.env.agent_dir
+        RIGHT_MOST = self.env.grid.width - 2
+
+        if x != RIGHT_MOST:
+            # Try to move to the right
+            if dir in [DirMap.LEFT, DirMap.UP]:
+                # Turn right
+                expert_action = ActionMap.RIGHT
+            elif dir == DirMap.RIGHT:
+                # Move forward
+                expert_action = ActionMap.FORWARD
+            else:
+                # Turn left
+                expert_action = ActionMap.LEFT
+        else:
+            # Try to move down
+            if dir in [DirMap.UP, DirMap.RIGHT]:
+                # Turn right
+                expert_action = ActionMap.RIGHT
+            elif dir == DirMap.DOWN:
+                # Move forward
+                expert_action = ActionMap.FORWARD
+            else:
+                # Turn left
+                expert_action = ActionMap.LEFT
+        return expert_action
+
+    def step(self, a):
+        if not self.start_failed and self.in_failed_step != self.failed_step:
+            if np.random.uniform() < self.failed_prob:
+                self.start_failed = True
+                self.in_failed_step = 0
+                # print("Start failure demo")
+        expert_action = self.get_expert_action()
+        if self.start_failed:
+            self.in_failed_step += 1
+            # print("in_failed_step: ", self.in_failed_step)
+            if self.in_failed_step == self.failed_step:
+                # print("end failure demo")
+                self.start_failed = False
+            wrong_action = {ActionMap.LEFT, ActionMap.RIGHT, ActionMap.FORWARD} - {expert_action}
+            wrong_action = np.random.choice(list(wrong_action))
+            behavior_action = int(wrong_action)
+            should_takeover = True
+            # print("using wrong action: ", a)
+        else:
+            behavior_action = expert_action
+            should_takeover = False
+            # print("using expert_action action: ", a)
+
+
+        self.total_steps += 1
+
+        cost = 0
+        # print("behavior action: ", behavior_action)
+        o, r, tm, tc, i = super().step(behavior_action)
+        takeover_start = should_takeover and not self.takeover
+        i["cost"] = cost
+        i["total_takeover"] = self.total_takeover
+        i["takeover_cost"] = cost
+        i["raw_action"] = int(behavior_action)
+        i["takeover_start"] = True if takeover_start else False
+        i["takeover"] = True if should_takeover and self.takeover else False
+        i["is_success"] = i["success"] = True if r > 0.0 else False
+        self.takeover = should_takeover
+        # self.valid_key_press = False  # refresh
+        # self.update_caption(None)  # Set caption to "waiting"
+        self.total_takeover += 1 if self.takeover else 0
+        return o, r, tm, tc, i
+
+
+
+    def reset(self, *args, **kwargs):
+        print("reset")
+        # out = super().reset(*args, **kwargs)
+
+        # def reset(self, *args, **kwargs):
+        self.takeover = False
+        out = self.env.reset(*args, **kwargs)
+
+        self.episode_step = 0
+        self.start_failed = False
+        self.in_failed_step = 0
+        return out
+
+
+def wrap_minigrid_env(env_class, enable_takeover, use_fake_human=False, use_fake_human_with_failure=False):
     if enable_takeover:
         env = env_class(render_mode="human", screen_size=SCREEN_SIZE)
     else:
         env = env_class()
-    env = MinigridWrapper(env)
+
+    if use_fake_human:
+        if use_fake_human_with_failure:
+            env = MinigridWrapperWithFakeHumanAndHumanFailureDemo(env)
+        else:
+            env = MinigridWrapperWithFakeHuman(env)
+    else:
+        env = MinigridWrapper(env)
     env = ImgObsWrapper(env)
     env = FrameStack(env, num_stack=4)
     env = ConcatenateChannel(env)
@@ -341,12 +585,13 @@ def wrap_minigrid_env(env_class, enable_takeover):
 
 if __name__ == '__main__':
     # env = MinigridWrapper(MiniGridEmpty6x6())
-    env = wrap_minigrid_env(MiniGridMultiRoomN4S5, enable_takeover=True)
+    env = wrap_minigrid_env(MiniGridEmpty16x16, enable_takeover=True, use_fake_human=True, use_fake_human_with_failure=True)
     env = Monitor(env)
     env.reset()
     print(env.observation_space)
     while True:
-        o, r, d, i = env.step(env.action_space.sample())
+        # o, r, d, i = env.step(env.action_space.sample())
+        o, r, d, i = env.step(ActionMap.RIGHT)
         if d:
             o = env.reset()
-        print(o.shape)
+        # print(o.shape)
