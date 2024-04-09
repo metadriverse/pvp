@@ -84,7 +84,7 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         engine_info["episode_native_cost"] = self.episode_cost
         self.total_cost += engine_info["cost"]
         engine_info["total_cost"] = self.total_cost
-        engine_info["total_cost_so_far"] = self.total_cost
+        # engine_info["total_cost_so_far"] = self.total_cost
         return o, r, d, engine_info
 
     def _is_out_of_road(self, vehicle):

@@ -450,6 +450,12 @@ class OffPolicyAlgorithm(BaseAlgorithm):
                         "rollout/{}_mean".format(k), safe_mean([ep_info[k] for ep_info in self.ep_info_buffer])
                     )
 
+            for k, v in first_ep_info.items():
+                if k.startswith("total"):
+                    self.logger.record(
+                        "rollout/{}_sum".format(k), sum([ep_info[k] for ep_info in self.ep_info_buffer])
+                    )
+
         self.logger.record("time/fps", fps)
         self.logger.record("time/time_elapsed", int(time_elapsed))
         self.logger.record("time/total_timesteps", self.num_timesteps)

@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
+    parser.add_argument("--free_level", type=float, default=0.95)
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -49,7 +50,7 @@ if __name__ == '__main__':
 
     # ===== Set up some arguments =====
     # control_device = args.device
-    experiment_batch_name = "{}".format(args.exp_name)
+    experiment_batch_name = "{}_freelevel{}".format(args.exp_name, args.free_level)
     seed = args.seed
     trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
 
@@ -68,6 +69,7 @@ if __name__ == '__main__':
     print(f"We start logging training data into {trial_dir}")
 
     # ===== Setup the config =====
+    free_level = args.free_level
     config = dict(
 
         # Environment config
@@ -80,7 +82,7 @@ if __name__ == '__main__':
             # window_size=(1600, 1100),
 
             # FakeHumanEnv config:
-            free_level=0.95,
+            free_level=free_level,
 
         ),
 
