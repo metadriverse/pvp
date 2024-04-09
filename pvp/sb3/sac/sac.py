@@ -133,7 +133,10 @@ class SAC(OffPolicyAlgorithm):
             sde_sample_freq=sde_sample_freq,
             use_sde_at_warmup=use_sde_at_warmup,
             optimize_memory_usage=optimize_memory_usage,
-            supported_action_spaces=(gym.spaces.Box),
+
+            # supported_action_spaces=(gym.spaces.Box),
+            supported_action_spaces=None,
+
             support_multi_env=True,
             monitor_wrapper=monitor_wrapper
         )
