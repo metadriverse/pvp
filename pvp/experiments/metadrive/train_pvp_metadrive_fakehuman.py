@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
+    parser.add_argument("--free_level", type=float, default=0.95)
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -61,6 +62,8 @@ if __name__ == '__main__':
     os.makedirs(trial_dir, exist_ok=False)  # Avoid overwritting old experiment
     print(f"We start logging training data into {trial_dir}")
 
+    free_level = args.free_level
+
     # ===== Setup the config =====
     config = dict(
 
@@ -74,7 +77,7 @@ if __name__ == '__main__':
             # window_size=(1600, 1100),
 
             # FakeHumanEnv config:
-            free_level=0.95,
+            free_level=free_level,
 
         ),
 

@@ -13,5 +13,6 @@ do
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    > "0409_pvp_egpo_seed${seeds[$i]}.log" 2>&1 &
+    --free_level=0.90 \
+    > "0409_pvp_egpo_freelevel0.9_seed${seeds[$i]}.log" 2>&1 &
 done
