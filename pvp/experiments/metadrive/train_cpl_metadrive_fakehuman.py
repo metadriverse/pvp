@@ -7,30 +7,26 @@ Compared to original file:
 """
 import argparse
 import os
+import uuid
 from pathlib import Path
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
-from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
+from pvp.pvp_cpl import CPL
 # from pvp.pvp_td3 import PVPTD3
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
+from pvp.sb3.common.vec_env import SubprocVecEnv
 from pvp.sb3.common.wandb_callback import WandbCallback
 from pvp.sb3.haco import HACOReplayBuffer
-
-from pvp.utils.shared_control_monitor import SharedControlMonitor
-from pvp.utils.utils import get_time_str
-from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
-
-# CPL related
 # from pvp.sb3.td3.policies import TD3Policy
 from pvp.sb3.sac.policies import SACPolicy
-from pvp.pvp_cpl import CPL
-
-
+from pvp.utils.shared_control_monitor import SharedControlMonitor
+from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_metadrive_fakehuman", type=str, help="The name for this batch of experiments.")
+    parser.add_argument("--exp_name", default="pvp_metadrive_fakehuman", type=str,
+                        help="The name for this batch of experiments.")
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -52,7 +48,7 @@ if __name__ == '__main__':
     # control_device = args.device
     experiment_batch_name = "{}_freelevel{}".format(args.exp_name, args.free_level)
     seed = args.seed
-    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
+    trial_name = "{}_{}_{}".format(experiment_batch_name, get_time_str(), uuid.uuid4().hex[:8])
 
     use_wandb = args.wandb
     project_name = args.wandb_project
@@ -103,7 +99,6 @@ if __name__ == '__main__':
                 entropy=1e-4,
             ),
 
-
             # learning_rate=1e-4,
             # q_value_bound=1,
 
@@ -149,18 +144,19 @@ if __name__ == '__main__':
     # ===== Also build the eval env =====
     def _make_eval_env():
         eval_env_config = dict(
-            use_render = False,  # Open the interface
-            manual_control = False,  # Allow receiving control signal from external device
-            start_seed = 1000,
-            horizon = 1500,
+            use_render=False,  # Open the interface
+            manual_control=False,  # Allow receiving control signal from external device
+            start_seed=1000,
+            horizon=1500,
         )
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
-    eval_env = SubprocVecEnv([_make_eval_env])
 
+
+    eval_env = SubprocVecEnv([_make_eval_env])
 
     # ===== Setup the callbacks =====
     save_freq = 500  # Number of steps per model checkpoint
@@ -200,7 +196,6 @@ if __name__ == '__main__':
         eval_freq=200,
         n_eval_episodes=10,
         eval_log_path=str(trial_dir),
-
 
         # logging
         tb_log_name=experiment_batch_name,
