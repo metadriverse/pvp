@@ -96,9 +96,9 @@ if __name__ == '__main__':
             env=None,
 
             learning_rate=dict(
-                actor=3e-4,
-                critic=3e-4,
-                entropy=3e-4,
+                actor=1e-4,
+                critic=1e-4,
+                entropy=1e-4,
             ),
 
 
