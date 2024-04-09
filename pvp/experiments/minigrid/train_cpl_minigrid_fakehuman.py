@@ -7,7 +7,7 @@ from pathlib import Path
 
 # import gymnasium as gym
 import torch
-
+import uuid
 from pvp.experiments.minigrid.minigrid_env import MiniGridMultiRoomN2S4, MiniGridMultiRoomN4S5, \
     MiniGridEmpty6x6, wrap_minigrid_env, MiniGridEmpty16x16
 from pvp.experiments.minigrid.minigrid_model import MinigridCNN
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     env_name = args.env
     experiment_batch_name = "{}_{}".format(args.exp_name, env_name)
     seed = args.seed
-    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
+    trial_name = "{}_{}_{}".format(experiment_batch_name, get_time_str(), uuid.uuid4().hex[:8])
 
     use_wandb = args.wandb
     project_name = args.wandb_project

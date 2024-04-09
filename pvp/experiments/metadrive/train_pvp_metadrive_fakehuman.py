@@ -7,6 +7,7 @@ Compared to original file:
 import argparse
 import os
 from pathlib import Path
+import uuid
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     # control_device = args.device
     experiment_batch_name = "{}".format(args.exp_name)
     seed = args.seed
-    trial_name = "{}_{}".format(experiment_batch_name, get_time_str())
+    trial_name = "{}_{}_{}".format(experiment_batch_name, get_time_str(), uuid.uuid4().hex[:8])
 
     use_wandb = args.wandb
     project_name = args.wandb_project
