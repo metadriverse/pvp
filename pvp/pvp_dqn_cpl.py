@@ -443,18 +443,19 @@ class PVPDQNCPL(DQN):
             stat_recorder["bc_loss"].append(bc_loss.item() if bc_loss is not None else float('nan'))
             stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
             stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy is not None else float('nan'))
+            stat_recorder["loss"].append(loss.item() if loss is not None else float('nan'))
 
         # Increase update counter
         self._n_updates += gradient_steps
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-        self.logger.record("train/loss", loss.item() if loss is not None else float('nan'))
+        # self.logger.record("train/loss", loss.item() if loss is not None else float('nan'))
 
         self.logger.record("train/agent_buffer_size", self.replay_buffer.get_buffer_size())
         # self.logger.record("train/human_buffer_size", self.human_data_buffer.get_buffer_size())
 
-        for key in ['bc_loss', 'cpl_loss', 'cpl_accuracy']:
-            self.logger.record("train/{}".format(key), np.mean(stat_recorder[key]))
+        for key, values in stat_recorder.items():
+            self.logger.record("train/{}".format(key), np.mean(values))
 
         # Compute entropy (copied from RLlib TF dist)
         # self.logger.record("train/entropy", np.mean(entropies))

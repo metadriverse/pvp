@@ -194,6 +194,12 @@ class CPL(SAC):
 
             self._optimize_actor(actor_loss=loss)
 
+            # Stats
+            stat_recorder["bc_loss"].append(bc_loss.item() if bc_loss is not None else float('nan'))
+            stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
+            stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy is not None else float('nan'))
+            stat_recorder["loss"].append(loss.item() if loss is not None else float('nan'))
+
             # if self.policy_kwargs["share_features_extractor"] == "critic":
             #     self._optimize_actor(actor_loss=actor_loss)
             #     # self._optimize_critics(merged_critic_loss=merged_critic_loss)
