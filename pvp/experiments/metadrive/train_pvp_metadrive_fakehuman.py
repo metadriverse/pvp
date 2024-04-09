@@ -27,6 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+    parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -50,10 +51,12 @@ if __name__ == '__main__':
     if not use_wandb:
         print("[WARNING] Please note that you are not using wandb right now!!!")
 
-    experiment_dir = Path("runs") / experiment_batch_name
+    log_dir = args.log_dir
+    experiment_dir = Path(log_dir) / Path("runs") / experiment_batch_name
+
     trial_dir = experiment_dir / trial_name
     os.makedirs(experiment_dir, exist_ok=True)
-    os.makedirs(trial_dir, exist_ok=True)
+    os.makedirs(trial_dir, exist_ok=False)  # Avoid overwritting old experiment
     print(f"We start logging training data into {trial_dir}")
 
     # ===== Setup the config =====
