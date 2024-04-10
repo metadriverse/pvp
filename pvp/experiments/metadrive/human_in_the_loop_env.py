@@ -43,6 +43,7 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
     """
     total_steps = 0
     total_takeover_cost = 0
+    total_takeover_count = 0
     total_cost = 0
     takeover = False
     takeover_recorder = deque(maxlen=2000)
@@ -79,6 +80,8 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
             cost = self.get_takeover_cost(engine_info)
             self.total_takeover_cost += cost
             engine_info["takeover_cost"] = cost
+        self.total_takeover_count += 1 if self.takeover else 0
+        engine_info["total_takeover_count"] = self.total_takeover_count
         engine_info["total_takeover_cost"] = self.total_takeover_cost
         engine_info["native_cost"] = engine_info["cost"]
         engine_info["episode_native_cost"] = self.episode_cost
