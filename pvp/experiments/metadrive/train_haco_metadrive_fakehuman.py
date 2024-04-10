@@ -70,6 +70,7 @@ if __name__ == '__main__':
 
             # FakeHumanEnv config:
             free_level=free_level,
+            cos_similarity=True,
 
         ),
 
