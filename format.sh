@@ -8,6 +8,8 @@ if ! echo $ver | grep -q 0.30.0; then
   exit 1
 fi
 
+echo "Running yapf..."
+
 yapf --in-place --recursive -p --verbose --style .style.yapf pvp/
 
 if [[ "$1" == '--test' ]]; then # Only for CI usage, user should not use --test flag.
