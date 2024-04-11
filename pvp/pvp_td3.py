@@ -270,6 +270,7 @@ class PVPTD3(TD3):
 
         return self
 
+
 class PVPES(PVPTD3):
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
@@ -302,6 +303,9 @@ class PVPES(PVPTD3):
                 replay_data_human_negative = replay_data_human
                 replay_data_human_positive.rewards.fill_(1)
                 replay_data_human_negative.rewards.fill_(-1)
+
+                replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
+
                 replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
 
             if replay_data_human is not None and replay_data_agent is None:
@@ -321,24 +325,29 @@ class PVPES(PVPTD3):
                 next_q_values = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
                 next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
 
-
                 # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
                 # and at this moment an instant reward +1 or -1 is given.
                 target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
 
             # Get current Q-values estimates for each critic network
-            current_q_behavior_values = self.critic(replay_data.observations, replay_data.actions_behavior)
-            current_q_novice_values = self.critic(replay_data.observations, replay_data.actions_novice)
-
-            stat_recorder["q_value_behavior"].append(current_q_behavior_values[0].mean().item())
-            stat_recorder["q_value_novice"].append(current_q_novice_values[0].mean().item())
+            current_q_values = self.critic(replay_data.observations, replay_data.actions_behavior)
 
             # Compute critic loss
-            critic_loss = []
-            for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
-                l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
-                critic_loss.append(l)
-            critic_loss = sum(critic_loss)
+            critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
+            # critic_losses.append(critic_loss.item())
+
+            # current_q_behavior_values = self.critic(replay_data.observations, replay_data.actions_behavior)
+            # current_q_novice_values = self.critic(replay_data.observations, replay_data.actions_novice)
+
+            # stat_recorder["q_value_behavior"].append(current_q_behavior_values[0].mean().item())
+            # stat_recorder["q_value_novice"].append(current_q_novice_values[0].mean().item())
+
+            # Compute critic loss
+            # critic_loss = []
+            # for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
+            #     l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
+            #     critic_loss.append(l)
+            # critic_loss = sum(critic_loss)
 
             # Optimize the critics
             self.critic.optimizer.zero_grad()
