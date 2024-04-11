@@ -671,7 +671,10 @@ def make_proba_distribution(
         return BernoulliDistribution(action_space.n, **dist_kwargs)
     else:
 
-        if isinstance(action_space, new_spaces.Box, ):
+        if isinstance(
+                action_space,
+                new_spaces.Box,
+        ):
             assert len(action_space.shape) == 1, "Error: the action space must be a vector"
             cls = StateDependentNoiseDistribution if use_sde else DiagGaussianDistribution
             return cls(get_action_dim(action_space), **dist_kwargs)

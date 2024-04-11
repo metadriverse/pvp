@@ -23,7 +23,9 @@ from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_metadrive_fakehuman", type=str, help="The name for this batch of experiments.")
+    parser.add_argument(
+        "--exp_name", default="pvp_metadrive_fakehuman", type=str, help="The name for this batch of experiments."
+    )
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -31,7 +33,9 @@ if __name__ == '__main__':
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
     parser.add_argument("--free_level", type=float, default=0.95)
 
-    parser.add_argument("--intervention_start_stop_td", default=True, type=bool, help="Whether to use intervention_start_stop_td.")
+    parser.add_argument(
+        "--intervention_start_stop_td", default=True, type=bool, help="Whether to use intervention_start_stop_td."
+    )
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -80,14 +84,11 @@ if __name__ == '__main__':
 
             # FakeHumanEnv config:
             free_level=free_level,
-
         ),
 
         # Algorithm config
         algo=dict(
-
             intervention_start_stop_td=args.intervention_start_stop_td,
-
             use_balance_sample=True,
             policy=TD3Policy,
             replay_buffer_class=HACOReplayBuffer,
@@ -136,22 +137,21 @@ if __name__ == '__main__':
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
-
     # ===== Also build the eval env =====
     def _make_eval_env():
         eval_env_config = dict(
-            use_render = False,  # Open the interface
-            manual_control = False,  # Allow receiving control signal from external device
-            start_seed = 1000,
-            horizon = 1500,
+            use_render=False,  # Open the interface
+            manual_control=False,  # Allow receiving control signal from external device
+            start_seed=1000,
+            horizon=1500,
         )
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
-    eval_env = SubprocVecEnv([_make_eval_env])
 
+    eval_env = SubprocVecEnv([_make_eval_env])
 
     # ===== Setup the callbacks =====
     save_freq = 500  # Number of steps per model checkpoint
@@ -191,7 +191,6 @@ if __name__ == '__main__':
         eval_freq=500,
         n_eval_episodes=10,
         eval_log_path=str(trial_dir),
-
 
         # logging
         tb_log_name=experiment_batch_name,

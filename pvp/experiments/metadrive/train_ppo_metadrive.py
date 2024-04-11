@@ -109,14 +109,12 @@ if __name__ == '__main__':
     # ===== Setup the training environment =====
     train_env_config = config["env_config"]
 
-
     def _make_train_env():
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
         train_env = HumanInTheLoopEnv(config=train_env_config)
         train_env = Monitor(env=train_env, filename=str(trial_dir))
         return train_env
-
 
     train_env_name = "metadrive_train-v0"
     register_env(_make_train_env, train_env_name)
@@ -127,14 +125,12 @@ if __name__ == '__main__':
     # ===== Also build the eval env =====
     eval_env_config = config["eval_env_config"]
 
-
     def _make_eval_env():
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
-
 
     eval_env_name = "metadrive_eval-v0"
     register_env(_make_eval_env, eval_env_name)
@@ -164,9 +160,7 @@ if __name__ == '__main__':
         ckpt = Path(args.ckpt)
         print(f"Loading checkpoint from {ckpt}!")
         from pvp.sb3.common.save_util import load_from_zip_file
-        data, params, pytorch_variables = load_from_zip_file(
-            ckpt, device=model.device, print_system_info=False
-        )
+        data, params, pytorch_variables = load_from_zip_file(ckpt, device=model.device, print_system_info=False)
         model.set_parameters(params, exact_match=True, device=model.device)
 
     # ===== Launch training =====

@@ -25,8 +25,9 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_metadrive_fakehuman", type=str,
-                        help="The name for this batch of experiments.")
+    parser.add_argument(
+        "--exp_name", default="pvp_metadrive_fakehuman", type=str, help="The name for this batch of experiments."
+    )
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -79,12 +80,10 @@ if __name__ == '__main__':
 
             # FakeHumanEnv config:
             free_level=free_level,
-
         ),
 
         # Algorithm config
         algo=dict(
-
             policy=SACPolicy,
             replay_buffer_class=HACOReplayBuffer,
             replay_buffer_kwargs=dict(
@@ -92,7 +91,6 @@ if __name__ == '__main__':
             ),
             policy_kwargs=dict(net_arch=[256, 256]),
             env=None,
-
             learning_rate=dict(
                 actor=1e-4,
                 critic=1e-4,
@@ -101,7 +99,6 @@ if __name__ == '__main__':
 
             # learning_rate=1e-4,
             # q_value_bound=1,
-
             optimize_memory_usage=True,
             buffer_size=150_000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  # The number of steps before
@@ -140,7 +137,6 @@ if __name__ == '__main__':
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
-
     # ===== Also build the eval env =====
     def _make_eval_env():
         eval_env_config = dict(
@@ -154,7 +150,6 @@ if __name__ == '__main__':
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
-
 
     eval_env = SubprocVecEnv([_make_eval_env])
 

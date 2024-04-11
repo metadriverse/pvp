@@ -136,7 +136,6 @@ class SAC(OffPolicyAlgorithm):
 
             # supported_action_spaces=(gym.spaces.Box),
             supported_action_spaces=None,
-
             support_multi_env=True,
             monitor_wrapper=monitor_wrapper
         )

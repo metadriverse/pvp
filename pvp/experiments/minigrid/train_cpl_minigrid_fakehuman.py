@@ -22,7 +22,9 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="pvp_minigrid_fakehuman", type=str, help="The name for this batch of experiments.")
+    parser.add_argument(
+        "--exp_name", default="pvp_minigrid_fakehuman", type=str, help="The name for this batch of experiments."
+    )
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--use_fake_human_with_failure", action="store_true")
@@ -85,7 +87,8 @@ if __name__ == '__main__':
             learning_rate=1e-4,
 
             # === New hypers ===
-            learning_starts=0,  # PZH NOTE: We are using episode as tran_freq. So set this to 0 and start training immediately.
+            learning_starts=
+            0,  # PZH NOTE: We are using episode as tran_freq. So set this to 0 and start training immediately.
             batch_size=32,
             train_freq=(1, 'episode'),  # TODO: This might need double check.
             tau=0.005,
@@ -120,7 +123,9 @@ if __name__ == '__main__':
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     # env = wrap_minigrid_env(env_class, enable_takeover=True)
-    env = wrap_minigrid_env(env_class, enable_takeover=False, use_fake_human=True, use_fake_human_with_failure=use_fake_human_with_failure)
+    env = wrap_minigrid_env(
+        env_class, enable_takeover=False, use_fake_human=True, use_fake_human_with_failure=use_fake_human_with_failure
+    )
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     env = Monitor(env=env, filename=str(trial_dir))

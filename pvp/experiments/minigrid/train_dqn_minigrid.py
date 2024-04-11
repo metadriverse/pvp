@@ -115,13 +115,11 @@ if __name__ == '__main__':
     # train_env = SharedControlMonitor(env=env, folder=trial_dir / "data", prefix=trial_name, save_freq=100)
     train_env = env
 
-
     # ===== Also build the eval env =====
     def _make_eval_env():
         env = wrap_minigrid_env(env_class, enable_takeover=False)
         env = Monitor(env=env, filename=str(trial_dir))
         return env
-
 
     eval_env = _make_eval_env()
     config["algo"]["env"] = train_env

@@ -14,15 +14,14 @@ FOLDER_PATH = pathlib.Path(__file__).parent
 
 logger = get_logger()
 
+
 def get_expert():
 
     from pvp.sb3.common.save_util import load_from_zip_file
     from pvp.sb3.ppo import PPO
     from pvp.sb3.ppo.policies import ActorCriticPolicy
 
-
     train_env = HumanInTheLoopEnv(config={'manual_control': False, "use_render": False})
-
 
     # Initialize agent
     algo_config = dict(
@@ -47,16 +46,13 @@ def get_expert():
     ckpt = FOLDER_PATH / "metadrive_pvp_20m_steps"
 
     print(f"Loading checkpoint from {ckpt}!")
-    data, params, pytorch_variables = load_from_zip_file(
-        ckpt, device=model.device, print_system_info=False
-    )
+    data, params, pytorch_variables = load_from_zip_file(ckpt, device=model.device, print_system_info=False)
     model.set_parameters(params, exact_match=True, device=model.device)
     print(f"Model is loaded from {ckpt}!")
 
     train_env.close()
 
     return model.policy
-
 
 
 def obs_correction(obs):
@@ -67,9 +63,9 @@ def obs_correction(obs):
 
 
 def normpdf(x, mean, sd):
-    var = float(sd) ** 2
-    denom = (2 * math.pi * var) ** .5
-    num = math.exp(-(float(x) - float(mean)) ** 2 / (2 * var))
+    var = float(sd)**2
+    denom = (2 * math.pi * var)**.5
+    num = math.exp(-(float(x) - float(mean))**2 / (2 * var))
     return num / denom
 
 
@@ -79,7 +75,9 @@ def load():
         _expert_weights = np.load(ckpt_path)
     return _expert_weights
 
+
 _expert = get_expert()
+
 
 class FakeHumanEnv(HumanInTheLoopEnv):
     last_takeover = None
@@ -89,12 +87,14 @@ class FakeHumanEnv(HumanInTheLoopEnv):
     def default_config(self):
         """Revert to use the RL policy (so no takeover signal will be issued from the human)"""
         config = super(FakeHumanEnv, self).default_config()
-        config.update({
-            "agent_policy": EnvInputPolicy,
-            "free_level": 0.95,
-            "manual_control": False,
-            "use_render": False,
-        })
+        config.update(
+            {
+                "agent_policy": EnvInputPolicy,
+                "free_level": 0.95,
+                "manual_control": False,
+                "use_render": False,
+            }
+        )
         return config
 
     def step(self, actions):

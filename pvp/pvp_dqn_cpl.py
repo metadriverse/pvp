@@ -95,14 +95,12 @@ class HACOReplayBufferNew(ReplayBuffer):
             self._fake_dict_obs = True
 
         self.buffer_size = max(buffer_size // n_envs, 1)
-        
+
         self.max_episode_length = 1000
         self.max_episodes = self.buffer_size // self.max_episode_length
 
         self.episode_pos = 0
         self.in_episode_pos = 0
-        
-        
 
         # Check that the replay buffer can fit into the memory
         if psutil is not None:
@@ -118,7 +116,9 @@ class HACOReplayBufferNew(ReplayBuffer):
 
         self.observations = {
             # key: np.zeros((self.max_episodes, self.max_episode_length) + _obs_shape, dtype=self.observation_space[key].dtype)
-            key: np.zeros((self.max_episodes, self.max_episode_length) + _obs_shape, dtype=self.observation_space[key].dtype)
+            key: np.zeros(
+                (self.max_episodes, self.max_episode_length) + _obs_shape, dtype=self.observation_space[key].dtype
+            )
             for key, _obs_shape in self.obs_shape.items()
         }
 
@@ -126,11 +126,15 @@ class HACOReplayBufferNew(ReplayBuffer):
             self.next_observations = None
         else:
             self.next_observations = {
-                key: np.zeros((self.max_episodes, self.max_episode_length) + _obs_shape, dtype=self.observation_space[key].dtype)
+                key: np.zeros(
+                    (self.max_episodes, self.max_episode_length) + _obs_shape, dtype=self.observation_space[key].dtype
+                )
                 for key, _obs_shape in self.obs_shape.items()
             }
 
-        self.actions_behavior = np.zeros((self.max_episodes, self.max_episode_length, self.action_dim), dtype=action_space.dtype)
+        self.actions_behavior = np.zeros(
+            (self.max_episodes, self.max_episode_length, self.action_dim), dtype=action_space.dtype
+        )
         self.rewards = np.zeros((self.max_episodes, self.max_episode_length), dtype=np.float32)
         self.dones = np.zeros((self.max_episodes, self.max_episode_length), dtype=np.float32)
 
@@ -138,7 +142,9 @@ class HACOReplayBufferNew(ReplayBuffer):
         self.interventions = np.zeros((self.max_episodes, self.max_episode_length), dtype=np.float32)
         self.intervention_starts = np.zeros((self.max_episodes, self.max_episode_length), dtype=np.float32)
         self.intervention_costs = np.zeros((self.max_episodes, self.max_episode_length), dtype=np.float32)
-        self.actions_novice = np.zeros((self.max_episodes, self.max_episode_length, self.action_dim), dtype=action_space.dtype)
+        self.actions_novice = np.zeros(
+            (self.max_episodes, self.max_episode_length, self.action_dim), dtype=action_space.dtype
+        )
         self.discard_reward = discard_reward
 
         if not self.discard_reward:
@@ -192,17 +198,18 @@ class HACOReplayBufferNew(ReplayBuffer):
             # Reshape needed when using multiple envs with discrete observations
             # as numpy cannot broadcast (n_discrete,) to (n_discrete, 1)
             if isinstance(self.observation_space.spaces[key], (spaces.Discrete, new_spaces.Discrete)):
-                obs[key] = obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                obs[key] = obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
 
             # self.observations[key][self.pos] = np.array(obs[key])
             self.observations[key][self.episode_pos][self.in_episode_pos] = np.array(obs[key])[0]
 
         for key in self.observations.keys():
             if isinstance(self.observation_space.spaces[key], (spaces.Discrete, new_spaces.Discrete)):
-                next_obs[key] = next_obs[key].reshape((self.n_envs,) + self.obs_shape[key])
+                next_obs[key] = next_obs[key].reshape((self.n_envs, ) + self.obs_shape[key])
             if self.optimize_memory_usage:
                 # self.observations[key][(self.pos + 1) % self.buffer_size] = np.array(next_obs[key]).copy()
-                self.observations[key][self.episode_pos][(self.in_episode_pos + 1) % self.max_episode_length] = np.array(next_obs[key]).copy()[0]
+                self.observations[key][self.episode_pos][(self.in_episode_pos + 1) % self.max_episode_length
+                                                         ] = np.array(next_obs[key]).copy()[0]
             else:
                 raise ValueError()
                 self.next_observations[key][self.pos] = np.array(next_obs[key]).copy()
@@ -212,21 +219,28 @@ class HACOReplayBufferNew(ReplayBuffer):
 
         # PZH: Add useful data into buffers
         self.interventions[self.episode_pos][self.in_episode_pos] = np.array([step["takeover"] for step in infos])[0]
-        self.intervention_starts[self.episode_pos][self.in_episode_pos] = np.array([step["takeover_start"] for step in infos])[0]
-        self.intervention_costs[self.episode_pos][self.in_episode_pos] = np.array([step["takeover_cost"] for step in infos])[0]
+        self.intervention_starts[self.episode_pos][self.in_episode_pos
+                                                   ] = np.array([step["takeover_start"] for step in infos])[0]
+        self.intervention_costs[self.episode_pos][self.in_episode_pos
+                                                  ] = np.array([step["takeover_cost"] for step in infos])[0]
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
         if isinstance(self.action_space, (spaces.Discrete, new_spaces.Discrete)):
             action = action.reshape((self.n_envs, self.action_dim))
             behavior_actions = behavior_actions.reshape((self.n_envs, self.action_dim))
-        self.actions_novice[self.episode_pos][self.in_episode_pos] = np.array(action).copy()[0]#.reshape(self.actions_novice[self.pos].shape)
-        self.actions_behavior[self.episode_pos][self.in_episode_pos]  = behavior_actions[0]#.reshape(self.actions_behavior[self.pos].shape)
+        self.actions_novice[self.episode_pos][self.in_episode_pos] = np.array(action).copy()[
+            0]  #.reshape(self.actions_novice[self.pos].shape)
+        self.actions_behavior[self.episode_pos][self.in_episode_pos
+                                                ] = behavior_actions[0
+                                                                     ]  #.reshape(self.actions_behavior[self.pos].shape)
         if self.discard_reward:
-            self.rewards[self.episode_pos][self.in_episode_pos]  = np.zeros_like(self.rewards[self.episode_pos][self.in_episode_pos] )
+            self.rewards[self.episode_pos][self.in_episode_pos
+                                           ] = np.zeros_like(self.rewards[self.episode_pos][self.in_episode_pos])
         else:
-            self.rewards[self.episode_pos][self.in_episode_pos]  = np.array(reward).copy()[0]
+            self.rewards[self.episode_pos][self.in_episode_pos] = np.array(reward).copy()[0]
 
         if self.handle_timeout_termination:
-            self.timeouts[self.episode_pos][self.in_episode_pos]  = np.array([info.get("TimeLimit.truncated", False) for info in infos])[0]
+            self.timeouts[self.episode_pos][self.in_episode_pos
+                                            ] = np.array([info.get("TimeLimit.truncated", False) for info in infos])[0]
 
         # self.pos += 1
         # if self.pos == self.buffer_size:
@@ -240,7 +254,6 @@ class HACOReplayBufferNew(ReplayBuffer):
         if self.episode_pos == self.max_episodes:
             self.full = True
             self.episode_pos = 0
-
 
     def sample(self, batch_size: int, env: Optional[VecNormalize] = None) -> HACODictReplayBufferSamples:
         """
@@ -263,7 +276,7 @@ class HACOReplayBufferNew(ReplayBuffer):
 
     def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None) -> HACODictReplayBufferSamples:
         # Sample randomly the env idx
-        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds),))
+        env_indices = np.random.randint(0, high=self.n_envs, size=(len(batch_inds), ))
 
         # Normalize if needed and remove extra dimension (we are using only one env for now)
         obs_ = self._normalize_obs(
@@ -376,7 +389,7 @@ class PVPDQNCPL(DQN):
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
 
         if self.replay_buffer.pos == 0:
-        # if self.replay_buffer.episode_pos== 0:
+            # if self.replay_buffer.episode_pos== 0:
             return
 
         # Switch to train mode (this affects batch norm / dropout)
@@ -410,8 +423,8 @@ class PVPDQNCPL(DQN):
                 agent_action = replay_data_human.actions_novice
                 policy_logit = self.policy.q_net(replay_data_human.observations)
                 dist = torch.distributions.Categorical(logits=policy_logit)
-                log_prob_human = dist.log_prob(human_action.flatten())#.sum(dim=-1)  # Don't do the sum...
-                log_prob_agent = dist.log_prob(agent_action.flatten())#.sum(dim=-1)
+                log_prob_human = dist.log_prob(human_action.flatten())  #.sum(dim=-1)  # Don't do the sum...
+                log_prob_agent = dist.log_prob(agent_action.flatten())  #.sum(dim=-1)
                 adv_human = alpha * log_prob_human
                 adv_agent = alpha * log_prob_agent
                 # If label = 1, then adv_human > adv_agent
@@ -429,7 +442,8 @@ class PVPDQNCPL(DQN):
             if bc_loss is None and cpl_loss is None:
                 break
 
-            loss = bc_loss_weight * (bc_loss if bc_loss is not None else 0.0) + (cpl_loss if cpl_loss is not None else 0.0)
+            loss = bc_loss_weight * (bc_loss
+                                     if bc_loss is not None else 0.0) + (cpl_loss if cpl_loss is not None else 0.0)
 
             # Optimize the policy
             self.policy.optimizer.zero_grad()

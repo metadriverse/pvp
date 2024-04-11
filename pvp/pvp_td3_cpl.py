@@ -41,7 +41,6 @@ def biased_bce_with_logits(adv1, adv2, y, bias=1.0):
     return loss, accuracy
 
 
-
 class PVPTD3CPL(TD3):
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
         """Please find the hyperparameters from original TD3"""
@@ -154,8 +153,6 @@ class PVPTD3CPL(TD3):
 
                 polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)  # TODO: not used.
                 polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)  # TODO: not used.
-
-
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():

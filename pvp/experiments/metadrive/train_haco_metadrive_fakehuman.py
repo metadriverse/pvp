@@ -14,8 +14,9 @@ from pvp.utils.utils import get_time_str
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp_name", default="haco_metadrive_fakehuman", type=str,
-                        help="The name for this batch of experiments.")
+    parser.add_argument(
+        "--exp_name", default="haco_metadrive_fakehuman", type=str, help="The name for this batch of experiments."
+    )
     parser.add_argument("--seed", default=0, type=int, help="The random seed.")
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
@@ -71,7 +72,6 @@ if __name__ == '__main__':
             # FakeHumanEnv config:
             free_level=free_level,
             cos_similarity=True,
-
         ),
 
         # Algorithm config
@@ -102,11 +102,9 @@ if __name__ == '__main__':
             tau=0.005,
             gamma=0.99,
             train_freq=(1, "step"),
-
             ent_coef="auto",
             target_update_interval=1,
             target_entropy="auto",
-
             action_noise=None,
             tensorboard_log=trial_dir,
             create_eval_env=False,
@@ -138,7 +136,6 @@ if __name__ == '__main__':
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
-
     # ===== Also build the eval env =====
     def _make_eval_env():
         eval_env_config = dict(
@@ -152,7 +149,6 @@ if __name__ == '__main__':
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
-
 
     eval_env = SubprocVecEnv([_make_eval_env])
 

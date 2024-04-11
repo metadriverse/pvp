@@ -168,8 +168,8 @@ class CPL(SAC):
                 mean, log_std, _ = self.policy.actor.get_action_dist_params(replay_data_human.observations)
                 dist = self.policy.actor.action_dist.proba_distribution(mean, log_std)
 
-                log_prob_human = dist.log_prob(human_action)#.sum(dim=-1)  # Don't do the sum...
-                log_prob_agent = dist.log_prob(agent_action)#.sum(dim=-1)
+                log_prob_human = dist.log_prob(human_action)  #.sum(dim=-1)  # Don't do the sum...
+                log_prob_agent = dist.log_prob(agent_action)  #.sum(dim=-1)
                 adv_human = alpha * log_prob_human
                 adv_agent = alpha * log_prob_agent
                 # If label = 1, then adv_human > adv_agent
@@ -190,7 +190,8 @@ class CPL(SAC):
             if bc_loss is None and cpl_loss is None:
                 break
 
-            loss = bc_loss_weight * (bc_loss if bc_loss is not None else 0.0) + (cpl_loss if cpl_loss is not None else 0.0)
+            loss = bc_loss_weight * (bc_loss
+                                     if bc_loss is not None else 0.0) + (cpl_loss if cpl_loss is not None else 0.0)
 
             self._optimize_actor(actor_loss=loss)
 

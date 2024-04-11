@@ -33,6 +33,7 @@ RULE_WIDTH = 5
 SCREEN_SIZE = 2000
 DEFAULT_TEXT = "Approve: Space/Down | L/R/Forward: Arrow Keys | Toggle: T | Pickup: P | Drop: D | Done: X | Quit: Esc \n"
 
+
 @dataclasses.dataclass
 class ActionMap:
     LEFT: int = 0
@@ -43,15 +44,13 @@ class ActionMap:
     TOGGLE: int = 5
     DONE: int = 6
 
+
 @dataclasses.dataclass
 class DirMap:
     RIGHT: int = 0
     DOWN: int = 1
     LEFT: int = 2
     UP: int = 3
-
-
-
 
 
 def new_render(self):
@@ -361,7 +360,6 @@ class MinigridWrapper(gym.Wrapper):
         self.env.reset(seed=seed)
 
 
-
 class MinigridWrapperWithFakeHuman(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env=env)
@@ -449,8 +447,6 @@ class MinigridWrapperWithFakeHuman(gym.Wrapper):
         self.env.reset(seed=seed)
 
 
-
-
 class MinigridWrapperWithFakeHumanAndHumanFailureDemo(gym.Wrapper):
     def __init__(self, env, failed_step=50, failed_prob=0.1):
         super().__init__(env=env)
@@ -527,7 +523,6 @@ class MinigridWrapperWithFakeHumanAndHumanFailureDemo(gym.Wrapper):
             should_takeover = False
             # print("using expert_action action: ", a)
 
-
         self.total_steps += 1
 
         cost = 0
@@ -546,8 +541,6 @@ class MinigridWrapperWithFakeHumanAndHumanFailureDemo(gym.Wrapper):
         # self.update_caption(None)  # Set caption to "waiting"
         self.total_takeover += 1 if self.takeover else 0
         return o, r, tm, tc, i
-
-
 
     def reset(self, *args, **kwargs):
         print("reset")
@@ -585,7 +578,9 @@ def wrap_minigrid_env(env_class, enable_takeover, use_fake_human=False, use_fake
 
 if __name__ == '__main__':
     # env = MinigridWrapper(MiniGridEmpty6x6())
-    env = wrap_minigrid_env(MiniGridEmpty16x16, enable_takeover=True, use_fake_human=True, use_fake_human_with_failure=True)
+    env = wrap_minigrid_env(
+        MiniGridEmpty16x16, enable_takeover=True, use_fake_human=True, use_fake_human_with_failure=True
+    )
     env = Monitor(env)
     env.reset()
     print(env.observation_space)
