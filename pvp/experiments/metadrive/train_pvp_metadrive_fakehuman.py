@@ -31,6 +31,8 @@ if __name__ == '__main__':
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
     parser.add_argument("--free_level", type=float, default=0.95)
 
+    parser.add_argument("--intervention_start_stop_td", default=True, type=bool, help="Whether to use intervention_start_stop_td.")
+
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
     #     "--device",
@@ -83,6 +85,9 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
+
+            intervention_start_stop_td=args.intervention_start_stop_td,
+
             use_balance_sample=True,
             policy=TD3Policy,
             replay_buffer_class=HACOReplayBuffer,
@@ -94,7 +99,7 @@ if __name__ == '__main__':
             learning_rate=1e-4,
             q_value_bound=1,
             optimize_memory_usage=True,
-            buffer_size=150_000,  # We only conduct experiment less than 50K steps
+            buffer_size=50_000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  # The number of steps before
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
