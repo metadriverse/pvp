@@ -38,6 +38,10 @@ class PVPTD3(TD3):
             # Default to set it True. We find this can improve the performance and user experience.
             self.intervention_start_stop_td = True
 
+        self.extra_config = {}
+        for k in ["no_done_for_positive"]:
+            self.extra_config[k] = kwargs.pop(k) if k in kwargs else None
+
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
         super(PVPTD3, self).__init__(*args, **kwargs)
@@ -298,7 +302,7 @@ class PVPES(PVPTD3):
 
             if replay_data_human is not None:
                 # Augment the reward / dones here.
-                replay_data_human.dones.fill_(1)
+
                 replay_data_human_positive = copy.deepcopy(replay_data_human)
                 replay_data_human_negative = replay_data_human
                 replay_data_human_positive.rewards.fill_(1)
@@ -306,7 +310,12 @@ class PVPES(PVPTD3):
 
                 replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
 
-                replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                if self.extra_config["no_done_for_positive"]:
+                    replay_data_human_negative.dones.fill_(1)
+                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                else:
+                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                    replay_data_human.dones.fill_(1)
 
             if replay_data_human is not None and replay_data_agent is None:
                 replay_data = replay_data_human
