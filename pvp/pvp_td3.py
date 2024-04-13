@@ -39,7 +39,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_n2_for_intervention"]:
+        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_n2_for_intervention", "reward_1_for_all"]:
             self.extra_config[k] = kwargs.pop(k) if k in kwargs else None
 
         self.q_value_bound = q_value_bound
@@ -320,6 +320,9 @@ class PVPES(PVPTD3):
                 else:
                     replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
                     replay_data_human.dones.fill_(1)
+
+            if self.extra_config["reward_1_for_all"]:
+                replay_data_agent.rewards.fill_(1)
 
             if replay_data_human is not None and replay_data_agent is None:
                 replay_data = replay_data_human
