@@ -39,7 +39,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "reward_0_for_positive"]:
+        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_n2_for_intervention"]:
             self.extra_config[k] = kwargs.pop(k) if k in kwargs else None
 
         self.q_value_bound = q_value_bound
@@ -327,6 +327,9 @@ class PVPES(PVPTD3):
                 replay_data = replay_data_agent
             else:
                 replay_data = concat_samples(replay_data_agent, replay_data_human)
+
+            if self.extra_config["reward_n2_for_intervention"]:
+                replay_data.rewards[replay_data.next_intervention_start.bool()] = -2
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise

@@ -32,6 +32,8 @@ class HACODictReplayBufferSamples(NamedTuple):
     actions_behavior: th.Tensor
     actions_novice: th.Tensor
 
+    next_intervention_start: th.Tensor
+
 
 def concat_samples(self, other):
     if isinstance(self.observations, dict):
@@ -52,7 +54,8 @@ def concat_samples(self, other):
         stop_td=th.cat([self.stop_td, other.stop_td], dim=0),
         intervention_costs=th.cat([self.intervention_costs, other.interventions], dim=0),
         actions_behavior=th.cat([self.actions_behavior, other.actions_behavior], dim=0),
-        actions_novice=th.cat([self.actions_novice, other.actions_novice], dim=0)
+        actions_novice=th.cat([self.actions_novice, other.actions_novice], dim=0),
+        next_intervention_start=th.cat([self.next_intervention_start, other.next_intervention_start], dim=0)
     )
 
 
@@ -267,6 +270,8 @@ class HACOReplayBuffer(ReplayBuffer):
         else:
             _stop_td = self.intervention_starts
 
+        next_intervention_start = self.intervention_starts[(batch_inds + 1) % self.buffer_size, env_indices]
+
         return HACODictReplayBufferSamples(
             observations=observations,
             next_observations=next_observations,
@@ -282,4 +287,5 @@ class HACOReplayBuffer(ReplayBuffer):
             interventions=self.to_torch(self.interventions[batch_inds, env_indices].reshape(-1, 1), env),
             stop_td=self.to_torch(1 - _stop_td[batch_inds, env_indices].reshape(-1, 1), env),
             actions_behavior=self.to_torch(self.actions_behavior[batch_inds, env_indices]),
+            next_intervention_start=self.to_torch(next_intervention_start),
         )
