@@ -322,7 +322,8 @@ class PVPES(PVPTD3):
                     replay_data_human.dones.fill_(1)
 
             if self.extra_config["reward_1_for_all"]:
-                replay_data_agent.rewards.fill_(1)
+                if replay_data_agent is not None:
+                    replay_data_agent.rewards.fill_(1)
 
             if replay_data_human is not None and replay_data_agent is None:
                 replay_data = replay_data_human
