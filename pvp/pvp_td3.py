@@ -364,7 +364,7 @@ class PVPES(PVPTD3):
             # current_q_novice_values = self.critic(replay_data.observations, replay_data.actions_novice)
 
             # stat_recorder["q_value_behavior"].append(current_q_behavior_values[0].mean().item())
-            # stat_recorder["q_value_novice"].append(current_q_novice_values[0].mean().item())
+            stat_recorder["q_value"].append(current_q_values[0].mean().item())
 
             # Compute critic loss
             # critic_loss = []
