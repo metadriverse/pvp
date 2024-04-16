@@ -323,7 +323,7 @@ class PVPES(PVPTD3):
 
                     if self.extra_config["use_weighted_reward"]:
                         w = (-replay_data_human_positive.takeover_log_prob)
-                        w = (w - w.min()) / (w.max() - w.min())
+                        # w = (w - w.min()) / (w.max() - w.min())
                         replay_data_human_positive.rewards.copy_(w)
                     else:
                         replay_data_human_positive.rewards.fill_(1)
@@ -333,7 +333,7 @@ class PVPES(PVPTD3):
                 else:
                     if self.extra_config["use_weighted_reward"]:
                         w = (-replay_data_human_negative.takeover_log_prob)
-                        w = (w - w.min()) / (w.max() - w.min())
+                        # w = (w - w.min()) / (w.max() - w.min())
                         replay_data_human_negative.rewards.copy_(-w)
                     else:
                         replay_data_human_negative.rewards.fill_(-1)
