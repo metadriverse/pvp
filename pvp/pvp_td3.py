@@ -291,8 +291,8 @@ class PVPES(PVPTD3):
             replay_data_agent = None
             replay_data_human = None
             if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
-                replay_data_agent = self.replay_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
-                replay_data_human = self.human_data_buffer.sample(int(batch_size / 2), env=self._vec_normalize_env)
+                replay_data_agent = self.replay_buffer.sample(int(batch_size), env=self._vec_normalize_env)
+                replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env)
             elif self.human_data_buffer.pos > batch_size:
                 replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
             elif self.replay_buffer.pos > batch_size:
@@ -306,28 +306,28 @@ class PVPES(PVPTD3):
                 replay_data_human_positive = copy.deepcopy(replay_data_human)
                 replay_data_human_negative = replay_data_human
 
-                if self.extra_config["reward_0_for_positive"]:
-                    replay_data_human_positive.rewards.fill_(0)
-                else:
-                    replay_data_human_positive.rewards.fill_(1)
+                # if self.extra_config["reward_0_for_positive"]:
+                #     replay_data_human_positive.rewards.fill_(0)
+                # else:
+                replay_data_human_positive.rewards.fill_(1)
 
-                if self.extra_config["reward_0_for_negative"]:
-                    replay_data_human_negative.rewards.fill_(0)
-                else:
-                    replay_data_human_negative.rewards.fill_(-1)
+                # if self.extra_config["reward_0_for_negative"]:
+                #     replay_data_human_negative.rewards.fill_(0)
+                # else:
+                replay_data_human_negative.rewards.fill_(-1)
 
                 replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
 
-                if self.extra_config["no_done_for_positive"]:
-                    replay_data_human_negative.dones.fill_(1)
-                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
-                else:
-                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
-                    replay_data_human.dones.fill_(1)
+                # if self.extra_config["no_done_for_positive"]:
+                #     replay_data_human_negative.dones.fill_(1)
+                #     replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                # else:
+                replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                replay_data_human.dones.fill_(1)
 
-            if self.extra_config["reward_1_for_all"]:
-                if replay_data_agent is not None:
-                    replay_data_agent.rewards.fill_(1)
+            # if self.extra_config["reward_1_for_all"]:
+            #     if replay_data_agent is not None:
+            #         replay_data_agent.rewards.fill_(1)
 
             if replay_data_human is not None and replay_data_agent is None:
                 replay_data = replay_data_human
@@ -336,8 +336,8 @@ class PVPES(PVPTD3):
             else:
                 replay_data = concat_samples(replay_data_agent, replay_data_human)
 
-            if self.extra_config["reward_n2_for_intervention"]:
-                replay_data.rewards[replay_data.next_intervention_start.bool()] = -2
+            # if self.extra_config["reward_n2_for_intervention"]:
+            #     replay_data.rewards[replay_data.next_intervention_start.bool()] = -2
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
