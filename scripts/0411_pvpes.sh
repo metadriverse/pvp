@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the seeds for each GPU
-seeds=(0 100 200 300)
+seeds=(0 100 200 300 400 500 600 700)
 
 
 # Loop over each GPU
