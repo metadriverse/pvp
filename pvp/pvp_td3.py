@@ -39,7 +39,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward"]:
+        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative"]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
@@ -342,9 +342,15 @@ class PVPES(PVPTD3):
 
                 if self.extra_config["no_done_for_positive"]:
                     replay_data_human_negative.dones.fill_(1)
-                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                    if self.extra_config["remove_negative"]:
+                        replay_data_human = replay_data_human_positive
+                    else:
+                        replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
                 else:
-                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                    if self.extra_config["remove_negative"]:
+                        replay_data_human = replay_data_human_positive
+                    else:
+                        replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
                     replay_data_human.dones.fill_(1)
 
             if self.extra_config["reward_1_for_all"]:

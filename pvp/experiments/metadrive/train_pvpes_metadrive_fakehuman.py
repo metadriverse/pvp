@@ -38,6 +38,7 @@ if __name__ == '__main__':
     parser.add_argument("--reward_1_for_all", type=str, default="False")
     parser.add_argument("--reward_0_for_negative", type=str, default="False")
     parser.add_argument("--use_weighted_reward", type=str, default="False")
+    parser.add_argument("--remove_negative", type=str, default="False")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -97,6 +98,7 @@ if __name__ == '__main__':
             reward_1_for_all=args.reward_1_for_all,
             reward_0_for_negative=args.reward_0_for_negative,
             use_weighted_reward=args.use_weighted_reward,
+            remove_negative=args.remove_negative,
 
             use_balance_sample=True,
             policy=TD3Policy,
