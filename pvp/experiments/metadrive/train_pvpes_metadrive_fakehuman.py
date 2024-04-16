@@ -32,11 +32,11 @@ if __name__ == '__main__':
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
     parser.add_argument("--free_level", type=float, default=0.95)
-    parser.add_argument("--no_done_for_positive", type=bool, default=False)
-    parser.add_argument("--reward_0_for_positive", type=bool, default=False)
-    parser.add_argument("--reward_n2_for_intervention", type=bool, default=False)
-    parser.add_argument("--reward_1_for_all", type=bool, default=False)
-    parser.add_argument("--reward_0_for_negative", type=bool, default=False)
+    parser.add_argument("--no_done_for_positive", type=str, default="False")
+    parser.add_argument("--reward_0_for_positive", type=str, default="False")
+    parser.add_argument("--reward_n2_for_intervention", type=str, default="False")
+    parser.add_argument("--reward_1_for_all", type=str, default="False")
+    parser.add_argument("--reward_0_for_negative", type=str, default="False")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(

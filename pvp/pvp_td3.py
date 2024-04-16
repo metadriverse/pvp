@@ -40,7 +40,11 @@ class PVPTD3(TD3):
 
         self.extra_config = {}
         for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all"]:
-            self.extra_config[k] = kwargs.pop(k) if k in kwargs else None
+            if k in kwargs:
+                v = kwargs.pop(k)
+                assert v in ["True", "False"]
+                v = v == "True"
+                self.extra_config[k] = v
 
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
@@ -300,34 +304,41 @@ class PVPES(PVPTD3):
             else:
                 break
 
+            current_q_novice_values = current_q_behavior_values = None
             if replay_data_human is not None:
                 # Augment the reward / dones here.
+
+
+                current_q_behavior_values = self.critic(replay_data_human.observations, replay_data_human.actions_behavior)
+                current_q_behavior_values = np.mean([q.mean().item() for q in current_q_behavior_values])
+                current_q_novice_values = self.critic(replay_data_human.observations, replay_data_human.actions_novice)
+                current_q_novice_values = np.mean([q.mean().item() for q in current_q_novice_values])
 
                 replay_data_human_positive = copy.deepcopy(replay_data_human)
                 replay_data_human_negative = replay_data_human
 
-                # if self.extra_config["reward_0_for_positive"]:
-                #     replay_data_human_positive.rewards.fill_(0)
-                # else:
-                replay_data_human_positive.rewards.fill_(1)
+                if self.extra_config["reward_0_for_positive"]:
+                    replay_data_human_positive.rewards.fill_(0)
+                else:
+                    replay_data_human_positive.rewards.fill_(1)
 
-                # if self.extra_config["reward_0_for_negative"]:
-                #     replay_data_human_negative.rewards.fill_(0)
-                # else:
-                replay_data_human_negative.rewards.fill_(-1)
+                if self.extra_config["reward_0_for_negative"]:
+                    replay_data_human_negative.rewards.fill_(0)
+                else:
+                    replay_data_human_negative.rewards.fill_(-1)
 
                 replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
 
-                # if self.extra_config["no_done_for_positive"]:
-                #     replay_data_human_negative.dones.fill_(1)
-                #     replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
-                # else:
-                replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
-                replay_data_human.dones.fill_(1)
+                if self.extra_config["no_done_for_positive"]:
+                    replay_data_human_negative.dones.fill_(1)
+                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                else:
+                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                    replay_data_human.dones.fill_(1)
 
-            # if self.extra_config["reward_1_for_all"]:
-            #     if replay_data_agent is not None:
-            #         replay_data_agent.rewards.fill_(1)
+            if self.extra_config["reward_1_for_all"]:
+                if replay_data_agent is not None:
+                    replay_data_agent.rewards.fill_(1)
 
             if replay_data_human is not None and replay_data_agent is None:
                 replay_data = replay_data_human
@@ -336,8 +347,8 @@ class PVPES(PVPTD3):
             else:
                 replay_data = concat_samples(replay_data_agent, replay_data_human)
 
-            # if self.extra_config["reward_n2_for_intervention"]:
-            #     replay_data.rewards[replay_data.next_intervention_start.bool()] = -2
+            if self.extra_config["reward_n2_for_intervention"]:
+                replay_data.rewards[replay_data.next_intervention_start.bool()] = -2
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
@@ -360,18 +371,10 @@ class PVPES(PVPTD3):
             critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
             # critic_losses.append(critic_loss.item())
 
-            # current_q_behavior_values = self.critic(replay_data.observations, replay_data.actions_behavior)
-            # current_q_novice_values = self.critic(replay_data.observations, replay_data.actions_novice)
+            stat_recorder["q_value_behavior"].append(current_q_behavior_values if current_q_behavior_values is not None else float("nan"))
+            stat_recorder["q_value_novice"].append(current_q_novice_values if current_q_novice_values is not None else float("nan"))
 
-            # stat_recorder["q_value_behavior"].append(current_q_behavior_values[0].mean().item())
             stat_recorder["q_value"].append(current_q_values[0].mean().item())
-
-            # Compute critic loss
-            # critic_loss = []
-            # for (current_q_behavior, current_q_novice) in zip(current_q_behavior_values, current_q_novice_values):
-            #     l = 0.5 * F.mse_loss(current_q_behavior, target_q_values)
-            #     critic_loss.append(l)
-            # critic_loss = sum(critic_loss)
 
             # Optimize the critics
             self.critic.optimizer.zero_grad()
