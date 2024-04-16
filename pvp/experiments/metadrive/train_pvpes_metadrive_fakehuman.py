@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument("--reward_0_for_positive", type=bool, default=False)
     parser.add_argument("--reward_n2_for_intervention", type=bool, default=False)
     parser.add_argument("--reward_1_for_all", type=bool, default=False)
+    parser.add_argument("--reward_0_for_negative", type=bool, default=False)
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -93,6 +94,7 @@ if __name__ == '__main__':
             reward_0_for_positive=args.reward_0_for_positive,
             reward_n2_for_intervention=args.reward_n2_for_intervention,
             reward_1_for_all=args.reward_1_for_all,
+            reward_0_for_negative=args.reward_0_for_negative,
 
             use_balance_sample=True,
             policy=TD3Policy,
