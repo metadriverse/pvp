@@ -8,7 +8,7 @@ for i in {0..7}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_pvpes_metadrive_fakehuman.py \
-    --exp_name=pvpes-metadrive-fake-reward_0_for_negative \
+    --exp_name=pvpes-metadrive-regression \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -19,5 +19,5 @@ do
     --reward_n2_for_intervention=False \
     --reward_1_for_all=False \
     --reward_0_for_negative=False \
-    > "0412-pvpes-reward_0_for_negative-seed${seeds[$i]}.log" 2>&1 &
+    > "0412-pvpes-regression-seed${seeds[$i]}.log" 2>&1 &
 done
