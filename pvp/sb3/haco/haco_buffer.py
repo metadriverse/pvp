@@ -54,6 +54,7 @@ def concat_samples(self, other):
         interventions=th.cat([self.interventions, other.interventions], dim=0),
         stop_td=th.cat([self.stop_td, other.stop_td], dim=0),
         intervention_costs=th.cat([self.intervention_costs, other.interventions], dim=0),
+        takeover_log_prob=th.cat([self.takeover_log_prob, other.takeover_log_prob], dim=0),
         actions_behavior=th.cat([self.actions_behavior, other.actions_behavior], dim=0),
         actions_novice=th.cat([self.actions_novice, other.actions_novice], dim=0),
         next_intervention_start=th.cat([self.next_intervention_start, other.next_intervention_start], dim=0)
