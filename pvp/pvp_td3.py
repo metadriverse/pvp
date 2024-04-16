@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Union, Optional
 
 import numpy as np
 import torch as th
+import torch
 from torch.nn import functional as F
 
 from pvp.sb3.common.buffers import ReplayBuffer
