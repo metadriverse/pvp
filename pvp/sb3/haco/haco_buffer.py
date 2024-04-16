@@ -29,6 +29,7 @@ class HACODictReplayBufferSamples(NamedTuple):
     interventions: th.Tensor
     stop_td: th.Tensor
     intervention_costs: th.Tensor
+    takeover_log_prob: th.Tensor
     actions_behavior: th.Tensor
     actions_novice: th.Tensor
 
@@ -124,6 +125,7 @@ class HACOReplayBuffer(ReplayBuffer):
         self.interventions = np.zeros((self.buffer_size, self.n_envs), dtype=np.float32)
         self.intervention_starts = np.zeros((self.buffer_size, self.n_envs), dtype=np.float32)
         self.intervention_costs = np.zeros((self.buffer_size, self.n_envs), dtype=np.float32)
+        self.takeover_log_prob = np.zeros((self.buffer_size, self.n_envs), dtype=np.float32)
         self.actions_novice = np.zeros((self.buffer_size, self.n_envs, self.action_dim), dtype=action_space.dtype)
         self.discard_reward = discard_reward
 
@@ -198,6 +200,8 @@ class HACOReplayBuffer(ReplayBuffer):
                                                       ).reshape(self.intervention_starts[self.pos].shape)
         self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]
                                                      ).reshape(self.intervention_costs[self.pos].shape)
+        self.takeover_log_prob[self.pos] = np.array([step["takeover_log_prob"] for step in infos]
+                                                     ).reshape(self.takeover_log_prob[self.pos].shape)
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
         if isinstance(self.action_space, (spaces.Discrete, new_spaces.Discrete)):
             action = action.reshape((self.n_envs, self.action_dim))
@@ -284,6 +288,7 @@ class HACOReplayBuffer(ReplayBuffer):
             # PZH: Our useful data
             actions_novice=self.to_torch(self.actions_novice[batch_inds, env_indices]),
             intervention_costs=self.to_torch(self.intervention_costs[batch_inds, env_indices].reshape(-1, 1), env),
+            takeover_log_prob=self.to_torch(self.takeover_log_prob[batch_inds, env_indices].reshape(-1, 1), env),
             interventions=self.to_torch(self.interventions[batch_inds, env_indices].reshape(-1, 1), env),
             stop_td=self.to_torch(1 - _stop_td[batch_inds, env_indices].reshape(-1, 1), env),
             actions_behavior=self.to_torch(self.actions_behavior[batch_inds, env_indices]),

@@ -39,7 +39,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all"]:
+        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward"]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
@@ -320,12 +320,23 @@ class PVPES(PVPTD3):
                 if self.extra_config["reward_0_for_positive"]:
                     replay_data_human_positive.rewards.fill_(0)
                 else:
-                    replay_data_human_positive.rewards.fill_(1)
+
+                    if self.extra_config["use_weighted_reward"]:
+                        w = (-replay_data_human_positive.takeover_log_prob)
+                        w = (w - w.min()) / (w.max() - w.min())
+                        replay_data_human_positive.rewards.copy_(w)
+                    else:
+                        replay_data_human_positive.rewards.fill_(1)
 
                 if self.extra_config["reward_0_for_negative"]:
                     replay_data_human_negative.rewards.fill_(0)
                 else:
-                    replay_data_human_negative.rewards.fill_(-1)
+                    if self.extra_config["use_weighted_reward"]:
+                        w = (-replay_data_human_negative.takeover_log_prob)
+                        w = (w - w.min()) / (w.max() - w.min())
+                        replay_data_human_negative.rewards.copy_(-w)
+                    else:
+                        replay_data_human_negative.rewards.fill_(-1)
 
                 replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
 

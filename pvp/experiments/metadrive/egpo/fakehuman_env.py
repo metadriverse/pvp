@@ -122,10 +122,13 @@ class FakeHumanEnv(HumanInTheLoopEnv):
             self.takeover = False
         # print(f"Action probability: {action_prob}, agent action: {actions}, expert action: {expert_action}, takeover: {self.takeover}")
 
-        ret = super(HumanInTheLoopEnv, self).step(actions)
+        o, r, d, i = super(HumanInTheLoopEnv, self).step(actions)
         self.takeover_recorder.append(self.takeover)
         self.total_steps += 1
-        return ret
+
+        i["takeover_log_prob"] = log_prob.item()
+
+        return o, r, d, i
 
     def _get_step_return(self, actions, engine_info):
         """Compared to original one, here we don't call expert_policy, but directly get self.last_takeover."""
