@@ -299,3 +299,58 @@ class HACOReplayBuffer(ReplayBuffer):
             actions_behavior=self.to_torch(self.actions_behavior[batch_inds, env_indices]),
             next_intervention_start=self.to_torch(next_intervention_start),
         )
+
+
+
+class HACOReplayBufferEpisode(ReplayBuffer):
+    def __init__(
+        self,
+        buffer_size: int,  # PZH: This is the number of episodes
+        max_steps: int,  # PZH: This is the number of steps in each episode
+        observation_space: spaces.Space,
+        action_space: spaces.Space,
+        device: Union[th.device, str] = "cpu",
+        n_envs: int = 1,
+        optimize_memory_usage: bool = True,
+        handle_timeout_termination: bool = True,
+        discard_reward=False,
+
+
+    ):
+        super(ReplayBuffer, self).__init__(buffer_size, observation_space, action_space, device, n_envs=n_envs)
+        self.max_steps = max_steps
+
+        self.make_buffer = lambda: HACOReplayBuffer(buffer_size, observation_space, action_space, device, n_envs, optimize_memory_usage, handle_timeout_termination, discard_reward)
+        self.episodes = [self.make_buffer()]
+
+    def add(
+        self,
+        obs: Dict[str, np.ndarray],
+        next_obs: Dict[str, np.ndarray],
+        action: np.ndarray,
+        reward: np.ndarray,
+        done: np.ndarray,
+        infos: List[Dict[str, Any]],
+    ) -> None:
+        assert len(obs) == 1, "Only support one env for now"
+        self.episodes[-1].add(obs, next_obs, action, reward, done, infos)
+        if done[0]:
+            self.episodes.append(self.make_buffer())
+            self.pos += 1
+
+    def sample(self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False) -> HACODictReplayBufferSamples:
+        """
+        We will return everything we have!
+        """
+        batch_inds = np.random.permutation(np.arange(self.buffer_size if self.full else self.pos))
+        new_ret = self._get_samples(batch_inds, env=env)
+        return new_ret
+
+    def _get_samples(self, batch_inds: np.ndarray, env: Optional[VecNormalize] = None):
+        """
+        We will return everything we have!
+        """
+        ret = []
+        for ep_count in batch_inds:
+            ret.append(self.episodes[ep_count].sample(0, return_all=True))
+        return ret

@@ -764,6 +764,8 @@ class BaseAlgorithm(ABC):
         for name in state_dicts_names:
             attr = recursive_getattr(self, name)
             # Retrieve state dict
+            if attr is None:
+                continue
             params[name] = attr.state_dict()
         return params
 

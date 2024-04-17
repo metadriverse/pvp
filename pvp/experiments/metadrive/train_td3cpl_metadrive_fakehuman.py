@@ -14,6 +14,7 @@ from pvp.sb3.td3.policies import TD3Policy
 from pvp.utils.shared_control_monitor import SharedControlMonitor
 from pvp.utils.utils import get_time_str
 from pvp.sb3.common.vec_env import DummyVecEnv, VecFrameStack, SubprocVecEnv
+from pvp.sb3.ppo.policies import MlpPolicy
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -79,14 +80,24 @@ if __name__ == '__main__':
         # Algorithm config
         algo=dict(
             use_balance_sample=True,
-            policy=TD3Policy,
-            replay_buffer_class=HACOReplayBuffer,
+            policy=MlpPolicy,
+            replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!
+                # max_steps=1000,  # TODO: CONFIG
             ),
             policy_kwargs=dict(net_arch=[256, 256]),
             env=None,
+
             learning_rate=1e-4,
+
+            # learning_rate=dict(
+            #     actor=1e-4,
+            #     critic=1e-4,
+            #     entropy=1e-4,
+            # ),
+
+
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=150_000,  # We only conduct experiment less than 50K steps
@@ -94,7 +105,12 @@ if __name__ == '__main__':
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
-            train_freq=(1, "step"),
+
+
+            train_freq=(1, "episode"),  # <<<<< This is very important
+            gradient_steps=-1,  # <<<<< This is very important
+
+
             action_noise=None,
             tensorboard_log=trial_dir,
             create_eval_env=False,

@@ -63,96 +63,204 @@ class PVPTD3CPL(TD3):
         self.use_balance_sample = use_balance_sample
         super().__init__(*args, **kwargs)
 
+    # def _setup_lr_schedule(self):
+    #     from pvp.sb3.common.utils import get_schedule_fn
+    #     self.lr_schedule = {k: get_schedule_fn(self.learning_rate[k]) for k in self.learning_rate}
+
+
+    def _create_aliases(self) -> None:
+        pass
+        # self.actor = self.policy.actor
+        # self.actor_target = self.policy.actor_target
+        # self.critic = self.policy.critic
+        # self.critic_target = self.policy.critic_target
+
+
     def _setup_model(self) -> None:
         super()._setup_model()
-        if self.use_balance_sample:
-            self.human_data_buffer = HACOReplayBuffer(
-                self.buffer_size,
-                self.observation_space,
-                self.action_space,
-                self.device,
-                n_envs=self.n_envs,
-                optimize_memory_usage=self.optimize_memory_usage,
-                **self.replay_buffer_kwargs
-            )
-        else:
-            self.human_data_buffer = self.replay_buffer
+        # if self.use_balance_sample:
+        from pvp.sb3.haco.haco_buffer import HACOReplayBufferEpisode
+        self.replay_buffer = HACOReplayBufferEpisode(
+            buffer_size=self.buffer_size,
+            max_steps=1000,  # TODO: CONFIG
+            observation_space=self.observation_space,
+            action_space=self.action_space,
+            device=self.device,
+            n_envs=self.n_envs,
+            optimize_memory_usage=self.optimize_memory_usage,
+            **self.replay_buffer_kwargs
+        )
+        # else:
+        # self.human_data_buffer = self.replay_buffer
+
+
+    # def _update_learning_rate(self, optimizers: Union[List[th.optim.Optimizer], th.optim.Optimizer]) -> None:
+    #     """
+    #     Update the optimizers learning rate using the current learning rate schedule
+    #     and the current progress remaining (from 1 to 0).
+    #
+    #     :param optimizers:
+    #         An optimizer or a list of optimizers.
+    #     """
+    #     pass
+        # from pvp.sb3.common.utils import update_learning_rate
+
+        # # Log the current learning rate
+        # self.logger.record("train/learning_rate", self.lr_schedule(self._current_progress_remaining))
+        #
+        # if not isinstance(optimizers, list):
+        #     optimizers = [optimizers]
+        # for optimizer in optimizers:
+        #     update_learning_rate(optimizer, self.lr_schedule(self._current_progress_remaining))
+
+
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
         self.policy.set_training_mode(True)
 
         # Update learning rate according to lr schedule
-        self._update_learning_rate([self.actor.optimizer, self.critic.optimizer])
+        # TODO: Not update
+        # self._update_learning_rate([self.actor.optimizer, self.critic.optimizer])
 
         stat_recorder = defaultdict(list)
 
         for step in range(gradient_steps):
             self._n_updates += 1
 
+            num_steps_per_chunk = 64
+
             # Sample replay buffer
-            replay_data_human = None
+            # replay_data_human = None
             replay_data_agent = None
-            if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
-                replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
-                replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
-            elif self.human_data_buffer.pos > batch_size:
-                replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
-            elif self.replay_buffer.pos > batch_size:
-                replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+            # if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
+            #     replay_data_agent = self.replay_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+            #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+            # elif self.human_data_buffer.pos > 0:
+            #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+            if self.replay_buffer.pos > 0:
+                replay_data_agent = self.replay_buffer.sample(0, env=self._vec_normalize_env)
             else:
                 loss = None
                 break
 
-            if replay_data_human is not None and replay_data_agent is not None:
-                replay_data = concat_samples(replay_data_agent, replay_data_human)
-            else:
-                replay_data = replay_data_agent if replay_data_agent is not None else replay_data_human
+
+            # if replay_data_human is not None and replay_data_agent is not None:
+            #     replay_data = concat_samples(replay_data_agent, replay_data_human)
+            # else:
+            #     replay_data = replay_data_agent if replay_data_agent is not None else replay_data_human
 
             # ========== Compute our CPL loss here (only train the advantage function) ==========
             # The policy will be trained to maximize the advantage function.
             accuracy = cpl_loss = bc_loss = None
-            if replay_data_human is not None:
-                human_action = replay_data_human.actions_behavior
-                agent_action = replay_data_human.actions_novice
+            adv_human_list = []
+            adv_agent_list = []
+
+            alpha = 0.1
+
+
+            for ep in replay_data_agent:
+
                 # TODO: And idea here, we can use AIRL ideal to use two network to capture the advantage.
                 # TODO: Note that the double Q networks are not used.
-                adv_human = self.critic(replay_data_human.observations, human_action)[0]
-                adv_agent = self.critic(replay_data_human.observations, agent_action)[0]
 
-                stat_recorder["adv_human"].append(adv_human.mean().item())
-                stat_recorder["adv_agent"].append(adv_agent.mean().item())
 
-                # If label = 1, then adv_human > adv_agent
-                label = torch.ones_like(adv_human)
-                cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
+
+                # chunk adv
+                # num_steps = len(ep.observations) - num_steps_per_chunk
+                # s = np.random.randint(num_steps)
+                # adv_human1, adv_human2 = self.critic(ep.observations[s: s+num_steps_per_chunk], ep.actions_behavior[s: s+num_steps_per_chunk])
+                # adv_agent1, adv_agent2 = self.critic(ep.observations[s: s+num_steps_per_chunk], ep.actions_novice[s: s+num_steps_per_chunk])
+                # adv_human = (adv_agent1 + adv_human2) / 2
+                # adv_agent = (adv_agent1 + adv_agent2) / 2
+
+                # clean adv
+                # interventions = ep.interventions.bool().reshape(-1)
+                # adv_human1, adv_human2 = self.critic(ep.observations[interventions], ep.actions_behavior[interventions])
+                # adv_agent1, adv_agent2 = self.critic(ep.observations[interventions], ep.actions_novice[interventions])
+                # adv_human = (adv_agent1 + adv_human2) / 2
+                # adv_agent = (adv_agent1 + adv_agent2) / 2
+
+
+                # cpl adv
+                num_steps = len(ep.observations) - num_steps_per_chunk
+                s = np.random.randint(num_steps)
+                # mean, log_std, _ = self.policy.actor.get_action_dist_params(ep.observations[s: s+num_steps_per_chunk])
+                # dist = self.policy.actor.action_dist.proba_distribution(mean, log_std)
+                # log_prob_human = dist.log_prob(ep.actions_behavior[s: s+num_steps_per_chunk])  #.sum(dim=-1)  # Don't do the sum...
+                # log_prob_agent = dist.log_prob(ep.actions_novice[s: s+num_steps_per_chunk])  #.sum(dim=-1)
+                _, log_prob_human, _ = self.policy.evaluate_actions(
+                    ep.observations[s: s+num_steps_per_chunk],
+                    ep.actions_behavior[s: s + num_steps_per_chunk]
+                )
+                _, log_prob_agent, _ = self.policy.evaluate_actions(
+                    ep.observations[s: s+num_steps_per_chunk],
+                    ep.actions_novice[s: s + num_steps_per_chunk]
+                )
+                adv_human = alpha * log_prob_human
+                adv_agent = alpha * log_prob_agent
+                adv_human = adv_human.sum()
+                adv_agent = adv_agent.sum()
+                adv_human_list.append(adv_human)
+                adv_agent_list.append(adv_agent)
+            adv_human = torch.stack(adv_human_list)
+            adv_agent = torch.stack(adv_agent_list)
+
+            # If label = 1, then adv_human > adv_agent
+            label = torch.ones_like(adv_human)
+            cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
+
+            stat_recorder["adv_human"].append(adv_human.mean().item())
+            stat_recorder["adv_agent"].append(adv_agent.mean().item())
 
             # TODO: Compared to PVP, we remove TD loss here.
             # Optimize the critics
-            critic_loss = cpl_loss
-            if critic_loss is not None:
-                self.critic.optimizer.zero_grad()
-                critic_loss.backward()
-                self.critic.optimizer.step()
+            # critic_loss = cpl_loss
+            # if critic_loss is not None:
+            #     self.critic.optimizer.zero_grad()
+            #     critic_loss.backward()
+            #     self.critic.optimizer.step()
+
+            # Optimization step
+            self.policy.optimizer.zero_grad()
+            cpl_loss.backward()
+            # Clip grad norm
+            # th.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
+            self.policy.optimizer.step()
+
+
 
             # Stats
             stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
             stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy is not None else float('nan'))
 
             # Delayed policy updates
-            if self._n_updates % self.policy_delay == 0:
-                # Compute actor loss
-                actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations
-                                                                                          )).mean()
-
-                # Optimize the actor
-                self.actor.optimizer.zero_grad()
-                actor_loss.backward()
-                self.actor.optimizer.step()
-                self.logger.record("train/actor_loss", actor_loss.item())
-
-                polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)  # TODO: not used.
-                polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)  # TODO: not used.
+            # if self._n_updates % self.policy_delay == 0:
+            #     # Compute actor loss
+            #     obs = torch.concatenate([ep.observations for ep in replay_data_agent], dim=0)
+            #     action = torch.concatenate([ep.actions_behavior for ep in replay_data_agent], dim=0)
+            #
+            #
+            #     # TODO: As the value is interpreted as advantage, maybe we should use policy gradient here?
+            #     # actor_loss = -self.critic.q1_forward(obs, self.actor(obs)).mean()
+            #
+            #     # Policy gradient:
+            #     # action = self.policy.actor(obs)
+            #     adv = self.critic.q1_forward(obs, action)
+            #     mean, log_std, _ = self.policy.actor.get_action_dist_params(obs)
+            #     dist = self.policy.actor.action_dist.proba_distribution(mean, log_std)
+            #     log_prob_human = dist.log_prob(action)  #.sum(dim=-1)  # Don't do the sum.
+            #     actor_loss = - (adv * log_prob_human).mean()
+            #
+            #
+            #     # Optimize the actor
+            #     self.actor.optimizer.zero_grad()
+            #     actor_loss.backward()
+            #     self.actor.optimizer.step()
+            #     self.logger.record("train/actor_loss", actor_loss.item())
+            #
+            #     # polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)  # TODO: not used.
+            #     # polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)  # TODO: not used.
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():
@@ -167,8 +275,8 @@ class PVPTD3CPL(TD3):
         dones: np.ndarray,
         infos: List[Dict[str, Any]],
     ) -> None:
-        if infos[0]["takeover"] or infos[0]["takeover_start"]:
-            replay_buffer = self.human_data_buffer
+        # if infos[0]["takeover"] or infos[0]["takeover_start"]:
+        #     replay_buffer = self.human_data_buffer
         super()._store_transition(replay_buffer, buffer_action, new_obs, reward, dones, infos)
 
     def save_replay_buffer(
@@ -204,6 +312,11 @@ class PVPTD3CPL(TD3):
             self.human_data_buffer.handle_timeout_termination = False
             self.human_data_buffer.timeouts = np.zeros_like(self.replay_buffer.dones)
         super().load_replay_buffer(path_replay, truncate_last_traj)
+    def _get_torch_save_params(self):
+        ret = super()._get_torch_save_params()
+        # print(1)
+        return (['policy'], [])
+
 
     def learn(
         self,

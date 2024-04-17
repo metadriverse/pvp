@@ -34,6 +34,8 @@ def recursive_getattr(obj: Any, attr: str, *args) -> Any:
     :return: The attribute
     """
     def _getattr(obj: Any, attr: str) -> Any:
+        if obj is None:
+            return None
         return getattr(obj, attr, *args)
 
     return functools.reduce(_getattr, [obj] + attr.split("."))
