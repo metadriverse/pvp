@@ -445,3 +445,124 @@ class PVPES(PVPTD3):
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():
             self.logger.record("train/{}".format(key), np.mean(values))
+
+
+
+class PVPAdv(PVPTD3):
+    def train(self, gradient_steps: int, batch_size: int = 100) -> None:
+        # Switch to train mode (this affects batch norm / dropout)
+        self.policy.set_training_mode(True)
+
+        # Update learning rate according to lr schedule
+        self._update_learning_rate([self.actor.optimizer, self.critic.optimizer])
+
+        stat_recorder = defaultdict(list)
+
+        for step in range(gradient_steps):
+            self._n_updates += 1
+            # Sample replay buffer
+            replay_data_agent = None
+            replay_data_human = None
+
+            if self.extra_config["adaptive_batch_size"]:
+                if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
+                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env,
+                                                                      return_all=True)
+                    replay_data_agent = self.replay_buffer.sample(int(len(replay_data_human.observations)), env=self._vec_normalize_env)
+
+                elif self.human_data_buffer.pos > 0:
+                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env, return_all=True)
+                elif self.replay_buffer.pos > 0:
+                    replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+                else:
+                    break
+
+
+            else:
+
+                if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
+                    replay_data_agent = self.replay_buffer.sample(int(batch_size), env=self._vec_normalize_env)
+                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env)
+                elif self.human_data_buffer.pos > batch_size:
+                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
+                elif self.replay_buffer.pos > batch_size:
+                    replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+                else:
+                    break
+
+            current_q_novice_values = current_q_behavior_values = None
+            if replay_data_human is not None:
+                # Augment the reward / dones here.
+
+
+                current_q_behavior_values = self.critic(replay_data_human.observations, replay_data_human.actions_behavior)
+                current_q_behavior_values = np.mean([q.mean().item() for q in current_q_behavior_values])
+                current_q_novice_values = self.critic(replay_data_human.observations, replay_data_human.actions_novice)
+                current_q_novice_values = np.mean([q.mean().item() for q in current_q_novice_values])
+
+                replay_data_human_positive = copy.deepcopy(replay_data_human)
+                replay_data_human_negative = replay_data_human
+                replay_data_human_positive.rewards.fill_(1)
+                replay_data_human_negative.rewards.fill_(-1)
+                replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
+                replay_data_human_negative.dones.fill_(1)
+                replay_data_human_positive.dones.fill_(1)
+                replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+
+            if replay_data_human is not None and replay_data_agent is None:
+                replay_data = replay_data_human
+            elif replay_data_human is None and replay_data_agent is not None:
+                replay_data = replay_data_agent
+            else:
+                replay_data = concat_samples(replay_data_agent, replay_data_human)
+
+            with th.no_grad():
+                # Select action according to policy and add clipped noise
+                noise = replay_data.actions_behavior.clone().data.normal_(0, self.target_policy_noise)
+                noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
+                next_actions = (self.actor_target(replay_data.next_observations) + noise).clamp(-1, 1)
+
+                # Compute the next Q-values: min over all critics targets
+                next_q_values = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
+                next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
+
+                # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
+                # and at this moment an instant reward +1 or -1 is given.
+                target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
+
+            # Get current Q-values estimates for each critic network
+            current_q_values = self.critic(replay_data.observations, replay_data.actions_behavior)
+
+            # Compute critic loss
+            critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
+            # critic_losses.append(critic_loss.item())
+
+            stat_recorder["q_value_behavior"].append(current_q_behavior_values if current_q_behavior_values is not None else float("nan"))
+            stat_recorder["q_value_novice"].append(current_q_novice_values if current_q_novice_values is not None else float("nan"))
+
+            stat_recorder["q_value"].append(current_q_values[0].mean().item())
+
+            # Optimize the critics
+            self.critic.optimizer.zero_grad()
+            critic_loss.backward()
+            self.critic.optimizer.step()
+            self.logger.record("train/critic_loss", critic_loss.item())
+
+            # Delayed policy updates
+            if self._n_updates % self.policy_delay == 0:
+                # Compute actor loss
+                actor_loss = -self.critic.q1_forward(replay_data.observations, self.actor(replay_data.observations
+                                                                                          )).mean()
+
+                # Optimize the actor
+                self.actor.optimizer.zero_grad()
+                actor_loss.backward()
+                self.actor.optimizer.step()
+                self.logger.record("train/actor_loss", actor_loss.item())
+
+                polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
+                polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
+
+        self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+        for key, values in stat_recorder.items():
+            self.logger.record("train/{}".format(key), np.mean(values))

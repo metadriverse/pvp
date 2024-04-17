@@ -59,6 +59,19 @@ class PVPTD3CPL(TD3):
             # Default to set it True. We find this can improve the performance and user experience.
             self.intervention_start_stop_td = True
 
+
+        self.extra_config = {}
+        for k in [
+            "use_chunk_adv",
+            "chunk_steps",
+        ]:
+            if k in kwargs:
+                v = kwargs.pop(k)
+                assert v in ["True", "False"]
+                v = v == "True"
+                self.extra_config[k] = v
+
+
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
         super().__init__(*args, **kwargs)
@@ -128,8 +141,6 @@ class PVPTD3CPL(TD3):
         for step in range(gradient_steps):
             self._n_updates += 1
 
-            num_steps_per_chunk = 64
-
             # Sample replay buffer
             # replay_data_human = None
             replay_data_agent = None
@@ -183,20 +194,28 @@ class PVPTD3CPL(TD3):
 
 
                 # cpl adv
-                num_steps = len(ep.observations) - num_steps_per_chunk
-                s = np.random.randint(num_steps)
-                # mean, log_std, _ = self.policy.actor.get_action_dist_params(ep.observations[s: s+num_steps_per_chunk])
-                # dist = self.policy.actor.action_dist.proba_distribution(mean, log_std)
-                # log_prob_human = dist.log_prob(ep.actions_behavior[s: s+num_steps_per_chunk])  #.sum(dim=-1)  # Don't do the sum...
-                # log_prob_agent = dist.log_prob(ep.actions_novice[s: s+num_steps_per_chunk])  #.sum(dim=-1)
-                _, log_prob_human, _ = self.policy.evaluate_actions(
-                    ep.observations[s: s+num_steps_per_chunk],
-                    ep.actions_behavior[s: s + num_steps_per_chunk]
-                )
-                _, log_prob_agent, _ = self.policy.evaluate_actions(
-                    ep.observations[s: s+num_steps_per_chunk],
-                    ep.actions_novice[s: s + num_steps_per_chunk]
-                )
+                if self.extra_config["use_chunk_adv"]:
+                    num_steps_per_chunk = self.extra_config["chunk_steps"]
+                    num_steps = len(ep.observations) - num_steps_per_chunk
+                    s = np.random.randint(num_steps)
+                    _, log_prob_human, _ = self.policy.evaluate_actions(
+                        ep.observations[s: s+num_steps_per_chunk],
+                        ep.actions_behavior[s: s + num_steps_per_chunk]
+                    )
+                    _, log_prob_agent, _ = self.policy.evaluate_actions(
+                        ep.observations[s: s+num_steps_per_chunk],
+                        ep.actions_novice[s: s + num_steps_per_chunk]
+                    )
+                else:
+                    interventions = ep.interventions.bool().reshape(-1)
+                    _, log_prob_human, _ = self.policy.evaluate_actions(
+                        ep.observations[interventions],
+                        ep.actions_behavior[interventions]
+                    )
+                    _, log_prob_agent, _ = self.policy.evaluate_actions(
+                        ep.observations[interventions],
+                        ep.actions_novice[interventions]
+                    )
                 adv_human = alpha * log_prob_human
                 adv_agent = alpha * log_prob_agent
                 adv_human = adv_human.sum()

@@ -36,6 +36,11 @@ if __name__ == '__main__':
     #     type=str,
     #     help="The control device, selected from [wheel, gamepad, keyboard]."
     # )
+
+
+    parser.add_argument("--use_chunk_adv", type=str, default="True")
+
+
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
@@ -79,6 +84,9 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
+
+            use_chunk_adv=args.use_chunk_adv,
+
             use_balance_sample=True,
             policy=MlpPolicy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
