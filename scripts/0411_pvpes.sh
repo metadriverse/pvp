@@ -21,7 +21,7 @@ do
     --reward_1_for_all=False \
     --reward_0_for_negative=False \
     --use_weighted_reward=False \
-    --remove_negative=True \
+    --remove_negative=False \
     > "0417-pvpes-bs512-seed${seeds[$i]}.log" 2>&1 &
 done
 
