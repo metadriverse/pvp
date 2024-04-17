@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Union, Optional
 
 import numpy as np
 import torch as th
+import torch
 from torch.nn import functional as F
 
 from pvp.sb3.common.buffers import ReplayBuffer
@@ -39,7 +40,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative"]:
+        for k in ["no_done_for_positive", "no_done_for_negative", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative"]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
@@ -322,7 +323,10 @@ class PVPES(PVPTD3):
                 else:
 
                     if self.extra_config["use_weighted_reward"]:
-                        w = (-replay_data_human_positive.takeover_log_prob)
+                        w = (replay_data_human_positive.takeover_log_prob)
+                        w = torch.exp(w)
+                        w = torch.clamp(w, 0, 1)
+                        w = 1 - w
                         # w = (w - w.min()) / (w.max() - w.min())
                         replay_data_human_positive.rewards.copy_(w)
                     else:
@@ -332,26 +336,31 @@ class PVPES(PVPTD3):
                     replay_data_human_negative.rewards.fill_(0)
                 else:
                     if self.extra_config["use_weighted_reward"]:
-                        w = (-replay_data_human_negative.takeover_log_prob)
+                        # w = (-replay_data_human_negative.takeover_log_prob)
                         # w = (w - w.min()) / (w.max() - w.min())
+                        w = (replay_data_human_positive.takeover_log_prob)
+                        w = torch.exp(w)
+                        w = torch.clamp(w, 0, 1)
+                        w = 1 - w
                         replay_data_human_negative.rewards.copy_(-w)
                     else:
                         replay_data_human_negative.rewards.fill_(-1)
 
                 replay_data_human_negative.actions_behavior.copy_(replay_data_human_negative.actions_novice)
 
-                if self.extra_config["no_done_for_positive"]:
-                    replay_data_human_negative.dones.fill_(1)
-                    if self.extra_config["remove_negative"]:
-                        replay_data_human = replay_data_human_positive
-                    else:
-                        replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
+                if self.extra_config["no_done_for_negative"]:
+                    pass
                 else:
-                    if self.extra_config["remove_negative"]:
-                        replay_data_human = replay_data_human_positive
-                    else:
-                        replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
-                    replay_data_human.dones.fill_(1)
+                    replay_data_human_negative.dones.fill_(1)
+
+                if self.extra_config["no_done_for_positive"]:
+                    pass
+                else:
+                    replay_data_human_positive.dones.fill_(1)
+                if self.extra_config["remove_negative"]:
+                    replay_data_human = replay_data_human_positive
+                else:
+                    replay_data_human = concat_samples(replay_data_human_positive, replay_data_human_negative)
 
             if self.extra_config["reward_1_for_all"]:
                 if replay_data_agent is not None:
