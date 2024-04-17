@@ -138,22 +138,43 @@ class PVPTD3CPL(TD3):
 
         stat_recorder = defaultdict(list)
 
+        # Sample replay buffer
+        # replay_data_human = None
+        replay_data_agent = None
+        # if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
+        #     replay_data_agent = self.replay_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+        #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+        # elif self.human_data_buffer.pos > 0:
+        #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
+        if self.replay_buffer.pos > 0:
+            replay_data_agent = self.replay_buffer.sample(0, env=self._vec_normalize_env)
+        else:
+            replay_data_agent = None
+
+        if replay_data_agent is None:
+            return
+
+        # print(111)
+        s_list = [len(ep.observations) for ep in replay_data_agent]
+        max_s = max(s_list)
+        bs = len(s_list)
+
+        obs = replay_data_agent[0].observations.new_zeros([bs, max_s, replay_data_agent[0].observations.shape[-1]])
+        mask = replay_data_agent[0].observations.new_zeros([bs, max_s])
+        actions_behavior = replay_data_agent[0].actions_behavior.new_zeros([bs, max_s, replay_data_agent[0].actions_behavior.shape[-1]])
+        actions_novice = replay_data_agent[0].actions_novice.new_zeros([bs, max_s, replay_data_agent[0].actions_novice.shape[-1]])
+        interventions = replay_data_agent[0].interventions.new_zeros([bs, max_s])
+        for i, ep in enumerate(replay_data_agent):
+            obs[i, :len(ep.observations)] = ep.observations
+            mask[i, :len(ep.observations)] = 1
+            actions_behavior[i, :len(ep.actions_behavior)] = ep.actions_behavior
+            actions_novice[i, :len(ep.actions_novice)] = ep.actions_novice
+            interventions[i, :len(ep.interventions)] = ep.interventions.reshape(-1)
+        interventions = interventions.bool()
+
+
         for step in range(gradient_steps):
             self._n_updates += 1
-
-            # Sample replay buffer
-            # replay_data_human = None
-            replay_data_agent = None
-            # if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
-            #     replay_data_agent = self.replay_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
-            #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
-            # elif self.human_data_buffer.pos > 0:
-            #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
-            if self.replay_buffer.pos > 0:
-                replay_data_agent = self.replay_buffer.sample(0, env=self._vec_normalize_env)
-            else:
-                loss = None
-                break
 
 
             # if replay_data_human is not None and replay_data_agent is not None:
@@ -164,66 +185,31 @@ class PVPTD3CPL(TD3):
             # ========== Compute our CPL loss here (only train the advantage function) ==========
             # The policy will be trained to maximize the advantage function.
             accuracy = cpl_loss = bc_loss = None
-            adv_human_list = []
-            adv_agent_list = []
 
             alpha = 0.1
 
+            if self.extra_config["use_chunk_adv"]:
+                raise ValueError()
 
-            for ep in replay_data_agent:
+            else:
+                _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
+                    obs[interventions],
+                    actions_behavior[interventions]
+                )
+                log_prob_human = log_prob_human_tmp.new_zeros([bs, max_s])
+                log_prob_human[interventions] = log_prob_human_tmp
 
-                # TODO: And idea here, we can use AIRL ideal to use two network to capture the advantage.
-                # TODO: Note that the double Q networks are not used.
+                _, log_prob_agent_tmp, _ = self.policy.evaluate_actions(
+                    obs[interventions],
+                    actions_novice[interventions]
+                )
+                log_prob_agent = log_prob_agent_tmp.new_zeros([bs, max_s])
+                log_prob_agent[interventions] = log_prob_agent_tmp
 
-
-
-                # chunk adv
-                # num_steps = len(ep.observations) - num_steps_per_chunk
-                # s = np.random.randint(num_steps)
-                # adv_human1, adv_human2 = self.critic(ep.observations[s: s+num_steps_per_chunk], ep.actions_behavior[s: s+num_steps_per_chunk])
-                # adv_agent1, adv_agent2 = self.critic(ep.observations[s: s+num_steps_per_chunk], ep.actions_novice[s: s+num_steps_per_chunk])
-                # adv_human = (adv_agent1 + adv_human2) / 2
-                # adv_agent = (adv_agent1 + adv_agent2) / 2
-
-                # clean adv
-                # interventions = ep.interventions.bool().reshape(-1)
-                # adv_human1, adv_human2 = self.critic(ep.observations[interventions], ep.actions_behavior[interventions])
-                # adv_agent1, adv_agent2 = self.critic(ep.observations[interventions], ep.actions_novice[interventions])
-                # adv_human = (adv_agent1 + adv_human2) / 2
-                # adv_agent = (adv_agent1 + adv_agent2) / 2
-
-
-                # cpl adv
-                if self.extra_config["use_chunk_adv"]:
-                    num_steps_per_chunk = self.extra_config["chunk_steps"]
-                    num_steps = len(ep.observations) - num_steps_per_chunk
-                    s = np.random.randint(num_steps)
-                    _, log_prob_human, _ = self.policy.evaluate_actions(
-                        ep.observations[s: s+num_steps_per_chunk],
-                        ep.actions_behavior[s: s + num_steps_per_chunk]
-                    )
-                    _, log_prob_agent, _ = self.policy.evaluate_actions(
-                        ep.observations[s: s+num_steps_per_chunk],
-                        ep.actions_novice[s: s + num_steps_per_chunk]
-                    )
-                else:
-                    interventions = ep.interventions.bool().reshape(-1)
-                    _, log_prob_human, _ = self.policy.evaluate_actions(
-                        ep.observations[interventions],
-                        ep.actions_behavior[interventions]
-                    )
-                    _, log_prob_agent, _ = self.policy.evaluate_actions(
-                        ep.observations[interventions],
-                        ep.actions_novice[interventions]
-                    )
-                adv_human = alpha * log_prob_human
-                adv_agent = alpha * log_prob_agent
-                adv_human = adv_human.sum()
-                adv_agent = adv_agent.sum()
-                adv_human_list.append(adv_human)
-                adv_agent_list.append(adv_agent)
-            adv_human = torch.stack(adv_human_list)
-            adv_agent = torch.stack(adv_agent_list)
+            adv_human = alpha * log_prob_human
+            adv_agent = alpha * log_prob_agent
+            adv_human = adv_human.sum(dim=-1)
+            adv_agent = adv_agent.sum(dim=-1)
 
             # If label = 1, then adv_human > adv_agent
             label = torch.ones_like(adv_human)
@@ -246,8 +232,6 @@ class PVPTD3CPL(TD3):
             # Clip grad norm
             # th.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
             self.policy.optimizer.step()
-
-
 
             # Stats
             stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
