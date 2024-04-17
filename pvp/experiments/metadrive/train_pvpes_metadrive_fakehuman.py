@@ -40,6 +40,7 @@ if __name__ == '__main__':
     parser.add_argument("--use_weighted_reward", type=str, default="False")
     parser.add_argument("--remove_negative", type=str, default="False")
     parser.add_argument("--no_done_for_negative", type=str, default="False")
+    parser.add_argument("--adaptive_batch_size", type=str, default="False")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     # parser.add_argument(
@@ -101,6 +102,7 @@ if __name__ == '__main__':
             use_weighted_reward=args.use_weighted_reward,
             remove_negative=args.remove_negative,
             no_done_for_negative=args.no_done_for_negative,
+            adaptive_batch_size=args.adaptive_batch_size,
 
             use_balance_sample=True,
             policy=TD3Policy,
@@ -115,7 +117,7 @@ if __name__ == '__main__':
             optimize_memory_usage=True,
             buffer_size=50_000,  # We only conduct experiment less than 50K steps
             learning_starts=100,  # The number of steps before
-            batch_size=512,  # Reduce the batch size for real-time copilot
+            batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
             train_freq=(1, "step"),

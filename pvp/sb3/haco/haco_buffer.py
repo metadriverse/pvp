@@ -222,7 +222,7 @@ class HACOReplayBuffer(ReplayBuffer):
             self.full = True
             self.pos = 0
 
-    def sample(self, batch_size: int, env: Optional[VecNormalize] = None) -> HACODictReplayBufferSamples:
+    def sample(self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False) -> HACODictReplayBufferSamples:
         """
         Sample elements from the replay buffer.
 
@@ -238,6 +238,10 @@ class HACOReplayBuffer(ReplayBuffer):
             batch_inds = (np.random.randint(1, self.buffer_size, size=batch_size) + self.pos) % self.buffer_size
         else:
             batch_inds = np.random.randint(0, self.pos, size=batch_size)
+
+        if return_all:
+            batch_inds = np.random.permutation(np.arange(self.buffer_size if self.full else self.pos))
+
         new_ret = self._get_samples(batch_inds, env=env)
         return new_ret
 

@@ -40,7 +40,7 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "no_done_for_negative", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative"]:
+        for k in ["no_done_for_positive", "no_done_for_negative", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative", "adaptive_batch_size"]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
@@ -295,15 +295,32 @@ class PVPES(PVPTD3):
             # Sample replay buffer
             replay_data_agent = None
             replay_data_human = None
-            if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
-                replay_data_agent = self.replay_buffer.sample(int(batch_size), env=self._vec_normalize_env)
-                replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env)
-            elif self.human_data_buffer.pos > batch_size:
-                replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
-            elif self.replay_buffer.pos > batch_size:
-                replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+
+            if self.extra_config["adaptive_batch_size"]:
+                if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
+                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env,
+                                                                      return_all=True)
+                    replay_data_agent = self.replay_buffer.sample(int(len(replay_data_human.observations)), env=self._vec_normalize_env)
+
+                elif self.human_data_buffer.pos > 0:
+                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env, return_all=True)
+                elif self.replay_buffer.pos > 0:
+                    replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+                else:
+                    break
+
+
             else:
-                break
+
+                if self.replay_buffer.pos > batch_size and self.human_data_buffer.pos > batch_size:
+                    replay_data_agent = self.replay_buffer.sample(int(batch_size), env=self._vec_normalize_env)
+                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env)
+                elif self.human_data_buffer.pos > batch_size:
+                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env)
+                elif self.replay_buffer.pos > batch_size:
+                    replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
+                else:
+                    break
 
             current_q_novice_values = current_q_behavior_values = None
             if replay_data_human is not None:
@@ -389,6 +406,8 @@ class PVPES(PVPTD3):
                 # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
                 # and at this moment an instant reward +1 or -1 is given.
                 target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
+
+            # print("BS: ", len(replay_data.observations))
 
             # Get current Q-values estimates for each critic network
             current_q_values = self.critic(replay_data.observations, replay_data.actions_behavior)
