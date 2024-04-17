@@ -116,7 +116,8 @@ if __name__ == '__main__':
 
 
             train_freq=(1, "episode"),  # <<<<< This is very important
-            gradient_steps=-1,  # <<<<< This is very important
+            # gradient_steps=-1,  # <<<<< This is very important
+            gradient_steps=20,  # <<<<< This is very important
 
 
             action_noise=None,
