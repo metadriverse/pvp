@@ -37,9 +37,7 @@ if __name__ == '__main__':
     #     help="The control device, selected from [wheel, gamepad, keyboard]."
     # )
 
-
     parser.add_argument("--use_chunk_adv", type=str, default="True")
-
 
     args = parser.parse_args()
 
@@ -84,9 +82,7 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
-
             use_chunk_adv=args.use_chunk_adv,
-
             use_balance_sample=True,
             policy=MlpPolicy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
@@ -96,7 +92,6 @@ if __name__ == '__main__':
             ),
             policy_kwargs=dict(net_arch=[256, 256]),
             env=None,
-
             learning_rate=1e-4,
 
             # learning_rate=dict(
@@ -104,8 +99,6 @@ if __name__ == '__main__':
             #     critic=1e-4,
             #     entropy=1e-4,
             # ),
-
-
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=150_000,  # We only conduct experiment less than 50K steps
@@ -113,13 +106,9 @@ if __name__ == '__main__':
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
-
-
             train_freq=(1, "episode"),  # <<<<< This is very important
             gradient_steps=-1,  # <<<<< This is very important
             # gradient_steps=20,  # <<<<< This is very important
-
-
             action_noise=None,
             tensorboard_log=trial_dir,
             create_eval_env=False,

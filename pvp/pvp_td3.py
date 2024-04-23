@@ -40,7 +40,9 @@ class PVPTD3(TD3):
             self.intervention_start_stop_td = True
 
         self.extra_config = {}
-        for k in ["no_done_for_positive", "no_done_for_negative", "reward_0_for_positive", "reward_0_for_negative", "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative", "adaptive_batch_size"]:
+        for k in ["no_done_for_positive", "no_done_for_negative", "reward_0_for_positive", "reward_0_for_negative",
+                  "reward_n2_for_intervention", "reward_1_for_all", "use_weighted_reward", "remove_negative",
+                  "adaptive_batch_size"]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
@@ -298,17 +300,21 @@ class PVPES(PVPTD3):
 
             if self.extra_config["adaptive_batch_size"]:
                 if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
-                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env,
-                                                                      return_all=True)
-                    replay_data_agent = self.replay_buffer.sample(int(len(replay_data_human.observations)), env=self._vec_normalize_env)
+                    replay_data_human = self.human_data_buffer.sample(
+                        int(batch_size), env=self._vec_normalize_env, return_all=True
+                    )
+                    replay_data_agent = self.replay_buffer.sample(
+                        int(len(replay_data_human.observations)), env=self._vec_normalize_env
+                    )
 
                 elif self.human_data_buffer.pos > 0:
-                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env, return_all=True)
+                    replay_data_human = self.human_data_buffer.sample(
+                        batch_size, env=self._vec_normalize_env, return_all=True
+                    )
                 elif self.replay_buffer.pos > 0:
                     replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
                 else:
                     break
-
 
             else:
 
@@ -326,8 +332,9 @@ class PVPES(PVPTD3):
             if replay_data_human is not None:
                 # Augment the reward / dones here.
 
-
-                current_q_behavior_values = self.critic(replay_data_human.observations, replay_data_human.actions_behavior)
+                current_q_behavior_values = self.critic(
+                    replay_data_human.observations, replay_data_human.actions_behavior
+                )
                 current_q_behavior_values = np.mean([q.mean().item() for q in current_q_behavior_values])
                 current_q_novice_values = self.critic(replay_data_human.observations, replay_data_human.actions_novice)
                 current_q_novice_values = np.mean([q.mean().item() for q in current_q_novice_values])
@@ -416,8 +423,12 @@ class PVPES(PVPTD3):
             critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
             # critic_losses.append(critic_loss.item())
 
-            stat_recorder["q_value_behavior"].append(current_q_behavior_values if current_q_behavior_values is not None else float("nan"))
-            stat_recorder["q_value_novice"].append(current_q_novice_values if current_q_novice_values is not None else float("nan"))
+            stat_recorder["q_value_behavior"].append(
+                current_q_behavior_values if current_q_behavior_values is not None else float("nan")
+            )
+            stat_recorder["q_value_novice"].append(
+                current_q_novice_values if current_q_novice_values is not None else float("nan")
+            )
 
             stat_recorder["q_value"].append(current_q_values[0].mean().item())
 
@@ -447,7 +458,6 @@ class PVPES(PVPTD3):
             self.logger.record("train/{}".format(key), np.mean(values))
 
 
-
 class PVPAdv(PVPTD3):
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
@@ -466,17 +476,21 @@ class PVPAdv(PVPTD3):
 
             if self.extra_config["adaptive_batch_size"]:
                 if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
-                    replay_data_human = self.human_data_buffer.sample(int(batch_size), env=self._vec_normalize_env,
-                                                                      return_all=True)
-                    replay_data_agent = self.replay_buffer.sample(int(len(replay_data_human.observations)), env=self._vec_normalize_env)
+                    replay_data_human = self.human_data_buffer.sample(
+                        int(batch_size), env=self._vec_normalize_env, return_all=True
+                    )
+                    replay_data_agent = self.replay_buffer.sample(
+                        int(len(replay_data_human.observations)), env=self._vec_normalize_env
+                    )
 
                 elif self.human_data_buffer.pos > 0:
-                    replay_data_human = self.human_data_buffer.sample(batch_size, env=self._vec_normalize_env, return_all=True)
+                    replay_data_human = self.human_data_buffer.sample(
+                        batch_size, env=self._vec_normalize_env, return_all=True
+                    )
                 elif self.replay_buffer.pos > 0:
                     replay_data_agent = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
                 else:
                     break
-
 
             else:
 
@@ -494,8 +508,9 @@ class PVPAdv(PVPTD3):
             if replay_data_human is not None:
                 # Augment the reward / dones here.
 
-
-                current_q_behavior_values = self.critic(replay_data_human.observations, replay_data_human.actions_behavior)
+                current_q_behavior_values = self.critic(
+                    replay_data_human.observations, replay_data_human.actions_behavior
+                )
                 current_q_behavior_values = np.mean([q.mean().item() for q in current_q_behavior_values])
                 current_q_novice_values = self.critic(replay_data_human.observations, replay_data_human.actions_novice)
                 current_q_novice_values = np.mean([q.mean().item() for q in current_q_novice_values])
@@ -537,8 +552,12 @@ class PVPAdv(PVPTD3):
             critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
             # critic_losses.append(critic_loss.item())
 
-            stat_recorder["q_value_behavior"].append(current_q_behavior_values if current_q_behavior_values is not None else float("nan"))
-            stat_recorder["q_value_novice"].append(current_q_novice_values if current_q_novice_values is not None else float("nan"))
+            stat_recorder["q_value_behavior"].append(
+                current_q_behavior_values if current_q_behavior_values is not None else float("nan")
+            )
+            stat_recorder["q_value_novice"].append(
+                current_q_novice_values if current_q_novice_values is not None else float("nan")
+            )
 
             stat_recorder["q_value"].append(current_q_values[0].mean().item())
 

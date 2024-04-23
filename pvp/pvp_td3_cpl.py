@@ -59,18 +59,16 @@ class PVPTD3CPL(TD3):
             # Default to set it True. We find this can improve the performance and user experience.
             self.intervention_start_stop_td = True
 
-
         self.extra_config = {}
         for k in [
-            "use_chunk_adv",
-            "chunk_steps",
+                "use_chunk_adv",
+                "chunk_steps",
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
                 assert v in ["True", "False"]
                 v = v == "True"
                 self.extra_config[k] = v
-
 
         self.q_value_bound = q_value_bound
         self.use_balance_sample = use_balance_sample
@@ -80,14 +78,12 @@ class PVPTD3CPL(TD3):
     #     from pvp.sb3.common.utils import get_schedule_fn
     #     self.lr_schedule = {k: get_schedule_fn(self.learning_rate[k]) for k in self.learning_rate}
 
-
     def _create_aliases(self) -> None:
         pass
         # self.actor = self.policy.actor
         # self.actor_target = self.policy.actor_target
         # self.critic = self.policy.critic
         # self.critic_target = self.policy.critic_target
-
 
     def _setup_model(self) -> None:
         super()._setup_model()
@@ -106,7 +102,6 @@ class PVPTD3CPL(TD3):
         # else:
         # self.human_data_buffer = self.replay_buffer
 
-
     # def _update_learning_rate(self, optimizers: Union[List[th.optim.Optimizer], th.optim.Optimizer]) -> None:
     #     """
     #     Update the optimizers learning rate using the current learning rate schedule
@@ -116,17 +111,15 @@ class PVPTD3CPL(TD3):
     #         An optimizer or a list of optimizers.
     #     """
     #     pass
-        # from pvp.sb3.common.utils import update_learning_rate
+    # from pvp.sb3.common.utils import update_learning_rate
 
-        # # Log the current learning rate
-        # self.logger.record("train/learning_rate", self.lr_schedule(self._current_progress_remaining))
-        #
-        # if not isinstance(optimizers, list):
-        #     optimizers = [optimizers]
-        # for optimizer in optimizers:
-        #     update_learning_rate(optimizer, self.lr_schedule(self._current_progress_remaining))
-
-
+    # # Log the current learning rate
+    # self.logger.record("train/learning_rate", self.lr_schedule(self._current_progress_remaining))
+    #
+    # if not isinstance(optimizers, list):
+    #     optimizers = [optimizers]
+    # for optimizer in optimizers:
+    #     update_learning_rate(optimizer, self.lr_schedule(self._current_progress_remaining))
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
@@ -161,8 +154,12 @@ class PVPTD3CPL(TD3):
 
         obs = replay_data_agent[0].observations.new_zeros([bs, max_s, replay_data_agent[0].observations.shape[-1]])
         mask = replay_data_agent[0].observations.new_zeros([bs, max_s])
-        actions_behavior = replay_data_agent[0].actions_behavior.new_zeros([bs, max_s, replay_data_agent[0].actions_behavior.shape[-1]])
-        actions_novice = replay_data_agent[0].actions_novice.new_zeros([bs, max_s, replay_data_agent[0].actions_novice.shape[-1]])
+        actions_behavior = replay_data_agent[0].actions_behavior.new_zeros(
+            [bs, max_s, replay_data_agent[0].actions_behavior.shape[-1]]
+        )
+        actions_novice = replay_data_agent[0].actions_novice.new_zeros(
+            [bs, max_s, replay_data_agent[0].actions_novice.shape[-1]]
+        )
         interventions = replay_data_agent[0].interventions.new_zeros([bs, max_s])
         for i, ep in enumerate(replay_data_agent):
             obs[i, :len(ep.observations)] = ep.observations
@@ -172,10 +169,8 @@ class PVPTD3CPL(TD3):
             interventions[i, :len(ep.interventions)] = ep.interventions.reshape(-1)
         interventions = interventions.bool()
 
-
         for step in range(gradient_steps):
             self._n_updates += 1
-
 
             # if replay_data_human is not None and replay_data_agent is not None:
             #     replay_data = concat_samples(replay_data_agent, replay_data_human)
@@ -193,15 +188,13 @@ class PVPTD3CPL(TD3):
 
             else:
                 _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
-                    obs[interventions],
-                    actions_behavior[interventions]
+                    obs[interventions], actions_behavior[interventions]
                 )
                 log_prob_human = log_prob_human_tmp.new_zeros([bs, max_s])
                 log_prob_human[interventions] = log_prob_human_tmp
 
                 _, log_prob_agent_tmp, _ = self.policy.evaluate_actions(
-                    obs[interventions],
-                    actions_novice[interventions]
+                    obs[interventions], actions_novice[interventions]
                 )
                 log_prob_agent = log_prob_agent_tmp.new_zeros([bs, max_s])
                 log_prob_agent[interventions] = log_prob_agent_tmp
@@ -315,11 +308,11 @@ class PVPTD3CPL(TD3):
             self.human_data_buffer.handle_timeout_termination = False
             self.human_data_buffer.timeouts = np.zeros_like(self.replay_buffer.dones)
         super().load_replay_buffer(path_replay, truncate_last_traj)
+
     def _get_torch_save_params(self):
         ret = super()._get_torch_save_params()
         # print(1)
         return (['policy'], [])
-
 
     def learn(
         self,

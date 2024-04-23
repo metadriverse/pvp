@@ -93,7 +93,6 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
-
             no_done_for_positive=args.no_done_for_positive,
             reward_0_for_positive=args.reward_0_for_positive,
             reward_n2_for_intervention=args.reward_n2_for_intervention,
@@ -103,7 +102,6 @@ if __name__ == '__main__':
             remove_negative=args.remove_negative,
             no_done_for_negative=args.no_done_for_negative,
             adaptive_batch_size=args.adaptive_batch_size,
-
             use_balance_sample=True,
             policy=TD3Policy,
             replay_buffer_class=HACOReplayBuffer,

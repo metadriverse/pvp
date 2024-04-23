@@ -202,7 +202,7 @@ class HACOReplayBuffer(ReplayBuffer):
         self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]
                                                      ).reshape(self.intervention_costs[self.pos].shape)
         self.takeover_log_prob[self.pos] = np.array([step["takeover_log_prob"] for step in infos]
-                                                     ).reshape(self.takeover_log_prob[self.pos].shape)
+                                                    ).reshape(self.takeover_log_prob[self.pos].shape)
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
         if isinstance(self.action_space, (spaces.Discrete, new_spaces.Discrete)):
             action = action.reshape((self.n_envs, self.action_dim))
@@ -222,7 +222,9 @@ class HACOReplayBuffer(ReplayBuffer):
             self.full = True
             self.pos = 0
 
-    def sample(self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False) -> HACODictReplayBufferSamples:
+    def sample(
+        self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False
+    ) -> HACODictReplayBufferSamples:
         """
         Sample elements from the replay buffer.
 
@@ -301,7 +303,6 @@ class HACOReplayBuffer(ReplayBuffer):
         )
 
 
-
 class HACOReplayBufferEpisode(ReplayBuffer):
     def __init__(
         self,
@@ -314,13 +315,14 @@ class HACOReplayBufferEpisode(ReplayBuffer):
         optimize_memory_usage: bool = True,
         handle_timeout_termination: bool = True,
         discard_reward=False,
-
-
     ):
         super(ReplayBuffer, self).__init__(buffer_size, observation_space, action_space, device, n_envs=n_envs)
         self.max_steps = max_steps
 
-        self.make_buffer = lambda: HACOReplayBuffer(buffer_size, observation_space, action_space, device, n_envs, optimize_memory_usage, handle_timeout_termination, discard_reward)
+        self.make_buffer = lambda: HACOReplayBuffer(
+            buffer_size, observation_space, action_space, device, n_envs, optimize_memory_usage,
+            handle_timeout_termination, discard_reward
+        )
         self.episodes = [self.make_buffer()]
 
     def add(
@@ -338,7 +340,9 @@ class HACOReplayBufferEpisode(ReplayBuffer):
             self.episodes.append(self.make_buffer())
             self.pos += 1
 
-    def sample(self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False) -> HACODictReplayBufferSamples:
+    def sample(
+        self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False
+    ) -> HACODictReplayBufferSamples:
         """
         We will return everything we have!
         """
