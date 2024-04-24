@@ -268,8 +268,6 @@ class PVPTD3CPL(TD3):
                 b_actions_novice = actions_novice[b_ind]
 
                 b_pref_a_label = b_count > a_count
-                b_pref_a_label = b_pref_a_label.float()
-                b_pref_a_label[b_count == a_count] = 0.5
 
                 # If traj b > traj a, traj b is positive and actions should be behavior. Otherwise should use novice.
                 b_actions = torch.where(b_pref_a_label[:, None, None], b_actions_behavior, b_actions_novice)
@@ -303,7 +301,9 @@ class PVPTD3CPL(TD3):
 
 
                 # TODO: Grid search the bias factor.
-                cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label.float(), bias=0.5)
+                b_pref_a_label_soft = b_pref_a_label.float()
+                b_pref_a_label_soft[b_count == a_count] = 0.5
+                cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label_soft, bias=0.5)
 
                 stat_recorder["adv_pos"].append(torch.where(b_pref_a_label, adv_b, adv_a).mean().item())
                 stat_recorder["adv_neg"].append(torch.where(~b_pref_a_label, adv_b, adv_a).mean().item())
