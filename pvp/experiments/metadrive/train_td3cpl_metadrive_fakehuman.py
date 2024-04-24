@@ -38,6 +38,7 @@ if __name__ == '__main__':
     # )
 
     parser.add_argument("--use_chunk_adv", type=str, default="True")
+    parser.add_argument("--num_comparisons", type=int, default=64)
 
     args = parser.parse_args()
 
@@ -82,7 +83,11 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
+
             use_chunk_adv=args.use_chunk_adv,
+            num_comparisons=args.num_comparisons,
+
+
             use_balance_sample=True,
             policy=MlpPolicy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
