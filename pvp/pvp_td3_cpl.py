@@ -152,6 +152,10 @@ class PVPTD3CPL(TD3):
         max_s = max(s_list)
         bs = len(s_list)
 
+
+        # TODO: CONFIG!
+        num_steps_per_chunk = 64
+
         obs = replay_data_agent[0].observations.new_zeros([bs, max_s, replay_data_agent[0].observations.shape[-1]])
         mask = replay_data_agent[0].observations.new_zeros([bs, max_s])
         actions_behavior = replay_data_agent[0].actions_behavior.new_zeros(
@@ -161,13 +165,65 @@ class PVPTD3CPL(TD3):
             [bs, max_s, replay_data_agent[0].actions_novice.shape[-1]]
         )
         interventions = replay_data_agent[0].interventions.new_zeros([bs, max_s])
+        # intervention_count = replay_data_agent[0].interventions.new_zeros([bs, max_s - num_steps_per_chunk])
+
+        valid_ep = []
+        valid_step = []
+        valid_count = []
+
         for i, ep in enumerate(replay_data_agent):
             obs[i, :len(ep.observations)] = ep.observations
             mask[i, :len(ep.observations)] = 1
             actions_behavior[i, :len(ep.actions_behavior)] = ep.actions_behavior
             actions_novice[i, :len(ep.actions_novice)] = ep.actions_novice
             interventions[i, :len(ep.interventions)] = ep.interventions.reshape(-1)
+            epint = ep.interventions.reshape(-1)
+            if len(ep.observations) >= num_steps_per_chunk:
+                valid_ep.extend([i for s in range(len(ep.observations) - num_steps_per_chunk)])
+                valid_step.extend(list(range(len(ep.observations) - num_steps_per_chunk)))
+                valid_count.extend([
+                    epint[s: s+num_steps_per_chunk].sum() for s in range(len(ep.observations) - num_steps_per_chunk)
+                ])
+            else:
+                valid_ep.append(i)
+                valid_step.append(0)
+                valid_count.append(epint.sum())
         interventions = interventions.bool()
+
+
+        valid_ep = torch.from_numpy(np.array(valid_ep)).to(interventions.device)
+        valid_step = torch.from_numpy(np.array(valid_step)).to(interventions.device)
+        valid_count = torch.stack(valid_count).to(interventions.device).int()
+
+        if self.extra_config["use_chunk_adv"]:
+            # Reorganize data with chunks
+            # Now obs.shape = (#batches, #steps, #features)
+            # We need to make it to be: obs.shape = (#batches, #steps-chunk_size, chunk_size, #features)
+            new_obs = []
+            new_action_behaviors = []
+            new_action_novices = []
+            for i, ep in enumerate(replay_data_agent):
+                if len(ep.observations) - num_steps_per_chunk >= 0:
+                    for s in range(len(ep.observations) - num_steps_per_chunk):
+                        new_obs.append(ep.observations[s: s + num_steps_per_chunk])
+                        new_action_behaviors.append(ep.actions_behavior[s: s + num_steps_per_chunk])
+                        new_action_novices.append(ep.actions_novice[s: s + num_steps_per_chunk])
+                else:
+                    # Need to pad the data
+                    new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros([num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
+                    new_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros([num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
+                    new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros([num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
+
+            # print(2222)
+
+            obs = torch.stack(new_obs)
+            actions_behavior = torch.stack(new_action_behaviors)
+            actions_novice = torch.stack(new_action_novices)
+
+
+
+        # Number of chunks to compare
+        num_comparisons = 64
 
         for step in range(gradient_steps):
             self._n_updates += 1
@@ -184,7 +240,64 @@ class PVPTD3CPL(TD3):
             alpha = 0.1
 
             if self.extra_config["use_chunk_adv"]:
-                raise ValueError()
+
+                a_ind = torch.randperm(len(valid_count))[:num_comparisons]
+                b_ind = torch.randperm(len(valid_count))[:num_comparisons]
+
+                # create the positive trajectory:
+                # 1. the trajectories that are less intervened
+                # 2. the trajectories that use human actions
+                # To do so, a quick workaround is for each episode select the less intervened chunks and form a pos pool.
+                # print(1111)
+
+                a_count = valid_count[a_ind]
+                a_obs = obs[a_ind]
+                a_actions_behavior = actions_behavior[a_ind]
+                a_actions_novice = actions_novice[a_ind]
+
+                b_count = valid_count[b_ind]
+                b_obs = obs[b_ind]
+                b_actions_behavior = actions_behavior[b_ind]
+                b_actions_novice = actions_novice[b_ind]
+
+                b_pref_a_label = b_count > a_count
+
+                # If traj b > traj a, traj b is positive and actions should be behavior. Otherwise should use novice.
+                b_actions = torch.where(b_pref_a_label[:, None, None], b_actions_behavior, b_actions_novice)
+                a_actions = torch.where(b_pref_a_label[:, None, None], a_actions_novice, a_actions_behavior)
+
+                flatten_obs = torch.cat([a_obs.flatten(0, 1), b_obs.flatten(0, 1)], dim=0)
+                flatten_actions = torch.cat([a_actions.flatten(0, 1), b_actions.flatten(0, 1)], dim=0)
+
+
+                _, log_probs, _ = self.policy.evaluate_actions(flatten_obs, flatten_actions)
+                a_log_probs, b_log_probs = torch.chunk(log_probs, 2)
+                a_log_probs = a_log_probs.reshape(num_comparisons, num_comparisons)
+                b_log_probs = b_log_probs.reshape(num_comparisons, num_comparisons)
+
+
+                # For debug:
+                # gt_a = torch.stack(
+                #     [self.policy.evaluate_actions(a_obs[i], a_actions[i])[1] for i in range(num_comparisons)]
+                # )
+                # gt_b = torch.stack(
+                #     [self.policy.evaluate_actions(b_obs[i], b_actions[i])[1] for i in range(num_comparisons)]
+                # )
+                # va = a_log_probs - gt_a
+                # vb = b_log_probs - gt_b
+                # print(222)
+
+                adv_a = alpha * a_log_probs
+                adv_b = alpha * b_log_probs
+                adv_a = adv_a.sum(dim=-1)
+                adv_b = adv_b.sum(dim=-1)
+
+                cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label.float(), bias=0.5)
+
+                stat_recorder["adv_pos"].append(torch.where(b_pref_a_label, adv_b, adv_a).mean().item())
+                stat_recorder["adv_neg"].append(torch.where(~b_pref_a_label, adv_b, adv_a).mean().item())
+                stat_recorder["int_count_pos"].append(torch.where(b_pref_a_label, b_count, a_count).mean().item())
+                stat_recorder["int_count_neg"].append(torch.where(~b_pref_a_label, b_count, a_count).mean().item())
 
             else:
                 _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
@@ -199,17 +312,17 @@ class PVPTD3CPL(TD3):
                 log_prob_agent = log_prob_agent_tmp.new_zeros([bs, max_s])
                 log_prob_agent[interventions] = log_prob_agent_tmp
 
-            adv_human = alpha * log_prob_human
-            adv_agent = alpha * log_prob_agent
-            adv_human = adv_human.sum(dim=-1)
-            adv_agent = adv_agent.sum(dim=-1)
+                adv_human = alpha * log_prob_human
+                adv_agent = alpha * log_prob_agent
+                adv_human = adv_human.sum(dim=-1)
+                adv_agent = adv_agent.sum(dim=-1)
 
-            # If label = 1, then adv_human > adv_agent
-            label = torch.ones_like(adv_human)
-            cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
+                # If label = 1, then adv_human > adv_agent
+                label = torch.ones_like(adv_human)
+                cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
 
-            stat_recorder["adv_human"].append(adv_human.mean().item())
-            stat_recorder["adv_agent"].append(adv_agent.mean().item())
+                stat_recorder["adv_pos"].append(adv_human.mean().item())
+                stat_recorder["adv_neg"].append(adv_agent.mean().item())
 
             # TODO: Compared to PVP, we remove TD loss here.
             # Optimize the critics
