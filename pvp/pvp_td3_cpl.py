@@ -62,7 +62,6 @@ class PVPTD3CPL(TD3):
         self.extra_config = {}
         for k in [
                 "use_chunk_adv",
-                "chunk_steps",
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -71,7 +70,7 @@ class PVPTD3CPL(TD3):
                 self.extra_config[k] = v
         for k in [
                 "num_comparisons",
-                "chunk_steps",
+                "num_steps_per_chunk",
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -160,8 +159,7 @@ class PVPTD3CPL(TD3):
         bs = len(s_list)
 
 
-        # TODO: CONFIG!
-        num_steps_per_chunk = 64
+        num_steps_per_chunk = self.extra_config["num_steps_per_chunk"]
 
         obs = replay_data_agent[0].observations.new_zeros([bs, max_s, replay_data_agent[0].observations.shape[-1]])
         mask = replay_data_agent[0].observations.new_zeros([bs, max_s])
@@ -177,6 +175,7 @@ class PVPTD3CPL(TD3):
         valid_ep = []
         valid_step = []
         valid_count = []
+        valid_mask = []
 
         for i, ep in enumerate(replay_data_agent):
             obs[i, :len(ep.observations)] = ep.observations
@@ -191,13 +190,20 @@ class PVPTD3CPL(TD3):
                 valid_count.extend([
                     epint[s: s+num_steps_per_chunk].sum() for s in range(len(ep.observations) - num_steps_per_chunk)
                 ])
+                valid_mask.extend([interventions.new_ones(num_steps_per_chunk) for _ in range(len(ep.observations) - num_steps_per_chunk)])
             else:
                 valid_ep.append(i)
                 valid_step.append(0)
                 valid_count.append(epint.sum())
+                m = torch.cat([
+                    interventions.new_ones(len(ep.observations)),
+                    interventions.new_zeros(num_steps_per_chunk - len(ep.observations)),
+                ]
+                )
+                valid_mask.append(m)
         interventions = interventions.bool()
 
-
+        valid_mask = torch.stack(valid_mask).bool()
         valid_ep = torch.from_numpy(np.array(valid_ep)).to(interventions.device)
         valid_step = torch.from_numpy(np.array(valid_step)).to(interventions.device)
         valid_count = torch.stack(valid_count).to(interventions.device).int()
@@ -275,13 +281,15 @@ class PVPTD3CPL(TD3):
 
                 flatten_obs = torch.cat([a_obs.flatten(0, 1), b_obs.flatten(0, 1)], dim=0)
                 flatten_actions = torch.cat([a_actions.flatten(0, 1), b_actions.flatten(0, 1)], dim=0)
+                flatten_valid_mask = torch.cat([valid_mask[a_ind].flatten(), valid_mask[b_ind].flatten()], dim=0)
 
+                _, log_probs_tmp, _ = self.policy.evaluate_actions(flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask])
+                log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
+                log_probs[flatten_valid_mask] = log_probs_tmp
 
-                _, log_probs, _ = self.policy.evaluate_actions(flatten_obs, flatten_actions)
                 a_log_probs, b_log_probs = torch.chunk(log_probs, 2)
                 a_log_probs = a_log_probs.reshape(num_comparisons, num_steps_per_chunk)
                 b_log_probs = b_log_probs.reshape(num_comparisons, num_steps_per_chunk)
-
 
                 # For debug:
                 # gt_a = torch.stack(
