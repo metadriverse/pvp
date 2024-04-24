@@ -5,7 +5,7 @@ seeds=(0 100 200 300 400 500 600 700)
 
 
 # Loop over each GPU
-for i in {0..2}
+for i in {0..1}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
@@ -22,7 +22,7 @@ done
 
 
 # Loop over each GPU
-for i in {0..2}
+for i in {0..1}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
@@ -40,7 +40,7 @@ done
 
 
 # Loop over each GPU
-for i in {0..2}
+for i in {0..1}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
