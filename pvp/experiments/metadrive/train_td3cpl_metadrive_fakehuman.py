@@ -40,6 +40,7 @@ if __name__ == '__main__':
     parser.add_argument("--use_chunk_adv", type=str, default="True")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
+    parser.add_argument("--cpl_bias", type=float, default=0.5)
 
     args = parser.parse_args()
 
@@ -88,6 +89,7 @@ if __name__ == '__main__':
             use_chunk_adv=args.use_chunk_adv,
             num_comparisons=args.num_comparisons,
             num_steps_per_chunk=args.num_steps_per_chunk,
+            cpl_bias=args.cpl_bias,
 
 
             use_balance_sample=True,

@@ -71,6 +71,7 @@ class PVPTD3CPL(TD3):
         for k in [
                 "num_comparisons",
                 "num_steps_per_chunk",
+                "cpl_bias"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -237,6 +238,7 @@ class PVPTD3CPL(TD3):
 
         # Number of chunks to compare
         num_comparisons = self.extra_config["num_comparisons"]
+        cpl_bias = self.extra_config["cpl_bias"]
 
         for step in range(gradient_steps):
             self._n_updates += 1
@@ -308,10 +310,9 @@ class PVPTD3CPL(TD3):
                 adv_b = adv_b.sum(dim=-1)
 
 
-                # TODO: Grid search the bias factor.
                 b_pref_a_label_soft = b_pref_a_label.float()
                 b_pref_a_label_soft[b_count == a_count] = 0.5
-                cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label_soft, bias=0.5)
+                cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label_soft, bias=cpl_bias)
 
                 stat_recorder["adv_pos"].append(torch.where(b_pref_a_label, adv_b, adv_a).mean().item())
                 stat_recorder["adv_neg"].append(torch.where(~b_pref_a_label, adv_b, adv_a).mean().item())
@@ -338,7 +339,7 @@ class PVPTD3CPL(TD3):
 
                 # If label = 1, then adv_human > adv_agent
                 label = torch.ones_like(adv_human)
-                cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=0.5)
+                cpl_loss, accuracy = biased_bce_with_logits(adv_agent, adv_human, label.float(), bias=cpl_bias)
 
                 stat_recorder["adv_pos"].append(adv_human.mean().item())
                 stat_recorder["adv_neg"].append(adv_agent.mean().item())

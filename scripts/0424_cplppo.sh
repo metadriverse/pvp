@@ -9,32 +9,32 @@ for i in {2..4}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-chunkadv-num_steps_per_chunk32 \
+    --exp_name=cplppo-chunkadv-num_steps_per_chunk64-cpl_bias0.5 \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
     --free_level=0.95 \
     --use_chunk_adv=True \
-    --num_steps_per_chunk=32 \
-    > "0424-cplppo-use_chunk_adv-num_steps_per_chunk32-seed${seeds[$i]}.log" 2>&1 &
+    --num_steps_per_chunk=64 \
+    --cpl_bias=0.5 \
+    > "0424-cplppo-use_chunk_adv-num_steps_per_chunk64-cpl_bias0.5-seed${seeds[$i]}.log" 2>&1 &
 done
 
 
 # Loop over each GPU
-for i in {0..2}
+for i in {2..4}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-chunkadv-num_steps_per_chunk128 \
+    --exp_name=cplppo-chunkadv-num_steps_per_chunk64-cpl_bias1.0 \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
     --free_level=0.95 \
     --use_chunk_adv=True \
-    --num_steps_per_chunk=128 \
-    > "0424-cplppo-use_chunk_adv-num_steps_per_chunk128-seed${seeds[$i]}.log" 2>&1 &
+    --num_steps_per_chunk=64 \
+    --cpl_bias=1.0 \
+    > "0424-cplppo-use_chunk_adv-num_steps_per_chunk64-cpl_bias1.0-seed${seeds[$i]}.log" 2>&1 &
 done
-
-
