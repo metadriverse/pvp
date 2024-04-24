@@ -279,8 +279,8 @@ class PVPTD3CPL(TD3):
 
                 _, log_probs, _ = self.policy.evaluate_actions(flatten_obs, flatten_actions)
                 a_log_probs, b_log_probs = torch.chunk(log_probs, 2)
-                a_log_probs = a_log_probs.reshape(num_comparisons, num_comparisons)
-                b_log_probs = b_log_probs.reshape(num_comparisons, num_comparisons)
+                a_log_probs = a_log_probs.reshape(num_comparisons, num_steps_per_chunk)
+                b_log_probs = b_log_probs.reshape(num_comparisons, num_steps_per_chunk)
 
 
                 # For debug:
