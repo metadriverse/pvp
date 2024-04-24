@@ -256,8 +256,17 @@ class PVPTD3CPL(TD3):
 
             if self.extra_config["use_chunk_adv"]:
 
-                a_ind = torch.randperm(len(valid_count))[:num_comparisons]
-                b_ind = torch.randperm(len(valid_count))[:num_comparisons]
+
+                if num_comparisons == -1:
+                    num_comparisons = int(len(valid_count) // 2)
+
+                    ind = torch.randperm(len(valid_count))
+                    a_ind = ind[:num_comparisons]
+                    b_ind = ind[-num_comparisons:]
+
+                else:
+                    a_ind = torch.randperm(len(valid_count))[:num_comparisons]
+                    b_ind = torch.randperm(len(valid_count))[:num_comparisons]
 
                 # create the positive trajectory:
                 # 1. the trajectories that are less intervened
