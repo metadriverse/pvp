@@ -296,8 +296,8 @@ class PVPTD3CPL(TD3):
 
                 stat_recorder["adv_pos"].append(torch.where(b_pref_a_label, adv_b, adv_a).mean().item())
                 stat_recorder["adv_neg"].append(torch.where(~b_pref_a_label, adv_b, adv_a).mean().item())
-                stat_recorder["int_count_pos"].append(torch.where(b_pref_a_label, b_count, a_count).mean().item())
-                stat_recorder["int_count_neg"].append(torch.where(~b_pref_a_label, b_count, a_count).mean().item())
+                stat_recorder["int_count_pos"].append(torch.where(b_pref_a_label, b_count, a_count).float().mean().item())
+                stat_recorder["int_count_neg"].append(torch.where(~b_pref_a_label, b_count, a_count).float().mean().item())
 
             else:
                 _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
