@@ -201,8 +201,11 @@ class HACOReplayBuffer(ReplayBuffer):
                                                       ).reshape(self.intervention_starts[self.pos].shape)
         self.intervention_costs[self.pos] = np.array([step["takeover_cost"] for step in infos]
                                                      ).reshape(self.intervention_costs[self.pos].shape)
-        self.takeover_log_prob[self.pos] = np.array([step["takeover_log_prob"] for step in infos]
-                                                    ).reshape(self.takeover_log_prob[self.pos].shape)
+        if "takeover_log_prob" in infos[0]:
+            self.takeover_log_prob[self.pos] = np.array([step["takeover_log_prob"] for step in infos]
+                                                        ).reshape(self.takeover_log_prob[self.pos].shape)
+        else:
+            self.takeover_log_prob[self.pos] = np.zeros_like(self.takeover_log_prob[self.pos])
         behavior_actions = np.array([step["raw_action"] for step in infos]).copy()
         if isinstance(self.action_space, (spaces.Discrete, new_spaces.Discrete)):
             action = action.reshape((self.n_envs, self.action_dim))
