@@ -280,7 +280,7 @@ class PVPTD3CPL(TD3):
                     valid_mask[b_ind].flatten()
                 ], dim=0)
 
-                _, log_probs_tmp, _ = self.policy.evaluate_actions(
+                _, log_probs_tmp, entropy = self.policy.evaluate_actions(
                     flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask]
                 )
                 log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
@@ -327,6 +327,7 @@ class PVPTD3CPL(TD3):
                 stat_recorder["adv_neg"].append((adv_a_neg.mean().item() + adv_b_neg.mean().item()) / 2)
                 stat_recorder["int_count_pos"].append(torch.where(a_count > b_count, b_count, a_count).float().mean().item())
                 stat_recorder["int_count_neg"].append(torch.where(a_count < b_count, b_count, a_count).float().mean().item())
+                stat_recorder["entropy"].append(entropy.mean().item())
 
                 if self.extra_config["add_loss_5"]:
                     cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4 + cpl_loss_5
