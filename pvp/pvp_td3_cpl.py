@@ -135,32 +135,19 @@ class PVPTD3CPL(TD3):
         self.policy.set_training_mode(True)
 
         # Update learning rate according to lr schedule
-        # TODO: Not update
-        # self._update_learning_rate([self.actor.optimizer, self.critic.optimizer])
+        self._update_learning_rate([self.policy.optimizer]) #, self.critic.optimizer])
 
         stat_recorder = defaultdict(list)
 
         # Sample replay buffer
-        # replay_data_human = None
-        replay_data_agent = None
-        # if self.replay_buffer.pos > 0 and self.human_data_buffer.pos > 0:
-        #     replay_data_agent = self.replay_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
-        #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
-        # elif self.human_data_buffer.pos > 0:
-        #     replay_data_human = self.human_data_buffer.sample(batch_size, num_steps=num_steps_per_chunk, env=self._vec_normalize_env)
         if self.replay_buffer.pos > 0:
             replay_data_agent = self.replay_buffer.sample(0, env=self._vec_normalize_env)
         else:
-            replay_data_agent = None
-
-        if replay_data_agent is None:
             return
 
-        # print(111)
         s_list = [len(ep.observations) for ep in replay_data_agent]
         max_s = max(s_list)
         bs = len(s_list)
-
 
         num_steps_per_chunk = self.extra_config["num_steps_per_chunk"]
 
@@ -303,11 +290,31 @@ class PVPTD3CPL(TD3):
                 b_pref_a_label_soft = b_pref_a_label.float()
                 b_pref_a_label_soft[b_count == a_count] = 0.5
                 cpl_loss, accuracy = biased_bce_with_logits(adv_a, adv_b, b_pref_a_label_soft, bias=cpl_bias)
+                # TODO: This accuracy is overwrite.
 
                 stat_recorder["adv_pos"].append(torch.where(b_pref_a_label, adv_b, adv_a).mean().item())
                 stat_recorder["adv_neg"].append(torch.where(~b_pref_a_label, adv_b, adv_a).mean().item())
                 stat_recorder["int_count_pos"].append(torch.where(b_pref_a_label, b_count, a_count).float().mean().item())
                 stat_recorder["int_count_neg"].append(torch.where(~b_pref_a_label, b_count, a_count).float().mean().item())
+
+                # additional same-trajectory-comparison
+                flatten_obs = torch.cat([a_obs.flatten(0, 1), a_obs.flatten(0, 1), b_obs.flatten(0, 1),  b_obs.flatten(0, 1)], dim=0)
+                flatten_actions = torch.cat([a_actions_behavior.flatten(0, 1), a_actions_novice.flatten(0, 1), b_actions_behavior.flatten(0, 1), b_actions_novice.flatten(0, 1)], dim=0)
+                flatten_valid_mask = torch.cat([valid_mask[a_ind].flatten(), valid_mask[a_ind].flatten(), valid_mask[b_ind].flatten(), valid_mask[b_ind].flatten()], dim=0)
+                _, log_probs_tmp, _ = self.policy.evaluate_actions(flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask])
+                log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
+                log_probs[flatten_valid_mask] = log_probs_tmp
+                a_log_probs_pos, a_log_probs_neg, b_log_probs_pos, b_log_probs_neg = torch.chunk(log_probs, 4)
+                a_log_probs_pos = (alpha * a_log_probs_pos.reshape(num_comparisons, num_steps_per_chunk)).sum(dim=-1)
+                a_log_probs_neg = (alpha * a_log_probs_neg.reshape(num_comparisons, num_steps_per_chunk)).sum(dim=-1)
+                b_log_probs_pos = (alpha * b_log_probs_pos.reshape(num_comparisons, num_steps_per_chunk)).sum(dim=-1)
+                b_log_probs_neg = (alpha * b_log_probs_neg.reshape(num_comparisons, num_steps_per_chunk)).sum(dim=-1)
+                cpl_loss2, accuracy = biased_bce_with_logits(
+                    torch.cat([a_log_probs_neg, b_log_probs_neg]),
+                    torch.cat([a_log_probs_pos, b_log_probs_pos]),
+                    torch.ones(2 * num_comparisons).to(a_log_probs_pos.device), bias=cpl_bias)
+
+                cpl_loss = cpl_loss + cpl_loss2
 
             else:
                 _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
@@ -334,7 +341,6 @@ class PVPTD3CPL(TD3):
                 stat_recorder["adv_pos"].append(adv_human.mean().item())
                 stat_recorder["adv_neg"].append(adv_agent.mean().item())
 
-            # TODO: Compared to PVP, we remove TD loss here.
             # Optimize the critics
             # critic_loss = cpl_loss
             # if critic_loss is not None:
@@ -354,35 +360,8 @@ class PVPTD3CPL(TD3):
 
             # Stats
             stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))
+            stat_recorder["cpl_loss2"].append(cpl_loss2.item() if cpl_loss2 is not None else float('nan'))
             stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy is not None else float('nan'))
-
-            # Delayed policy updates
-            # if self._n_updates % self.policy_delay == 0:
-            #     # Compute actor loss
-            #     obs = torch.concatenate([ep.observations for ep in replay_data_agent], dim=0)
-            #     action = torch.concatenate([ep.actions_behavior for ep in replay_data_agent], dim=0)
-            #
-            #
-            #     # TODO: As the value is interpreted as advantage, maybe we should use policy gradient here?
-            #     # actor_loss = -self.critic.q1_forward(obs, self.actor(obs)).mean()
-            #
-            #     # Policy gradient:
-            #     # action = self.policy.actor(obs)
-            #     adv = self.critic.q1_forward(obs, action)
-            #     mean, log_std, _ = self.policy.actor.get_action_dist_params(obs)
-            #     dist = self.policy.actor.action_dist.proba_distribution(mean, log_std)
-            #     log_prob_human = dist.log_prob(action)  #.sum(dim=-1)  # Don't do the sum.
-            #     actor_loss = - (adv * log_prob_human).mean()
-            #
-            #
-            #     # Optimize the actor
-            #     self.actor.optimizer.zero_grad()
-            #     actor_loss.backward()
-            #     self.actor.optimizer.step()
-            #     self.logger.record("train/actor_loss", actor_loss.item())
-            #
-            #     # polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)  # TODO: not used.
-            #     # polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)  # TODO: not used.
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():

@@ -299,12 +299,13 @@ class BaseAlgorithm(ABC):
             An optimizer or a list of optimizers.
         """
         # Log the current learning rate
-        self.logger.record("train/learning_rate", self.lr_schedule(self._current_progress_remaining))
+        lr = self.lr_schedule(self._current_progress_remaining)
+        self.logger.record("train/learning_rate", lr)
 
         if not isinstance(optimizers, list):
             optimizers = [optimizers]
         for optimizer in optimizers:
-            update_learning_rate(optimizer, self.lr_schedule(self._current_progress_remaining))
+            update_learning_rate(optimizer, lr)
 
     def _excluded_save_params(self) -> List[str]:
         """
