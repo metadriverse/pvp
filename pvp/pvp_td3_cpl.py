@@ -76,7 +76,8 @@ class PVPTD3CPL(TD3):
         for k in [
             "num_comparisons",
             "num_steps_per_chunk",
-            "cpl_bias"
+            "cpl_bias",
+            "top_factor"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -244,7 +245,9 @@ class PVPTD3CPL(TD3):
                         descending_indices = torch.sort(valid_count + torch.randn(valid_count.shape).to(valid_count.device), descending=True)[1]
 
                         # Pick up top half samples
-                        descending_indices = descending_indices[:len(valid_count) // 2]
+                        num_left = int(len(valid_count) * self.extra_config["top_factor"])
+                        num_left = min(10, num_left)
+                        descending_indices = descending_indices[:num_left]
 
                         num_comparisons = len(descending_indices) // 2
                         ind = torch.randperm(len(descending_indices))
