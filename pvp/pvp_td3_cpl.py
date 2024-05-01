@@ -286,7 +286,18 @@ class PVPTD3CPL(TD3):
                 log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
                 log_probs[flatten_valid_mask] = log_probs_tmp
 
-                lp_a_pos, lp_a_neg, lp_b_pos, lp_b_neg = torch.chunk(log_probs, 4)
+                lp_a_pos, lp_b_pos, lp_a_neg, lp_b_neg = torch.chunk(log_probs, 4)
+
+                # Debug code:
+                # gt = torch.cat(
+                #     [
+                #         self.policy.evaluate_actions(a_obs.flatten(0, 1), a_actions_behavior.flatten(0, 1))[1],
+                #         self.policy.evaluate_actions(b_obs.flatten(0, 1), b_actions_behavior.flatten(0, 1))[1],
+                #         self.policy.evaluate_actions(a_obs.flatten(0, 1), a_actions_novice.flatten(0, 1))[1],
+                #         self.policy.evaluate_actions(b_obs.flatten(0, 1), b_actions_novice.flatten(0, 1))[1],
+                #      ], dim=0
+                # )
+
                 adv_a_pos = log_probs_to_advantages(lp_a_pos.reshape(num_comparisons, num_steps_per_chunk), alpha)
                 adv_a_neg = log_probs_to_advantages(lp_a_neg.reshape(num_comparisons, num_steps_per_chunk), alpha)
                 adv_b_pos = log_probs_to_advantages(lp_b_pos.reshape(num_comparisons, num_steps_per_chunk), alpha)
@@ -320,7 +331,7 @@ class PVPTD3CPL(TD3):
                 if self.extra_config["add_loss_5"]:
                     cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4 + cpl_loss_5
                     accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4 + accuracy_5) / 5
-                    stat_recorder["cpl_loss_4"].append(cpl_loss_4.item())
+
                 else:
                     cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4
                     accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4) / 4
@@ -328,9 +339,15 @@ class PVPTD3CPL(TD3):
                 stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
                 stat_recorder["cpl_loss_2"].append(cpl_loss_2.item())
                 stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
+                stat_recorder["cpl_loss_4"].append(cpl_loss_4.item())
                 stat_recorder["cpl_loss_5"].append(cpl_loss_5.item())
 
                 stat_recorder["cpl_accuracy"].append(accuracy.item())
+                stat_recorder["cpl_accuracy_1"].append(accuracy_1.item())
+                stat_recorder["cpl_accuracy_2"].append(accuracy_2.item())
+                stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
+                stat_recorder["cpl_accuracy_4"].append(accuracy_4.item())
+                stat_recorder["cpl_accuracy_5"].append(accuracy_5.item())
 
             else:
                 _, log_prob_human_tmp, _ = self.policy.evaluate_actions(
