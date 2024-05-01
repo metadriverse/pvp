@@ -502,6 +502,7 @@ class PVPTD3CPL(TD3):
                 learning_starts=self.learning_starts,
                 replay_buffer=self.replay_buffer,
                 log_interval=log_interval,
+                deterministic=True,  # <<<<< We use deterministic PPO policy here!
             )
 
             if rollout.continue_training is False:

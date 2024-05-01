@@ -388,6 +388,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         learning_starts: int,
         action_noise: Optional[ActionNoise] = None,
         n_envs: int = 1,
+        deterministic=None,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Sample an action according to the exploration policy.
@@ -412,7 +413,9 @@ class OffPolicyAlgorithm(BaseAlgorithm):
             # Note: when using continuous actions,
             # we assume that the policy uses tanh to scale the action
             # We use non-deterministic action in the case of SAC, for TD3, it does not matter
-            unscaled_action, _ = self.predict(self._last_obs, deterministic=False)
+            if deterministic is None:
+                deterministic = False
+            unscaled_action, _ = self.predict(self._last_obs, deterministic=deterministic)
 
         # Rescale the action from [low, high] to [-1, 1]
         if isinstance(self.action_space, gym.spaces.Box):
@@ -548,6 +551,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         action_noise: Optional[ActionNoise] = None,
         learning_starts: int = 0,
         log_interval: Optional[int] = None,
+        deterministic=None,
     ) -> RolloutReturn:
         """
         Collect experiences and store them into a ``ReplayBuffer``.
@@ -595,7 +599,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
                 self.actor.reset_noise(env.num_envs)
 
             # Select action randomly or according to policy
-            actions, buffer_actions = self._sample_action(learning_starts, action_noise, env.num_envs)
+            actions, buffer_actions = self._sample_action(learning_starts, action_noise, env.num_envs, deterministic=deterministic)
 
             # Rescale and perform action
             new_obs, rewards, dones, infos = env.step(actions)
