@@ -65,7 +65,8 @@ class PVPTD3CPL(TD3):
         self.extra_config = {}
         for k in [
             "use_chunk_adv",
-            "add_loss_5"
+            "add_loss_5",
+            "prioritized_buffer"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -236,10 +237,27 @@ class PVPTD3CPL(TD3):
             alpha = 0.1
             if self.extra_config["use_chunk_adv"]:
                 if num_comparisons == -1:
-                    num_comparisons = int(len(valid_count) // 2)
-                    ind = torch.randperm(len(valid_count))
-                    a_ind = ind[:num_comparisons]
-                    b_ind = ind[-num_comparisons:]
+
+                    if self.extra_config["prioritized_buffer"]:
+
+                        # TODO: Maybe can control by the latest takeover rate.
+                        descending_indices = torch.sort(valid_count + torch.randn(valid_count.shape).to(valid_count.device), descending=True)[1]
+
+                        # Pick up top half samples
+                        descending_indices = descending_indices[:len(valid_count) // 2]
+
+                        num_comparisons = len(descending_indices) // 2
+                        ind = torch.randperm(len(descending_indices))
+                        a_ind = ind[:num_comparisons]
+                        b_ind = ind[-num_comparisons:]
+
+
+                    else:
+                        num_comparisons = int(len(valid_count) // 2)
+                        ind = torch.randperm(len(valid_count))
+                        a_ind = ind[:num_comparisons]
+                        b_ind = ind[-num_comparisons:]
+
                     # print(f"num_comparisons={num_comparisons}")
                 else:
                     a_ind = torch.randperm(len(valid_count))[:num_comparisons]

@@ -37,6 +37,7 @@ if __name__ == '__main__':
     #     help="The control device, selected from [wheel, gamepad, keyboard]."
     # )
 
+    parser.add_argument("--prioritized_buffer", type=str, default="True")
     parser.add_argument("--use_chunk_adv", type=str, default="True")
     parser.add_argument("--add_loss_5", type=str, default="True")
     parser.add_argument("--num_comparisons", type=int, default=64)
@@ -94,6 +95,7 @@ if __name__ == '__main__':
             use_chunk_adv=args.use_chunk_adv,
             num_comparisons=args.num_comparisons,
             num_steps_per_chunk=args.num_steps_per_chunk,
+            prioritized_buffer=args.prioritized_buffer,
             cpl_bias=args.cpl_bias,
             add_loss_5=args.add_loss_5,
 
@@ -117,7 +119,7 @@ if __name__ == '__main__':
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=150_000,  # We only conduct experiment less than 50K steps
-            learning_starts=100,  # The number of steps before
+            learning_starts=0,  # The number of steps before
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
@@ -223,7 +225,10 @@ if __name__ == '__main__':
 
     # ===== Setup the training algorithm =====
     if args.ckpt:
-        model = PVPTD3CPL.load(args.ckpt, **config["algo"])
+        from pvp.sb3.common.save_util import load_from_zip_file
+        model = PVPTD3CPL(**config["algo"])
+        data, params, pytorch_variables = load_from_zip_file(args.ckpt, device=model.device, print_system_info=False)
+        model.set_parameters(params, exact_match=True, device=model.device)
     else:
         model = PVPTD3CPL(**config["algo"])
 
