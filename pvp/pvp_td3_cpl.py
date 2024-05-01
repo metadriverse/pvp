@@ -42,6 +42,8 @@ def biased_bce_with_logits(adv1, adv2, y, bias=1.0):
 
 
 class PVPTD3CPL(TD3):
+    actor_update_count = 0
+
     def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
         """Please find the hyperparameters from original TD3"""
         if "cql_coefficient" in kwargs:
@@ -228,13 +230,9 @@ class PVPTD3CPL(TD3):
                     new_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros([num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
                     new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros([num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
 
-            # print(2222)
-
             obs = torch.stack(new_obs)
             actions_behavior = torch.stack(new_action_behaviors)
             actions_novice = torch.stack(new_action_novices)
-
-
 
         # Number of chunks to compare
         num_comparisons = self.extra_config["num_comparisons"]
@@ -242,28 +240,14 @@ class PVPTD3CPL(TD3):
 
         for step in range(gradient_steps):
             self._n_updates += 1
-
-            # if replay_data_human is not None and replay_data_agent is not None:
-            #     replay_data = concat_samples(replay_data_agent, replay_data_human)
-            # else:
-            #     replay_data = replay_data_agent if replay_data_agent is not None else replay_data_human
-
-            # ========== Compute our CPL loss here (only train the advantage function) ==========
-            # The policy will be trained to maximize the advantage function.
-            accuracy = cpl_loss = bc_loss = None
-
             alpha = 0.1
-
             if self.extra_config["use_chunk_adv"]:
-
-
                 if num_comparisons == -1:
                     num_comparisons = int(len(valid_count) // 2)
-
                     ind = torch.randperm(len(valid_count))
                     a_ind = ind[:num_comparisons]
                     b_ind = ind[-num_comparisons:]
-
+                    # print(f"num_comparisons={num_comparisons}")
                 else:
                     a_ind = torch.randperm(len(valid_count))[:num_comparisons]
                     b_ind = torch.randperm(len(valid_count))[:num_comparisons]
@@ -272,8 +256,6 @@ class PVPTD3CPL(TD3):
                 # 1. the trajectories that are less intervened
                 # 2. the trajectories that use human actions
                 # To do so, a quick workaround is for each episode select the less intervened chunks and form a pos pool.
-                # print(1111)
-
                 a_count = valid_count[a_ind]
                 a_obs = obs[a_ind]
                 a_actions_behavior = actions_behavior[a_ind]
@@ -317,7 +299,6 @@ class PVPTD3CPL(TD3):
                 adv_b = alpha * b_log_probs
                 adv_a = adv_a.sum(dim=-1)
                 adv_b = adv_b.sum(dim=-1)
-
 
                 b_pref_a_label_soft = b_pref_a_label.float()
                 b_pref_a_label_soft[b_count == a_count] = 0.5
@@ -367,6 +348,9 @@ class PVPTD3CPL(TD3):
             # Clip grad norm
             # th.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
             self.policy.optimizer.step()
+
+            self.actor_update_count += 1
+            # print(f"Actor update count: {self.actor_update_count}")
 
             # Stats
             stat_recorder["cpl_loss"].append(cpl_loss.item() if cpl_loss is not None else float('nan'))

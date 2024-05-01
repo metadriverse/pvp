@@ -283,6 +283,8 @@ class PVPTD3(TD3):
 
 
 class PVPES(PVPTD3):
+    actor_update_count = 0
+
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
         self.policy.set_training_mode(True)
@@ -452,6 +454,9 @@ class PVPES(PVPTD3):
 
                 polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
                 polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
+
+                self.actor_update_count += 1
+                # print("Actor update count: ", self.actor_update_count)
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():
