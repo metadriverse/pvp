@@ -246,7 +246,7 @@ class PVPTD3CPL(TD3):
 
                         # Pick up top half samples
                         num_left = int(len(valid_count) * self.extra_config["top_factor"])
-                        num_left = min(10, num_left)
+                        num_left = max(10, num_left)
                         descending_indices = descending_indices[:num_left]
 
                         num_comparisons = len(descending_indices) // 2
