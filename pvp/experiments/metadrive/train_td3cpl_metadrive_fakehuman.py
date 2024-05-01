@@ -43,6 +43,9 @@ if __name__ == '__main__':
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
 
+    parser.add_argument("--eval", action="store_true")
+    parser.add_argument("--ckpt", type=str, default="")
+
     args = parser.parse_args()
 
     # ===== Set up some arguments =====
@@ -82,6 +85,7 @@ if __name__ == '__main__':
 
             # FakeHumanEnv config:
             free_level=free_level,
+            use_render=False,
         ),
 
         # Algorithm config
@@ -152,9 +156,9 @@ if __name__ == '__main__':
     assert config["algo"]["env"] is not None
 
     # ===== Also build the eval env =====
-    def _make_eval_env():
+    def _make_eval_env(use_render=False):
         eval_env_config = dict(
-            use_render=False,  # Open the interface
+            use_render=use_render,  # Open the interface
             manual_control=False,  # Allow receiving control signal from external device
             start_seed=1000,
             horizon=1500,
@@ -164,6 +168,39 @@ if __name__ == '__main__':
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
+
+
+    if args.eval:
+        eval_env = SubprocVecEnv([lambda: _make_eval_env(True)])
+        config["algo"]["learning_rate"] = 0.0
+        config["algo"]["train_freq"] = (1, "step")
+        model = PVPTD3CPL.load(args.ckpt, **config["algo"])
+
+        model.learn(
+            # training
+            total_timesteps=50_000,
+            callback=None,
+            reset_num_timesteps=True,
+
+            # eval
+            # eval_env=None,
+            # eval_freq=-1,
+            # n_eval_episodes=2,
+            # eval_log_path=None,
+
+            # eval
+            eval_env=eval_env,
+            eval_freq=1,
+            n_eval_episodes=10,
+            eval_log_path=str(trial_dir),
+
+            # logging
+            tb_log_name=experiment_batch_name,
+            log_interval=1,
+            save_buffer=False,
+            load_buffer=False,
+        )
+        exit(0)
 
     eval_env = SubprocVecEnv([_make_eval_env])
 
@@ -185,7 +222,10 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
-    model = PVPTD3CPL(**config["algo"])
+    if args.ckpt:
+        model = PVPTD3CPL.load(args.ckpt, **config["algo"])
+    else:
+        model = PVPTD3CPL(**config["algo"])
 
     # ===== Launch training =====
     model.learn(

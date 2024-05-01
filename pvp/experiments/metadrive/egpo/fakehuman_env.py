@@ -116,6 +116,9 @@ class FakeHumanEnv(HumanInTheLoopEnv):
         action_prob = action_prob[0]
         expert_action = expert_action[0]
         if action_prob < 1 - self.config['free_level']:
+
+            # print(f"Action probability: {action_prob}, agent action: {actions}, expert action: {expert_action},")
+
             actions = expert_action
             self.takeover = True
         else:
@@ -127,6 +130,19 @@ class FakeHumanEnv(HumanInTheLoopEnv):
         self.total_steps += 1
 
         i["takeover_log_prob"] = log_prob.item()
+
+        if self.config["use_render"]:  # and self.config["main_exp"]: #and not self.config["in_replay"]:
+            super(HumanInTheLoopEnv, self).render(
+                text={
+                    "Total Cost": round(self.total_cost, 2),
+                    "Takeover Cost": round(self.total_takeover_cost, 2),
+                    "Takeover": "TAKEOVER" if self.takeover else "NO",
+                    "Total Step": self.total_steps,
+                    # "Total Time": time.strftime("%M:%S", time.gmtime(time.time() - self.start_time)),
+                    "Takeover Rate": "{:.2f}%".format(np.mean(np.array(self.takeover_recorder) * 100)),
+                    "Pause": "Press E",
+                }
+            )
 
         return o, r, d, i
 
