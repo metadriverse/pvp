@@ -27,7 +27,7 @@ for i in {0..2}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-chunkadv-cpl_bias0.0-num_comparisons-1-add_loss_5=False-deter-prioritized_buffer=True \
+    --exp_name=cplppo-cpl_bias0.0-add_loss_5=False-deter-prioritized_buffer=True \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -47,7 +47,7 @@ for i in {4..6}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-chunkadv-cpl_bias0.0-num_comparisons-1-add_loss_5=True-deter-prioritized_buffer=True \
+    --exp_name=cplppo-cpl_bias0.0-add_loss_5=True-deter-prioritized_buffer=True \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
