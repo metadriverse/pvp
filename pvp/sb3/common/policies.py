@@ -894,6 +894,16 @@ class ContinuousCritic(BaseModel):
             features = self.extract_features(obs)
         return self.q_networks[0](th.cat([features, actions], dim=1))
 
+    def q2_forward(self, obs: th.Tensor, actions: th.Tensor) -> th.Tensor:
+        """
+        Only predict the Q-value using the first network.
+        This allows to reduce computation when all the estimates are not needed
+        (e.g. when updating the policy in TD3).
+        """
+        with th.no_grad():
+            features = self.extract_features(obs)
+        return self.q_networks[1](th.cat([features, actions], dim=1))
+
 
 _policy_registry = dict()  # type: Dict[Type[BasePolicy], Dict[str, Type[BasePolicy]]]
 

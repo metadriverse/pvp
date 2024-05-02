@@ -5,7 +5,7 @@ import uuid
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.pvp_td3_cpl import PVPTD3CPL
+from pvp.pvp_td3_cpl import PVPTD3CPL, PVPRealTD3CPL
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
@@ -40,10 +40,14 @@ if __name__ == '__main__':
     parser.add_argument("--prioritized_buffer", type=str, default="True")
     parser.add_argument("--use_chunk_adv", type=str, default="True")
     parser.add_argument("--add_loss_5", type=str, default="True")
+    parser.add_argument("--mask_same_actions", type=str, default="True")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
+
+
+    parser.add_argument("--real_td3", action="store_true")
 
     parser.add_argument("--eval", action="store_true")
     parser.add_argument("--ckpt", type=str, default="")
@@ -72,6 +76,7 @@ if __name__ == '__main__':
     print(f"We start logging training data into {trial_dir}")
 
     free_level = args.free_level
+    real_td3 = args.real_td3
 
     # ===== Setup the config =====
     config = dict(
@@ -100,10 +105,11 @@ if __name__ == '__main__':
             cpl_bias=args.cpl_bias,
             add_loss_5=args.add_loss_5,
             top_factor=args.top_factor,
+            mask_same_actions=args.mask_same_actions,
 
 
             use_balance_sample=True,
-            policy=MlpPolicy,
+            policy=MlpPolicy if not real_td3 else TD3Policy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!
@@ -226,13 +232,14 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
+    algo_cls = PVPRealTD3CPL if real_td3 else PVPTD3CPL
     if args.ckpt:
         from pvp.sb3.common.save_util import load_from_zip_file
-        model = PVPTD3CPL(**config["algo"])
+        model = algo_cls(**config["algo"])
         data, params, pytorch_variables = load_from_zip_file(args.ckpt, device=model.device, print_system_info=False)
         model.set_parameters(params, exact_match=True, device=model.device)
     else:
-        model = PVPTD3CPL(**config["algo"])
+        model = algo_cls(**config["algo"])
 
     # ===== Launch training =====
     model.learn(
