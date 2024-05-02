@@ -185,6 +185,7 @@ class BaseAlgorithm(ABC):
                 )
 
             if self.use_sde and not isinstance(self.action_space, gym.spaces.Box):
+                raise ValueError("compatiblity gymnasium space?")
                 raise ValueError(
                     "generalized State-Dependent Exploration (gSDE) can only be used with continuous actions."
                 )

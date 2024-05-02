@@ -173,6 +173,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             clipped_actions = actions
             # Clip the actions to avoid out of bound error
             if isinstance(self.action_space, gym.spaces.Box):
+                raise ValueError("compatiblity gymnasium space?")
                 clipped_actions = np.clip(actions, self.action_space.low, self.action_space.high)
 
             new_obs, rewards, dones, infos = env.step(clipped_actions)
@@ -188,6 +189,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             n_steps += 1
 
             if isinstance(self.action_space, gym.spaces.Discrete):
+                raise ValueError("compatiblity gymnasium space?")
                 # Reshape in case of discrete action
                 actions = actions.reshape(-1, 1)
 

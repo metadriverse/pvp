@@ -240,6 +240,7 @@ class ReplayBuffer(BaseBuffer):
 
         # Same, for actions
         if isinstance(self.action_space, spaces.Discrete):
+            raise ValueError("compatiblity gymnasium discrete?")
             action = action.reshape((self.n_envs, self.action_dim))
 
         # Copy to avoid modification by reference
@@ -583,6 +584,7 @@ class DictReplayBuffer(ReplayBuffer):
 
         # Same reshape, for actions
         if isinstance(self.action_space, spaces.Discrete):
+            raise ValueError("compatiblity gymnasium discrete?")
             action = action.reshape((self.n_envs, self.action_dim))
 
         self.actions[self.pos] = np.array(action).copy()

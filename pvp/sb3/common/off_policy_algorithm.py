@@ -20,7 +20,7 @@ from pvp.sb3.common.type_aliases import GymEnv, MaybeCallback, RolloutReturn, Sc
 from pvp.sb3.common.utils import safe_mean, should_collect_more_steps
 from pvp.sb3.common.vec_env import VecEnv
 from pvp.sb3.her.her_replay_buffer import HerReplayBuffer
-
+import gymnasium
 
 class OffPolicyAlgorithm(BaseAlgorithm):
     """
@@ -418,7 +418,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
             unscaled_action, _ = self.predict(self._last_obs, deterministic=deterministic)
 
         # Rescale the action from [low, high] to [-1, 1]
-        if isinstance(self.action_space, gym.spaces.Box):
+        if isinstance(self.action_space, (gym.spaces.Box, gymnasium.spaces.Box)):
             scaled_action = self.policy.scale_action(unscaled_action)
 
             # Add noise to the action (improve exploration)

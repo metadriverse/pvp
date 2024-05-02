@@ -338,6 +338,8 @@ class BasePolicy(BaseModel):
         actions = actions.cpu().numpy()
 
         if isinstance(self.action_space, gym.spaces.Box):
+            raise ValueError("compatiblity gymnasium space?")
+
             if self.squash_output:
                 # Rescale to proper domain when using squashing
                 actions = self.unscale_action(actions)
