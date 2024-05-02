@@ -21,10 +21,15 @@ def log_probs_to_advantages(log_probs, alpha):
     return (alpha * log_probs).sum(dim=-1)
 
 
-def biased_bce_with_logits(adv1, adv2, y, bias=1.0):
+def biased_bce_with_logits(adv1, adv2, y, bias=1.0, shuffle=False):
     # Apply the log-sum-exp trick.
     # y = 1 if we prefer x2 to x1
     # We need to implement the numerical stability trick.
+
+    # If shuffle is True, we will shuffle the order of adv1 and adv2. In this case y must be all 0 or 1.
+    if shuffle:
+        adv1 = adv1[torch.randperm(adv1.shape[0])]
+        adv2 = adv2[torch.randperm(adv2.shape[0])]
 
     logit21 = adv2 - bias * adv1
     logit12 = adv1 - bias * adv2
@@ -297,9 +302,11 @@ class PVPTD3CPL(TD3):
 
                         num_c_comparisons = 0
                         if len(no_human_involved_indices) > 0:
-                            c_ind = torch.randperm(len(no_human_involved_indices))
-                            num_c_comparisons = min(num_comparisons, len(no_human_involved_indices))
-                            c_ind = no_human_involved_indices[c_ind[:num_c_comparisons]]
+                            # Make the data from agent's exploration equally sized as human involved data.
+                            c_ind = torch.randint(
+                                len(no_human_involved_indices), size=(num_comparisons,)
+                            ).to(no_human_involved_indices.device)
+                            num_c_comparisons = num_comparisons
 
                         stat_recorder["num_c_comparisons"].append(num_c_comparisons)
 
@@ -382,20 +389,20 @@ class PVPTD3CPL(TD3):
 
                 zeros_label = torch.zeros_like(adv_a_pos)
                 # Case 1: a+ > a-
-                cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias)
+                cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=True)
                 cpl_losses.append(cpl_loss_1)
                 accuracies.append(accuracy_1)
                 # Case 2: b+ > b-
-                cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias)
+                cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=True)
                 cpl_losses.append(cpl_loss_2)
                 accuracies.append(accuracy_2)
 
                 # Case 3: a+ > b-
-                cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_b_neg, zeros_label, bias=cpl_bias)
+                cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=True)
                 cpl_losses.append(cpl_loss_3)
                 accuracies.append(accuracy_3)
                 # Case 4: b+ > a-
-                cpl_loss_4, accuracy_4 = biased_bce_with_logits(adv_b_pos, adv_a_neg, zeros_label, bias=cpl_bias)
+                cpl_loss_4, accuracy_4 = biased_bce_with_logits(adv_b_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=True)
                 cpl_losses.append(cpl_loss_4)
                 accuracies.append(accuracy_4)
 
@@ -403,7 +410,7 @@ class PVPTD3CPL(TD3):
                 label5 = a_count > b_count  # if a_count>b_count, we prefer b as it costs less intervention.
                 label5 = label5.float()
                 label5[b_count == a_count] = 0.5
-                cpl_loss_5, accuracy_5 = biased_bce_with_logits(adv_a_pos, adv_b_pos, label5, bias=cpl_bias)
+                cpl_loss_5, accuracy_5 = biased_bce_with_logits(adv_a_pos, adv_b_pos, label5, bias=cpl_bias, shuffle=False)
                 if self.extra_config["add_loss_5"]:
                     cpl_losses.append(cpl_loss_5)
                     accuracies.append(accuracy_5)
@@ -428,12 +435,12 @@ class PVPTD3CPL(TD3):
                     zeros_label_c = zeros_label.new_zeros((min_comparison, ))
 
                     cpl_loss_61, accuracy_61 = biased_bce_with_logits(
-                        adv_c[:min_comparison], adv_a_neg[:min_comparison], zeros_label_c, bias=cpl_bias
+                        adv_c[:min_comparison], adv_a_neg[:min_comparison], zeros_label_c, bias=cpl_bias, shuffle=True
                     )
                     cpl_losses.append(cpl_loss_61)
                     accuracies.append(accuracy_61)
                     cpl_loss_62, accuracy_62 = biased_bce_with_logits(
-                        adv_c[:min_comparison], adv_b_neg[:min_comparison], zeros_label_c, bias=cpl_bias
+                        adv_c[:min_comparison], adv_b_neg[:min_comparison], zeros_label_c, bias=cpl_bias, shuffle=True
                     )
                     cpl_losses.append(cpl_loss_62)
                     accuracies.append(accuracy_62)
