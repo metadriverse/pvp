@@ -389,11 +389,11 @@ class PVPTD3CPL(TD3):
 
                 zeros_label = torch.zeros_like(adv_a_pos)
                 # Case 1: a+ > a-
-                cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=True)
+                cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
                 cpl_losses.append(cpl_loss_1)
                 accuracies.append(accuracy_1)
                 # Case 2: b+ > b-
-                cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=True)
+                cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=False)
                 cpl_losses.append(cpl_loss_2)
                 accuracies.append(accuracy_2)
 
