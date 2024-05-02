@@ -214,6 +214,7 @@ class PVPTD3CPL(TD3):
         new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(obs.device)
         new_valid_count = torch.stack(new_valid_count).to(obs.device).int()
         valid_count = new_valid_count
+        valid_mask = new_valid_mask
 
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
