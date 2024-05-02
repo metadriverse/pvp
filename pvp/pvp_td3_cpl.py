@@ -230,30 +230,46 @@ class PVPTD3CPL(TD3):
             actions_novice = torch.stack(new_action_novices)
 
         # Number of chunks to compare
-        num_comparisons = self.extra_config["num_comparisons"]
         cpl_bias = self.extra_config["cpl_bias"]
 
         for step in range(gradient_steps):
             self._n_updates += 1
             alpha = 0.1
+            c_ind = None
+            num_comparisons = self.extra_config["num_comparisons"]
+
+            cpl_losses = []
+            accuracies = []
+
             if self.extra_config["use_chunk_adv"]:
                 if num_comparisons == -1:
 
                     if self.extra_config["prioritized_buffer"]:
 
-                        # TODO: Maybe can control by the latest takeover rate.
-                        descending_indices = torch.sort(valid_count + torch.randn(valid_count.shape).to(valid_count.device), descending=True)[1]
+                        assert (valid_count > 0).any().item(), "No human in the loop data is found."
+
+                        human_involved = valid_count > 0
+                        num_human_involved = human_involved.sum().item()
 
                         # Pick up top half samples
-                        num_left = int(len(valid_count) * self.extra_config["top_factor"])
-                        num_left = max(10, num_left)
-                        descending_indices = descending_indices[:num_left]
+                        # num_left = int(len(valid_count) * self.extra_config["top_factor"])
+                        # num_left = max(10, num_left)
+                        # descending_indices = descending_indices[:num_left]
 
-                        num_comparisons = len(descending_indices) // 2
-                        ind = torch.randperm(len(descending_indices))
-                        a_ind = ind[:num_comparisons]
-                        b_ind = ind[-num_comparisons:]
+                        num_comparisons = num_human_involved // 2
 
+                        # Randomly select num_comparisons indices in the human involved data. The indices should in
+                        # range len(valid_count) not num_human_involved.
+                        ind = torch.randperm(num_human_involved)
+                        human_involved_indices = torch.nonzero(human_involved, as_tuple=True)[0]
+                        no_human_involved_indices = torch.nonzero(~human_involved, as_tuple=True)[0]
+                        a_ind = human_involved_indices[ind[:num_comparisons]]
+                        b_ind = human_involved_indices[ind[-num_comparisons:]]
+
+                        if len(no_human_involved_indices) > 0:
+                            c_ind = torch.randperm(len(no_human_involved_indices))
+                            num_c_comparisons = min(num_comparisons, len(no_human_involved_indices))
+                            c_ind = no_human_involved_indices[c_ind[:num_c_comparisons]]
 
                     else:
                         num_comparisons = int(len(valid_count) // 2)
@@ -263,6 +279,7 @@ class PVPTD3CPL(TD3):
 
                     # print(f"num_comparisons={num_comparisons}")
                 else:
+                    raise ValueError()
                     a_ind = torch.randperm(len(valid_count))[:num_comparisons]
                     b_ind = torch.randperm(len(valid_count))[:num_comparisons]
 
@@ -281,7 +298,6 @@ class PVPTD3CPL(TD3):
                 b_actions_novice = actions_novice[b_ind]
 
                 # Compute advantage for a+, b+, a-, b- trajectory:
-
                 flatten_obs = torch.cat([
                     a_obs.flatten(0, 1),
                     b_obs.flatten(0, 1),
@@ -327,22 +343,64 @@ class PVPTD3CPL(TD3):
                 zeros_label = torch.zeros_like(adv_a_pos)
                 # Case 1: a+ > a-
                 cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias)
+                cpl_losses.append(cpl_loss_1)
+                accuracies.append(accuracy_1)
                 # Case 2: b+ > b-
                 cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias)
+                cpl_losses.append(cpl_loss_2)
+                accuracies.append(accuracy_2)
 
                 # Case 3: a+ > b-
                 cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_b_neg, zeros_label, bias=cpl_bias)
+                cpl_losses.append(cpl_loss_3)
+                accuracies.append(accuracy_3)
                 # Case 4: b+ > a-
                 cpl_loss_4, accuracy_4 = biased_bce_with_logits(adv_b_pos, adv_a_neg, zeros_label, bias=cpl_bias)
+                cpl_losses.append(cpl_loss_4)
+                accuracies.append(accuracy_4)
 
                 # Case 5: a+ > b+ or b+ > a+
                 label5 = a_count > b_count  # if a_count>b_count, we prefer b as it costs less intervention.
                 label5 = label5.float()
                 label5[b_count == a_count] = 0.5
                 cpl_loss_5, accuracy_5 = biased_bce_with_logits(adv_a_pos, adv_b_pos, label5, bias=cpl_bias)
+                if self.extra_config["add_loss_5"]:
+                    cpl_losses.append(cpl_loss_5)
+                    accuracies.append(accuracy_5)
 
-                # TODO: can try case6 comparison between a- and b-.
-                pass
+                # Compute the c trajectory:
+                if c_ind is not None:
+                    c_obs = obs[c_ind]
+                    c_actions_behavior = actions_behavior[c_ind]
+                    c_valid_mask = valid_mask[c_ind].flatten()
+
+                    _, log_probs_tmp_c, entropy_c = self.policy.evaluate_actions(
+                        c_obs.flatten(0, 1)[c_valid_mask], c_actions_behavior.flatten(0, 1)[c_valid_mask]
+                    )
+                    log_probs_c = log_probs_tmp_c.new_zeros(c_valid_mask.shape[0])
+                    log_probs_c[c_valid_mask] = log_probs_tmp_c
+                    adv_c = log_probs_to_advantages(
+                        log_probs_c.reshape(num_c_comparisons, num_steps_per_chunk), alpha
+                    )
+
+                    # Case 6: c > a- & c > b-
+                    min_comparison = min(num_c_comparisons, num_comparisons)
+                    zeros_label_c = zeros_label.new_zeros((min_comparison, ))
+
+                    cpl_loss_61, accuracy_61 = biased_bce_with_logits(
+                        adv_c[:min_comparison], adv_a_neg[:min_comparison], zeros_label_c, bias=cpl_bias
+                    )
+                    cpl_losses.append(cpl_loss_61)
+                    accuracies.append(accuracy_61)
+                    cpl_loss_62, accuracy_62 = biased_bce_with_logits(
+                        adv_c[:min_comparison], adv_b_neg[:min_comparison], zeros_label_c, bias=cpl_bias
+                    )
+                    cpl_losses.append(cpl_loss_62)
+                    accuracies.append(accuracy_62)
+                    cpl_loss_6 = (cpl_loss_61 + cpl_loss_62) / 2
+                    accuracy_6 = (accuracy_61 + accuracy_62) / 2
+                    stat_recorder["cpl_loss_6"].append(cpl_loss_6.item())
+                    stat_recorder["cpl_accuracy_6"].append(accuracy_6.item())
 
                 stat_recorder["adv_pos"].append((adv_a_pos.mean().item() + adv_b_pos.mean().item()) / 2)
                 stat_recorder["adv_neg"].append((adv_a_neg.mean().item() + adv_b_neg.mean().item()) / 2)
@@ -350,13 +408,16 @@ class PVPTD3CPL(TD3):
                 stat_recorder["int_count_neg"].append(torch.where(a_count < b_count, b_count, a_count).float().mean().item())
                 stat_recorder["entropy"].append(entropy.mean().item())
 
-                if self.extra_config["add_loss_5"]:
-                    cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4 + cpl_loss_5
-                    accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4 + accuracy_5) / 5
+                # if self.extra_config["add_loss_5"]:
+                #     cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4 + cpl_loss_5
+                #     accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4 + accuracy_5) / 5
+                #
+                # else:
+                #     cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4
+                #     accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4) / 4
 
-                else:
-                    cpl_loss = cpl_loss_1 + cpl_loss_2 + cpl_loss_3 + cpl_loss_4
-                    accuracy = (accuracy_1 + accuracy_2 + accuracy_3 + accuracy_4) / 4
+                cpl_loss = sum(cpl_losses)
+                accuracy = sum(accuracies) / len(cpl_losses)
 
                 stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
                 stat_recorder["cpl_loss_2"].append(cpl_loss_2.item())
