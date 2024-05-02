@@ -202,6 +202,13 @@ class PVPTD3CPL(TD3):
         actions_behavior = torch.stack(new_action_behaviors)
         actions_novice = torch.stack(new_action_novices)
 
+        # FIXME
+        # FIXME
+        # FIXME
+        # FIXME
+        # FIXME
+        actions_novice = actions_novice.clamp(-1, 1)
+
         new_valid_mask = torch.stack(new_valid_mask).bool()
         new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(obs.device)
         new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(obs.device)
