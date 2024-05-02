@@ -278,6 +278,7 @@ class PVPTD3CPL(TD3):
 
                         human_involved = valid_count > 0
                         num_human_involved = human_involved.sum().item()
+                        stat_recorder["human_ratio"].append(num_human_involved / len(human_involved))
 
                         # Pick up top half samples
                         # num_left = int(len(valid_count) * self.extra_config["top_factor"])
@@ -294,10 +295,13 @@ class PVPTD3CPL(TD3):
                         a_ind = human_involved_indices[ind[:num_comparisons]]
                         b_ind = human_involved_indices[ind[-num_comparisons:]]
 
+                        num_c_comparisons = 0
                         if len(no_human_involved_indices) > 0:
                             c_ind = torch.randperm(len(no_human_involved_indices))
                             num_c_comparisons = min(num_comparisons, len(no_human_involved_indices))
                             c_ind = no_human_involved_indices[c_ind[:num_c_comparisons]]
+
+                        stat_recorder["num_c_comparisons"].append(num_c_comparisons)
 
                     else:
                         num_comparisons = int(len(valid_count) // 2)
@@ -344,6 +348,14 @@ class PVPTD3CPL(TD3):
                     valid_mask[a_ind].flatten(),
                     valid_mask[b_ind].flatten()
                 ], dim=0)
+
+                # TODO: FIXME
+                # TODO: FIXME
+                # TODO: FIXME
+                # TODO: FIXME
+                # TODO: FIXME
+                # TODO: Make sure scale is the same.
+                flatten_actions = flatten_actions.clamp(-1, 1)
 
                 _, log_probs_tmp, entropy = self.policy.evaluate_actions(
                     flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask]
