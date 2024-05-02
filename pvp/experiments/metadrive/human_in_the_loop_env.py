@@ -72,7 +72,7 @@ class HumanInTheLoopEnv(SafeMetaDriveEnv):
         last_t = self.takeover
         self.takeover = shared_control_policy.takeover if hasattr(shared_control_policy, "takeover") else False
         engine_info["takeover_start"] = True if not last_t and self.takeover else False
-        engine_info["takeover"] = self.takeover and not engine_info["takeover_start"]
+        engine_info["takeover"] = self.takeover
         condition = engine_info["takeover_start"] if self.config["only_takeover_start_cost"] else self.takeover
         if not condition:
             engine_info["takeover_cost"] = 0

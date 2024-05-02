@@ -358,7 +358,7 @@ class HumanInTheLoopCARLAEnv(ContinuousBenchmarkEnvWrapper):
         # Postprocess the environment return
         self.episode_recorder["reward"].append(r)
         info["takeover_start"] = True if not self.last_takeover and takeover else False
-        info["takeover"] = takeover and not info["takeover_start"]
+        info["takeover"] = takeover
         condition = info["takeover_start"]
         if not condition:
             self.episode_recorder["cost"].append(0)

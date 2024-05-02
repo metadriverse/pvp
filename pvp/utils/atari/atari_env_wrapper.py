@@ -79,7 +79,7 @@ class HumanInTheLoopAtariWrapper(Wrapper):
         i["total_takeover_cost"] = self.total_cost
         i["raw_action"] = [behavior_action]
         i["takeover_start"] = True if takeover_start else False
-        i["takeover"] = True if self.keypress and self.takeover else False
+        i["takeover"] = True if self.keypress else False
         self.takeover = self.keypress
 
         if self.enable_render:

@@ -276,7 +276,7 @@ class MinigridWrapper(gym.Wrapper):
         i["takeover_cost"] = cost
         i["raw_action"] = int(behavior_action)
         i["takeover_start"] = True if takeover_start else False
-        i["takeover"] = True if should_takeover and self.takeover else False
+        i["takeover"] = True if should_takeover else False
         i["is_success"] = i["success"] = True if r > 0.0 else False
         self.takeover = should_takeover
         self.valid_key_press = False  # refresh
@@ -421,7 +421,7 @@ class MinigridWrapperWithFakeHuman(gym.Wrapper):
         i["takeover_cost"] = cost
         i["raw_action"] = int(behavior_action)
         i["takeover_start"] = True if takeover_start else False
-        i["takeover"] = True if should_takeover and self.takeover else False
+        i["takeover"] = True if should_takeover else False
         i["is_success"] = i["success"] = True if r > 0.0 else False
         self.takeover = should_takeover
         # self.valid_key_press = False  # refresh
@@ -534,7 +534,7 @@ class MinigridWrapperWithFakeHumanAndHumanFailureDemo(gym.Wrapper):
         i["takeover_cost"] = cost
         i["raw_action"] = int(behavior_action)
         i["takeover_start"] = True if takeover_start else False
-        i["takeover"] = True if should_takeover and self.takeover else False
+        i["takeover"] = True if should_takeover else False
         i["is_success"] = i["success"] = True if r > 0.0 else False
         self.takeover = should_takeover
         # self.valid_key_press = False  # refresh

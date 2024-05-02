@@ -144,6 +144,15 @@ class FakeHumanEnv(HumanInTheLoopEnv):
                 }
             )
 
+        # FIXME
+        if not self.takeover:
+            if (i["raw_action"] != actions).any():
+                print(1111)
+
+        assert i["takeover"] == self.takeover
+
+        print("Actions: ", actions, "Expert action: ", expert_action, "Takeover: ", self.takeover, "Takeover prob: ", action_prob)
+
         return o, r, d, i
 
     def _get_step_return(self, actions, engine_info):
@@ -153,7 +162,7 @@ class FakeHumanEnv(HumanInTheLoopEnv):
         d = tm or tc
         last_t = self.last_takeover
         engine_info["takeover_start"] = True if not last_t and self.takeover else False
-        engine_info["takeover"] = self.takeover and not engine_info["takeover_start"]
+        engine_info["takeover"] = self.takeover
         condition = engine_info["takeover_start"] if self.config["only_takeover_start_cost"] else self.takeover
         if not condition:
             engine_info["takeover_cost"] = 0
