@@ -154,113 +154,59 @@ class PVPTD3CPL(TD3):
         else:
             return
 
-        s_list = [len(ep.observations) for ep in replay_data_agent]
-        max_s = max(s_list)
-        bs = len(s_list)
-
         num_steps_per_chunk = self.extra_config["num_steps_per_chunk"]
 
-        obs = replay_data_agent[0].observations.new_zeros([bs, max_s, replay_data_agent[0].observations.shape[-1]])
-        mask = replay_data_agent[0].observations.new_zeros([bs, max_s])
-        actions_behavior = replay_data_agent[0].actions_behavior.new_zeros(
-            [bs, max_s, replay_data_agent[0].actions_behavior.shape[-1]]
-        )
-        actions_novice = replay_data_agent[0].actions_novice.new_zeros(
-            [bs, max_s, replay_data_agent[0].actions_novice.shape[-1]]
-        )
-        interventions = replay_data_agent[0].interventions.new_zeros([bs, max_s])
-        # intervention_count = replay_data_agent[0].interventions.new_zeros([bs, max_s - num_steps_per_chunk])
+        # if self.extra_config["use_chunk_adv"]:
+        # Reorganize data with chunks
+        # Now obs.shape = (#batches, #steps, #features)
+        # We need to make it to be: obs.shape = (#batches, #steps-chunk_size, chunk_size, #features)
+        new_obs = []
+        new_action_behaviors = []
+        new_action_novices = []
 
-        valid_ep = []
-        valid_step = []
-        valid_count = []
-        valid_mask = []
+        new_valid_ep = []
+        new_valid_step = []
+        new_valid_count = []
+        new_valid_mask = []
 
         for i, ep in enumerate(replay_data_agent):
-            obs[i, :len(ep.observations)] = ep.observations
-            mask[i, :len(ep.observations)] = 1
-            actions_behavior[i, :len(ep.actions_behavior)] = ep.actions_behavior
-            actions_novice[i, :len(ep.actions_novice)] = ep.actions_novice
-            interventions[i, :len(ep.interventions)] = ep.interventions.reshape(-1)
-            epint = ep.interventions.reshape(-1)
-            if len(ep.observations) >= num_steps_per_chunk:
-                valid_ep.extend([i for s in range(len(ep.observations) - num_steps_per_chunk)])
-                valid_step.extend(list(range(len(ep.observations) - num_steps_per_chunk)))
-                valid_count.extend([
-                    epint[s: s + num_steps_per_chunk].sum() for s in range(len(ep.observations) - num_steps_per_chunk)
-                ])
-                valid_mask.extend([interventions.new_ones(num_steps_per_chunk) for _ in
-                                   range(len(ep.observations) - num_steps_per_chunk)])
-            else:
-                valid_ep.append(i)
-                valid_step.append(0)
-                valid_count.append(epint.sum())
-                m = torch.cat([
-                    interventions.new_ones(len(ep.observations)),
-                    interventions.new_zeros(num_steps_per_chunk - len(ep.observations)),
-                ]
-                )
-                valid_mask.append(m)
-        interventions = interventions.bool()
-
-        valid_mask = torch.stack(valid_mask).bool()
-        valid_ep = torch.from_numpy(np.array(valid_ep)).to(interventions.device)
-        valid_step = torch.from_numpy(np.array(valid_step)).to(interventions.device)
-        valid_count = torch.stack(valid_count).to(interventions.device).int()
-
-        if self.extra_config["use_chunk_adv"]:
-            # Reorganize data with chunks
-            # Now obs.shape = (#batches, #steps, #features)
-            # We need to make it to be: obs.shape = (#batches, #steps-chunk_size, chunk_size, #features)
-            new_obs = []
-            new_action_behaviors = []
-            new_action_novices = []
-
-            new_valid_ep = []
-            new_valid_step = []
-            new_valid_count = []
-            new_valid_mask = []
-
-            for i, ep in enumerate(replay_data_agent):
-                if len(ep.observations) - num_steps_per_chunk >= 0:
-                    for s in range(len(ep.observations) - num_steps_per_chunk):
-                        new_obs.append(ep.observations[s: s + num_steps_per_chunk])
-                        new_action_behaviors.append(ep.actions_behavior[s: s + num_steps_per_chunk])
-                        new_action_novices.append(ep.actions_novice[s: s + num_steps_per_chunk])
-
-                        new_valid_ep.append(i)
-                        new_valid_step.append(s)
-                        new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
-                        new_valid_mask.append(interventions.new_ones(num_steps_per_chunk))
-
-                else:
-                    # Need to pad the data
-                    new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
-                        [num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
-                    new_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
-                        [num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
-                    new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
-                        [num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
+            if len(ep.observations) - num_steps_per_chunk >= 0:
+                for s in range(len(ep.observations) - num_steps_per_chunk):
+                    new_obs.append(ep.observations[s: s + num_steps_per_chunk])
+                    new_action_behaviors.append(ep.actions_behavior[s: s + num_steps_per_chunk])
+                    new_action_novices.append(ep.actions_novice[s: s + num_steps_per_chunk])
 
                     new_valid_ep.append(i)
-                    new_valid_step.append(0)
-                    new_valid_count.append(ep.interventions.sum())
-                    new_valid_mask.append(torch.cat([
-                        interventions.new_ones(len(ep.interventions)),
-                        interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
-                    ]))
+                    new_valid_step.append(s)
+                    new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
+                    new_valid_mask.append(ep.interventions.new_ones(num_steps_per_chunk))
 
-            obs = torch.stack(new_obs)
-            actions_behavior = torch.stack(new_action_behaviors)
-            actions_novice = torch.stack(new_action_novices)
+            else:
+                # Need to pad the data
+                new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
+                    [num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
+                new_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
+                    [num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
+                new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
+                    [num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
 
-            new_valid_mask = torch.stack(new_valid_mask).bool()
-            new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(interventions.device)
-            new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(interventions.device)
-            new_valid_count = torch.stack(new_valid_count).to(interventions.device).int()
+                new_valid_ep.append(i)
+                new_valid_step.append(0)
+                new_valid_count.append(ep.interventions.sum())
+                new_valid_mask.append(torch.cat([
+                    ep.interventions.new_ones(len(ep.interventions)),
+                    ep.interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
+                ]))
 
-            # TODO: remove
-            assert (new_valid_count==valid_count).all()
+        obs = torch.stack(new_obs)
+        actions_behavior = torch.stack(new_action_behaviors)
+        actions_novice = torch.stack(new_action_novices)
+
+        new_valid_mask = torch.stack(new_valid_mask).bool()
+        new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(obs.device)
+        new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(obs.device)
+        new_valid_count = torch.stack(new_valid_count).to(obs.device).int()
+        valid_count = new_valid_count
 
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
