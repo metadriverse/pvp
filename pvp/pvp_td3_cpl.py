@@ -210,12 +210,24 @@ class PVPTD3CPL(TD3):
             new_obs = []
             new_action_behaviors = []
             new_action_novices = []
+
+            new_valid_ep = []
+            new_valid_step = []
+            new_valid_count = []
+            new_valid_mask = []
+
             for i, ep in enumerate(replay_data_agent):
                 if len(ep.observations) - num_steps_per_chunk >= 0:
                     for s in range(len(ep.observations) - num_steps_per_chunk):
                         new_obs.append(ep.observations[s: s + num_steps_per_chunk])
                         new_action_behaviors.append(ep.actions_behavior[s: s + num_steps_per_chunk])
                         new_action_novices.append(ep.actions_novice[s: s + num_steps_per_chunk])
+
+                        new_valid_ep.append(i)
+                        new_valid_step.append(s)
+                        new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
+                        new_valid_mask.append(interventions.new_ones(num_steps_per_chunk))
+
                 else:
                     # Need to pad the data
                     new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
@@ -225,9 +237,25 @@ class PVPTD3CPL(TD3):
                     new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
                         [num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
 
+                    new_valid_ep.append(i)
+                    new_valid_step.append(0)
+                    new_valid_count.append(ep.interventions.sum())
+                    new_valid_mask.append(torch.cat([
+                        interventions.new_ones(len(ep.interventions)),
+                        interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
+                    ]))
+
             obs = torch.stack(new_obs)
             actions_behavior = torch.stack(new_action_behaviors)
             actions_novice = torch.stack(new_action_novices)
+
+            new_valid_mask = torch.stack(new_valid_mask).bool()
+            new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(interventions.device)
+            new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(interventions.device)
+            new_valid_count = torch.stack(new_valid_count).to(interventions.device).int()
+
+            # TODO: remove
+            assert (new_valid_count==valid_count).all()
 
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
