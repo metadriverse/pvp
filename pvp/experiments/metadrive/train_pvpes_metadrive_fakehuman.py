@@ -32,6 +32,7 @@ if __name__ == '__main__':
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
     parser.add_argument("--free_level", type=float, default=0.95)
+    parser.add_argument("--agent_data_ratio", type=float, default=1.0)
     parser.add_argument("--no_done_for_positive", type=str, default="False")
     parser.add_argument("--reward_0_for_positive", type=str, default="False")
     parser.add_argument("--reward_n2_for_intervention", type=str, default="False")
@@ -102,6 +103,7 @@ if __name__ == '__main__':
             remove_negative=args.remove_negative,
             no_done_for_negative=args.no_done_for_negative,
             adaptive_batch_size=args.adaptive_batch_size,
+            agent_data_ratio=args.agent_data_ratio,
             use_balance_sample=True,
             policy=TD3Policy,
             replay_buffer_class=HACOReplayBuffer,
