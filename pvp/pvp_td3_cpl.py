@@ -91,7 +91,8 @@ class PVPTD3CPL(TD3):
             "num_comparisons",
             "num_steps_per_chunk",
             "cpl_bias",
-            "top_factor"
+            "top_factor",
+            "last_ratio"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -236,6 +237,18 @@ class PVPTD3CPL(TD3):
         valid_count = new_valid_count
         valid_mask = new_valid_mask
 
+        if self.extra_config["last_ratio"] > 0:
+            num_samples = int(len(valid_count) * self.extra_config["last_ratio"])
+            num_samples = max(1024, num_samples)
+            if num_samples < len(valid_count):
+                # valid_count, indices = valid_count.topk(num_samples, largest=False)
+                valid_mask = valid_mask[-num_samples:].clone()
+                obs = obs[-num_samples:].clone()
+                actions_behavior = actions_behavior[-num_samples:].clone()
+                actions_novice = actions_novice[-num_samples:].clone()
+                interventions = interventions[-num_samples:].clone()
+                valid_count = valid_count[-num_samples:].clone()
+
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
 
@@ -341,13 +354,17 @@ class PVPTD3CPL(TD3):
 
             adv_a_pos = log_probs_to_advantages(lp_a_pos.reshape(num_comparisons, num_steps_per_chunk), alpha, remove_sum=False)
             adv_a_neg = log_probs_to_advantages(lp_a_neg.reshape(num_comparisons, num_steps_per_chunk), alpha, remove_sum=False)
-            # adv_b_pos = log_probs_to_advantages(lp_b_pos.reshape(num_comparisons, num_steps_per_chunk), alpha)
-            # adv_b_neg = log_probs_to_advantages(lp_b_neg.reshape(num_comparisons, num_steps_per_chunk), alpha)
 
+            # TODO: Remove debug code:
             adv_a_pos2 = log_probs_to_advantages(lp_a_pos.reshape(num_comparisons, num_steps_per_chunk), alpha,
                                                  remove_sum=True)
             adv_a_neg2 = log_probs_to_advantages(lp_a_neg.reshape(num_comparisons, num_steps_per_chunk), alpha,
                                                  remove_sum=True)
+            nppos = adv_a_pos2.cpu().detach().numpy()
+            npneg = adv_a_neg2.cpu().detach().numpy()
+            inte = interventions[a_ind].cpu().detach().numpy()
+            nppos2 = nppos * inte
+            npneg2 = npneg * inte
 
             zeros_label = torch.zeros_like(adv_a_pos)
             if not self.extra_config["remove_loss_1"]:

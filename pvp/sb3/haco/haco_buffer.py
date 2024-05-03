@@ -358,11 +358,11 @@ class HACOReplayBufferEpisode(ReplayBuffer):
         We will return everything we have!
         """
         if last_episodes is None:
-            batch_inds = np.random.permutation(np.arange(self.buffer_size if self.full else self.pos))
+            batch_inds = np.arange(self.buffer_size if self.full else self.pos)
         else:
             s = max(0, self.pos - last_episodes)
             e = self.pos
-            batch_inds = np.random.permutation(np.arange(s, e))
+            batch_inds = np.arange(s, e)
         new_ret = self._get_samples(batch_inds, env=env)
         return new_ret
 
