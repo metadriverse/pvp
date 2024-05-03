@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument("--use_chunk_adv", type=str, default="True")
     parser.add_argument("--add_loss_5", type=str, default="True")
     parser.add_argument("--mask_same_actions", type=str, default="True")
+    parser.add_argument("--remove_loss_1", type=str, default="True")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
@@ -106,6 +107,7 @@ if __name__ == '__main__':
             add_loss_5=args.add_loss_5,
             top_factor=args.top_factor,
             mask_same_actions=args.mask_same_actions,
+            remove_loss_1=args.remove_loss_1,
 
 
             use_balance_sample=True,

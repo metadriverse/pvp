@@ -74,7 +74,8 @@ class PVPTD3CPL(TD3):
             "use_chunk_adv",
             "add_loss_5",
             "prioritized_buffer",
-            "mask_same_actions"
+            "mask_same_actions",
+            "remove_loss_1",
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -339,14 +340,16 @@ class PVPTD3CPL(TD3):
             adv_a_neg2 = log_probs_to_advantages(lp_a_neg.reshape(num_comparisons, num_steps_per_chunk), alpha,
                                                  remove_sum=True)
 
-            zeros_label = torch.zeros_like(adv_a_pos)
-            # Case 1: a+ > a-
-            if self.extra_config["mask_same_actions"]:
-                cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * a_int).sum(-1), (adv_a_neg2 * a_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
-            else:
-                cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
-            cpl_losses.append(cpl_loss_1)
-            accuracies.append(accuracy_1)
+            if not self.extra_config["remove_loss_1"]:
+                zeros_label = torch.zeros_like(adv_a_pos)
+                # Case 1: a+ > a-
+                if self.extra_config["mask_same_actions"]:
+                    cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * a_int).sum(-1), (adv_a_neg2 * a_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
+                else:
+                    cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
+                cpl_losses.append(cpl_loss_1)
+                accuracies.append(accuracy_1)
+
             # Case 2: b+ > b-
             # cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=False)
             # cpl_losses.append(cpl_loss_2)
