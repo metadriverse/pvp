@@ -239,7 +239,9 @@ class PVPTD3CPL(TD3):
 
         if self.extra_config["last_ratio"] > 0:
             num_samples = int(len(valid_count) * self.extra_config["last_ratio"])
-            if num_samples >= 1024:
+            START_SAMPLES = 1024
+            num_samples = max(START_SAMPLES, num_samples)
+            if len(valid_count) >= START_SAMPLES:
                 print("Sample from the last part of the data. Samples: ", num_samples)
                 # valid_count, indices = valid_count.topk(num_samples, largest=False)
                 valid_mask = valid_mask[-num_samples:].clone()
