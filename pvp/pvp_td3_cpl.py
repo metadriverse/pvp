@@ -76,6 +76,7 @@ class PVPTD3CPL(TD3):
             "prioritized_buffer",
             "mask_same_actions",
             "remove_loss_1",
+            "training_deterministic"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -285,32 +286,19 @@ class PVPTD3CPL(TD3):
             a_actions_novice = actions_novice[a_ind]
             a_int = interventions[a_ind]
 
-            # b_count = valid_count[b_ind]
-            # b_obs = obs[b_ind]
-            # b_actions_behavior = actions_behavior[b_ind]
-            # b_actions_novice = actions_novice[b_ind]
-
             # Compute advantage for a+, b+, a-, b- trajectory:
             flatten_obs = torch.cat([
                 a_obs.flatten(0, 1),
-                # b_obs.flatten(0, 1),
                 a_obs.flatten(0, 1),
-                # b_obs.flatten(0, 1)
             ], dim=0)
             flatten_actions = torch.cat([
                 a_actions_behavior.flatten(0, 1),
-                # b_actions_behavior.flatten(0, 1),
                 a_actions_novice.flatten(0, 1),
-                # b_actions_novice.flatten(0, 1)
             ], dim=0)
             flatten_valid_mask = torch.cat([
                 valid_mask[a_ind].flatten(),
-                # valid_mask[b_ind].flatten(),
                 valid_mask[a_ind].flatten(),
-                # valid_mask[b_ind].flatten()
             ], dim=0)
-
-            # flatten_actions = flatten_actions.clamp(-1, 1)
 
             _, log_probs_tmp, entropy = self.policy.evaluate_actions(
                 flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask]
@@ -352,20 +340,11 @@ class PVPTD3CPL(TD3):
                 stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
                 stat_recorder["cpl_accuracy_1"].append(accuracy_1.item())
 
-            # Case 2: b+ > b-
-            # cpl_loss_2, accuracy_2 = biased_bce_with_logits(adv_b_pos, adv_b_neg, zeros_label, bias=cpl_bias, shuffle=False)
-            # cpl_losses.append(cpl_loss_2)
-            # accuracies.append(accuracy_2)
-
             # Case 3: a+ > b-
             shuffled_indices = torch.randperm(num_comparisons)
             cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_a_neg[shuffled_indices], zeros_label, bias=cpl_bias, shuffle=False)
             cpl_losses.append(cpl_loss_3)
             accuracies.append(accuracy_3)
-            # Case 4: b+ > a-
-            # cpl_loss_4, accuracy_4 = biased_bce_with_logits(adv_b_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
-            # cpl_losses.append(cpl_loss_4)
-            # accuracies.append(accuracy_4)
 
             # Case 5: a+ > b+ or b+ > a+
             # TODO: FIX THIS
@@ -546,7 +525,7 @@ class PVPTD3CPL(TD3):
                 learning_starts=self.learning_starts,
                 replay_buffer=self.replay_buffer,
                 log_interval=log_interval,
-                deterministic=True,  # <<<<< We use deterministic PPO policy here!
+                deterministic=self.extra_config["training_deterministic"],
             )
 
             if rollout.continue_training is False:

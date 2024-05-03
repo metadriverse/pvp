@@ -39,14 +39,14 @@ if __name__ == '__main__':
 
     parser.add_argument("--prioritized_buffer", type=str, default="True")
     parser.add_argument("--use_chunk_adv", type=str, default="True")
-    parser.add_argument("--add_loss_5", type=str, default="True")
-    parser.add_argument("--mask_same_actions", type=str, default="True")
-    parser.add_argument("--remove_loss_1", type=str, default="True")
+    parser.add_argument("--training_deterministic", type=str, default="True")
+    parser.add_argument("--add_loss_5", type=str, default="False")
+    parser.add_argument("--mask_same_actions", type=str, default="False")
+    parser.add_argument("--remove_loss_1", type=str, default="False")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
-
 
     parser.add_argument("--real_td3", action="store_true")
 
@@ -103,6 +103,7 @@ if __name__ == '__main__':
             num_comparisons=args.num_comparisons,
             num_steps_per_chunk=args.num_steps_per_chunk,
             prioritized_buffer=args.prioritized_buffer,
+            training_deterministic=args.training_deterministic,
             cpl_bias=args.cpl_bias,
             add_loss_5=args.add_loss_5,
             top_factor=args.top_factor,
