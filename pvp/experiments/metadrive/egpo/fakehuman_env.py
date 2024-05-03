@@ -123,7 +123,7 @@ class FakeHumanEnv(HumanInTheLoopEnv):
             self.takeover = True
         else:
             self.takeover = False
-        # print(f"Action probability: {action_prob}, agent action: {actions}, expert action: {expert_action}, takeover: {self.takeover}")
+        # print(f"Action probability: {action_prob:.3f}, agent action: {actions}, expert action: {expert_action}, takeover: {self.takeover}")
 
         o, r, d, i = super(HumanInTheLoopEnv, self).step(actions)
         self.takeover_recorder.append(self.takeover)

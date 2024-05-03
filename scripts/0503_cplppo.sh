@@ -9,12 +9,12 @@ for i in {0..2}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-use_target_policy \
+    --exp_name=cplppo-cpl_bias=0.5-use_target_policy=False \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.95 \
+    --free_level=0.8 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
     --cpl_bias=0.5 \
@@ -24,7 +24,7 @@ do
     --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
-    --use_target_policy=True \
+    --use_target_policy=False \
     > "0503-exp1-seed${seeds[$i]}.log" 2>&1 &
 done
 
@@ -33,22 +33,22 @@ for i in {3..5}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.0-use_target_policy \
+    --exp_name=cplppo-cpl_bias=0.5-use_target_policy=False \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.95 \
+    --free_level=0.25 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
-    --cpl_bias=0.0 \
+    --cpl_bias=0.5 \
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
     --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
-    --use_target_policy=True \
+    --use_target_policy=False \
     > "0503-exp2-seed${seeds[$i]}.log" 2>&1 &
 done
 
@@ -58,21 +58,21 @@ for i in {6..7}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.75-use_target_policy \
+    --exp_name=cplppo-cpl_bias=0.5-use_target_policy=False \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.95 \
+    --free_level=0.50 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
-    --cpl_bias=0.75 \
+    --cpl_bias=0.5 \
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
     --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
-    --use_target_policy=True \
+    --use_target_policy=False \
     > "0503-exp3-seed${seeds[$i]}.log" 2>&1 &
 done
