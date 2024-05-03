@@ -298,11 +298,13 @@ class PVPTD3CPL(TD3):
                 lp_a_pos = log_probs_tmp1.new_zeros(m.shape[0])
                 lp_a_pos[m] = log_probs_tmp1
 
-                _, log_probs_tmp2, entropy1 = self.policy_target.evaluate_actions(
+                _, log_probs_tmp2, entropy2 = self.policy_target.evaluate_actions(
                     a_obs.flatten(0, 1)[m], a_actions_novice.flatten(0, 1)[m]
                 )
                 lp_a_neg = log_probs_tmp2.new_zeros(m.shape[0])
                 lp_a_neg[m] = log_probs_tmp2
+
+                entropy = entropy1
 
             else:
                 flatten_obs = torch.cat([
