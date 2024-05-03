@@ -23,7 +23,7 @@ do
     --prioritized_buffer=True \
     --mask_same_actions=False \
     --remove_loss_1=False \
-    --training_deterministic=False \
+    --training_deterministic=True \
     --use_target_policy=True \
     > "0503-exp1-seed${seeds[$i]}.log" 2>&1 &
 done
@@ -47,7 +47,7 @@ do
     --prioritized_buffer=True \
     --mask_same_actions=False \
     --remove_loss_1=False \
-    --training_deterministic=False \
+    --training_deterministic=True \
     --use_target_policy=True \
     > "0503-exp2-seed${seeds[$i]}.log" 2>&1 &
 done
@@ -72,7 +72,7 @@ do
     --prioritized_buffer=True \
     --mask_same_actions=False \
     --remove_loss_1=False \
-    --training_deterministic=False \
+    --training_deterministic=True \
     --use_target_policy=True \
     > "0503-exp3-seed${seeds[$i]}.log" 2>&1 &
 done
