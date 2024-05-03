@@ -5,7 +5,7 @@ import uuid
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.pvp_td3_cpl import PVPTD3CPL, PVPRealTD3CPL
+from pvp.pvp_td3_cpl import PVPTD3CPL, PVPRealTD3CPL, PVPRealTD3Policy
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
@@ -43,6 +43,7 @@ if __name__ == '__main__':
     parser.add_argument("--add_loss_5", type=str, default="False")
     parser.add_argument("--mask_same_actions", type=str, default="False")
     parser.add_argument("--remove_loss_1", type=str, default="False")
+    parser.add_argument("--remove_loss_3", type=str, default="False")
     parser.add_argument("--use_target_policy", type=str, default="False")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
@@ -110,11 +111,12 @@ if __name__ == '__main__':
             top_factor=args.top_factor,
             mask_same_actions=args.mask_same_actions,
             remove_loss_1=args.remove_loss_1,
+            remove_loss_3=args.remove_loss_3,
             use_target_policy=args.use_target_policy,
 
 
             use_balance_sample=True,
-            policy=MlpPolicy if not real_td3 else TD3Policy,
+            policy=MlpPolicy if not real_td3 else PVPRealTD3Policy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!

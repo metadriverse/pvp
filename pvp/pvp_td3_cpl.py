@@ -7,12 +7,14 @@ from typing import Any, Dict, List, Union, Optional
 import copy
 import numpy as np
 import torch
+import torch as th
 from pvp.sb3.common.utils import polyak_update
 from pvp.sb3.common.buffers import ReplayBuffer
 from pvp.sb3.common.save_util import load_from_pkl, save_to_pkl
 from pvp.sb3.common.type_aliases import GymEnv, MaybeCallback
 from pvp.sb3.haco.haco_buffer import HACOReplayBuffer
 from pvp.sb3.td3.td3 import TD3
+import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,7 @@ class PVPTD3CPL(TD3):
             "prioritized_buffer",
             "mask_same_actions",
             "remove_loss_1",
+            "remove_loss_3",
             "training_deterministic",
             "use_target_policy"
         ]:
@@ -359,10 +362,11 @@ class PVPTD3CPL(TD3):
                 stat_recorder["cpl_accuracy_1"].append(accuracy_1.item())
 
             # Case 3: a+ > b-
-            shuffled_indices = torch.randperm(num_comparisons)
-            cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_a_neg[shuffled_indices], zeros_label, bias=cpl_bias, shuffle=False)
-            cpl_losses.append(cpl_loss_3)
-            accuracies.append(accuracy_3)
+            if not self.extra_config["remove_loss_3"]:
+                shuffled_indices = torch.randperm(num_comparisons)
+                cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_a_neg[shuffled_indices], zeros_label, bias=cpl_bias, shuffle=False)
+                cpl_losses.append(cpl_loss_3)
+                accuracies.append(accuracy_3)
 
             # Case 5: a+ > b+ or b+ > a+
             # TODO: FIX THIS
@@ -575,62 +579,28 @@ class PVPTD3CPL(TD3):
 
 
 
+from pvp.sb3.td3.policies import TD3Policy
+
+class PVPRealTD3Policy(TD3Policy):
+    def _build(self, lr_schedule):
+        super()._build(lr_schedule)
+        self.reward_model = self.make_critic(features_extractor=None)
+        self.reward_model.optimizer = self.optimizer_class(
+            self.reward_model.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs
+        )
 
 
-class PVPRealTD3CPL(TD3):
+class PVPRealTD3CPL(PVPTD3CPL):
     actor_update_count = 0
-
-    def __init__(self, use_balance_sample=True, q_value_bound=1., *args, **kwargs):
-        """Please find the hyperparameters from original TD3"""
-        if "cql_coefficient" in kwargs:
-            self.cql_coefficient = kwargs["cql_coefficient"]
-            kwargs.pop("cql_coefficient")
-        else:
-            self.cql_coefficient = 1
-        if "replay_buffer_class" not in kwargs:
-            kwargs["replay_buffer_class"] = HACOReplayBuffer
-
-        if "intervention_start_stop_td" in kwargs:
-            self.intervention_start_stop_td = kwargs["intervention_start_stop_td"]
-            kwargs.pop("intervention_start_stop_td")
-        else:
-            # Default to set it True. We find this can improve the performance and user experience.
-            self.intervention_start_stop_td = True
-
-        self.extra_config = {}
-        for k in [
-            "use_chunk_adv",
-            "add_loss_5",
-            "prioritized_buffer"
-        ]:
-            if k in kwargs:
-                v = kwargs.pop(k)
-                assert v in ["True", "False"]
-                v = v == "True"
-                self.extra_config[k] = v
-        for k in [
-            "num_comparisons",
-            "num_steps_per_chunk",
-            "cpl_bias",
-            "top_factor"
-        ]:
-            if k in kwargs:
-                v = kwargs.pop(k)
-                self.extra_config[k] = v
-
-        self.q_value_bound = q_value_bound
-        self.use_balance_sample = use_balance_sample
-        super().__init__(*args, **kwargs)
-
-    # def _setup_lr_schedule(self):
-    #     from pvp.sb3.common.utils import get_schedule_fn
-    #     self.lr_schedule = {k: get_schedule_fn(self.learning_rate[k]) for k in self.learning_rate}
 
     def _create_aliases(self) -> None:
         self.actor = self.policy.actor
         self.actor_target = self.policy.actor_target
         self.critic = self.policy.critic
         self.critic_target = self.policy.critic_target
+
+        self.reward_model = self.policy.reward_model
+
 
     def _setup_model(self) -> None:
         super()._setup_model()
@@ -692,6 +662,8 @@ class PVPRealTD3CPL(TD3):
         new_obs = []
         new_action_behaviors = []
         new_action_novices = []
+        new_next_obs = []
+        new_dones = []
 
         new_valid_ep = []
         new_valid_step = []
@@ -702,9 +674,10 @@ class PVPRealTD3CPL(TD3):
             if len(ep.observations) - num_steps_per_chunk >= 0:
                 for s in range(len(ep.observations) - num_steps_per_chunk):
                     new_obs.append(ep.observations[s: s + num_steps_per_chunk])
+                    new_next_obs.append(ep.next_observations[s: s + num_steps_per_chunk])
                     new_action_behaviors.append(ep.actions_behavior[s: s + num_steps_per_chunk])
                     new_action_novices.append(ep.actions_novice[s: s + num_steps_per_chunk])
-
+                    new_dones.append(ep.dones[s: s + num_steps_per_chunk])
                     new_valid_ep.append(i)
                     new_valid_step.append(s)
                     new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
@@ -714,11 +687,15 @@ class PVPRealTD3CPL(TD3):
                 # Need to pad the data
                 new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
                     [num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
+                new_next_obs.append(torch.cat([ep.next_observations, ep.next_observations.new_zeros(
+                    [num_steps_per_chunk - len(ep.next_observations), *ep.next_observations.shape[1:]])], dim=0))
                 new_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
                     [num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
                 new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
                     [num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
-
+                new_dones.append(torch.cat([ep.dones, ep.dones.new_zeros(
+                    [num_steps_per_chunk - len(ep.dones), *ep.dones.shape[1:]])], dim=0)
+                                 )
                 new_valid_ep.append(i)
                 new_valid_step.append(0)
                 new_valid_count.append(ep.interventions.sum())
@@ -728,6 +705,8 @@ class PVPRealTD3CPL(TD3):
                 ]))
 
         obs = torch.stack(new_obs)
+        dones = torch.stack(new_dones)
+        next_obs = torch.stack(new_next_obs)
         actions_behavior = torch.stack(new_action_behaviors)
         actions_novice = torch.stack(new_action_novices)
 
@@ -827,11 +806,11 @@ class PVPRealTD3CPL(TD3):
 
             # NOTE: to make life easier, we assume q1 is Q net and q2 is value net.
             act = flatten_actions[flatten_valid_mask]
-            q = self.critic.q1_forward(flatten_obs[flatten_valid_mask], act)
-            v = self.critic.q2_forward(flatten_obs[flatten_valid_mask], torch.zeros_like(act))
-            a = q - v
+            values = self.reward_model(flatten_obs[flatten_valid_mask], act)
+            values = values[0]
             # values = torch.cat(values, dim=1)
             # values, _ = torch.min(values, dim=1, keepdim=True)
+            a = values
             full_values = a.new_zeros(flatten_valid_mask.shape[0])
             full_values[flatten_valid_mask] = a.flatten()
             adv_a_pos, adv_a_neg = torch.chunk(full_values, 2)
@@ -866,6 +845,8 @@ class PVPRealTD3CPL(TD3):
                 c_actions_behavior = actions_behavior[c_ind]
                 c_valid_mask = valid_mask[c_ind].flatten()
 
+
+                raise ValueError()
                 _, log_probs_tmp_c, entropy_c = self.policy.evaluate_actions(
                     c_obs.flatten(0, 1)[c_valid_mask], c_actions_behavior.flatten(0, 1)[c_valid_mask]
                 )
@@ -897,21 +878,91 @@ class PVPRealTD3CPL(TD3):
             stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
             # Optimization step
-            self.critic.optimizer.zero_grad()
+            self.reward_model.optimizer.zero_grad()
             cpl_loss.backward()
             # Clip grad norm
+            self.reward_model.optimizer.step()
+
+        for step in range(gradient_steps):
+            self._n_updates += 1
+            c_ind = None
+            num_comparisons = self.extra_config["num_comparisons"]
+
+            assert self.extra_config["use_chunk_adv"]
+            assert num_comparisons == -1
+            assert self.extra_config["prioritized_buffer"]
+            assert (valid_count > 0).any().item(), "No human in the loop data is found."
+
+            human_involved = valid_count > 0
+            num_human_involved = human_involved.sum().item()
+            stat_recorder["human_ratio"].append(num_human_involved / len(human_involved))
+
+            num_comparisons = num_human_involved
+            no_human_involved_indices = torch.nonzero(~human_involved, as_tuple=True)[0]
+
+            num_c_comparisons = 0
+            if len(no_human_involved_indices) > 0:
+                # Make the data from agent's exploration equally sized as human involved data.
+                c_ind = torch.randint(
+                    len(no_human_involved_indices), size=(num_comparisons,)
+                ).to(no_human_involved_indices.device)
+                num_c_comparisons = num_comparisons
+
+            stat_recorder["num_c_comparisons"].append(num_c_comparisons)
+
+
+            # ========================================================
+            # train the critic
+            rl_obs = obs[valid_mask]
+            rl_actions = actions_behavior[valid_mask]
+            rl_next_obs = next_obs[valid_mask]
+            rl_dones = dones[valid_mask]
+            if c_ind is not None:
+                rl_obs = torch.cat([rl_obs, c_obs], dim=0)
+                rl_actions = torch.cat([rl_actions, actions_behavior[c_ind]], dim=0)
+                rl_next_obs = torch.cat([rl_next_obs, next_obs[c_ind]], dim=0)
+
+            with th.no_grad():
+                # Select action according to policy and add clipped noise
+                noise = rl_actions.clone().data.normal_(0, self.target_policy_noise)
+                noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
+                next_actions = (self.actor_target(rl_next_obs) + noise).clamp(-1, 1)
+
+                # Compute the next Q-values: min over all critics targets
+                next_q_values = th.cat(self.critic_target(rl_next_obs, next_actions), dim=1)
+                next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
+
+                new_rewards = self.reward_model(rl_obs, rl_actions)
+                new_rewards = torch.cat(new_rewards, dim=1)
+                new_rewards, _ = torch.min(new_rewards, dim=1, keepdim=True)
+
+                # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
+                # and at this moment an instant reward +1 or -1 is given.
+                target_q_values = new_rewards + (1 - rl_dones) * self.gamma * next_q_values
+
+            # print("BS: ", len(replay_data.observations))
+
+            # Get current Q-values estimates for each critic network
+            current_q_values = self.critic(rl_obs, rl_actions)
+
+            # Compute critic loss
+            critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
+
+            stat_recorder["q_value"].append(current_q_values[0].mean().item())
+
+            # Optimize the critics
+            self.critic.optimizer.zero_grad()
+            critic_loss.backward()
             self.critic.optimizer.step()
+            stat_recorder["critic_loss"].append(critic_loss.item())
 
-
-
-            # Policy loss:
 
             # Delayed policy updates
             if self._n_updates % self.policy_delay == 0:
 
                 # Compute actor loss
                 actor_loss = -self.critic.q1_forward(
-                    obs[valid_mask], self.actor(obs[valid_mask])
+                    rl_obs, self.actor(rl_obs)
                 ).mean()
 
                 # Optimize the actor
