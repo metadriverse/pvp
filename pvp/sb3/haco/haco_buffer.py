@@ -351,12 +351,18 @@ class HACOReplayBufferEpisode(ReplayBuffer):
             self.pos += 1
 
     def sample(
-        self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False
+        self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False,
+            last_episodes = None
     ) -> HACODictReplayBufferSamples:
         """
         We will return everything we have!
         """
-        batch_inds = np.random.permutation(np.arange(self.buffer_size if self.full else self.pos))
+        if last_episodes is None:
+            batch_inds = np.random.permutation(np.arange(self.buffer_size if self.full else self.pos))
+        else:
+            s = max(0, self.pos - last_episodes)
+            e = self.pos
+            batch_inds = np.random.permutation(np.arange(s, e))
         new_ret = self._get_samples(batch_inds, env=env)
         return new_ret
 

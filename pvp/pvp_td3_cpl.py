@@ -4,10 +4,10 @@ import os
 import pathlib
 from collections import defaultdict
 from typing import Any, Dict, List, Union, Optional
-
+import copy
 import numpy as np
 import torch
-
+from pvp.sb3.common.utils import polyak_update
 from pvp.sb3.common.buffers import ReplayBuffer
 from pvp.sb3.common.save_util import load_from_pkl, save_to_pkl
 from pvp.sb3.common.type_aliases import GymEnv, MaybeCallback
@@ -76,7 +76,8 @@ class PVPTD3CPL(TD3):
             "prioritized_buffer",
             "mask_same_actions",
             "remove_loss_1",
-            "training_deterministic"
+            "training_deterministic",
+            "use_target_policy"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -102,7 +103,7 @@ class PVPTD3CPL(TD3):
     #     self.lr_schedule = {k: get_schedule_fn(self.learning_rate[k]) for k in self.learning_rate}
 
     def _create_aliases(self) -> None:
-        pass
+        self.policy_target = copy.deepcopy(self.policy)
         # self.actor = self.policy.actor
         # self.actor_target = self.policy.actor_target
         # self.critic = self.policy.critic
@@ -287,26 +288,41 @@ class PVPTD3CPL(TD3):
             a_int = interventions[a_ind]
 
             # Compute advantage for a+, b+, a-, b- trajectory:
-            flatten_obs = torch.cat([
-                a_obs.flatten(0, 1),
-                a_obs.flatten(0, 1),
-            ], dim=0)
-            flatten_actions = torch.cat([
-                a_actions_behavior.flatten(0, 1),
-                a_actions_novice.flatten(0, 1),
-            ], dim=0)
-            flatten_valid_mask = torch.cat([
-                valid_mask[a_ind].flatten(),
-                valid_mask[a_ind].flatten(),
-            ], dim=0)
 
-            _, log_probs_tmp, entropy = self.policy.evaluate_actions(
-                flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask]
-            )
-            log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
-            log_probs[flatten_valid_mask] = log_probs_tmp
 
-            lp_a_pos, lp_a_neg = torch.chunk(log_probs, 2)
+            if self.extra_config["use_target_policy"]:
+                m = valid_mask[a_ind].flatten()
+                _, log_probs_tmp1, entropy1 = self.policy.evaluate_actions(
+                    a_obs.flatten(0, 1)[m], a_actions_behavior.flatten(0, 1)[m]
+                )
+                lp_a_pos = log_probs_tmp1.new_zeros(m.shape[0])
+                lp_a_pos[m] = log_probs_tmp1
+
+                _, log_probs_tmp2, entropy1 = self.policy_target.evaluate_actions(
+                    a_obs.flatten(0, 1)[m], a_actions_novice.flatten(0, 1)[m]
+                )
+                lp_a_neg = log_probs_tmp2.new_zeros(m.shape[0])
+                lp_a_neg[m] = log_probs_tmp2
+
+            else:
+                flatten_obs = torch.cat([
+                    a_obs.flatten(0, 1),
+                    a_obs.flatten(0, 1),
+                ], dim=0)
+                flatten_actions = torch.cat([
+                    a_actions_behavior.flatten(0, 1),
+                    a_actions_novice.flatten(0, 1),
+                ], dim=0)
+                flatten_valid_mask = torch.cat([
+                    valid_mask[a_ind].flatten(),
+                    valid_mask[a_ind].flatten(),
+                ], dim=0)
+                _, log_probs_tmp, entropy = self.policy.evaluate_actions(
+                    flatten_obs[flatten_valid_mask], flatten_actions[flatten_valid_mask]
+                )
+                log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
+                log_probs[flatten_valid_mask] = log_probs_tmp
+                lp_a_pos, lp_a_neg = torch.chunk(log_probs, 2)
 
             # Debug code:
             # gt = torch.cat(
@@ -416,6 +432,8 @@ class PVPTD3CPL(TD3):
             # Clip grad norm
             torch.nn.utils.clip_grad_norm_(self.policy.parameters(), 10.0)
             self.policy.optimizer.step()
+
+            polyak_update(self.policy.parameters(), self.policy_target.parameters(), self.tau)
 
             self.actor_update_count += 1
 
