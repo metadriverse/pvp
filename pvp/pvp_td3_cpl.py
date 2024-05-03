@@ -367,6 +367,8 @@ class PVPTD3CPL(TD3):
                 cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_a_neg[shuffled_indices], zeros_label, bias=cpl_bias, shuffle=False)
                 cpl_losses.append(cpl_loss_3)
                 accuracies.append(accuracy_3)
+                stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
+                stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
             # Case 5: a+ > b+ or b+ > a+
             # TODO: FIX THIS
@@ -422,13 +424,11 @@ class PVPTD3CPL(TD3):
             accuracy = sum(accuracies) / len(cpl_losses)
 
             # stat_recorder["cpl_loss_2"].append(cpl_loss_2.item())
-            stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
             # stat_recorder["cpl_loss_4"].append(cpl_loss_4.item())
             # stat_recorder["cpl_loss_5"].append(cpl_loss_5.item())
 
             stat_recorder["cpl_accuracy"].append(accuracy.item())
             # stat_recorder["cpl_accuracy_2"].append(accuracy_2.item())
-            stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
             # stat_recorder["cpl_accuracy_4"].append(accuracy_4.item())
             # stat_recorder["cpl_accuracy_5"].append(accuracy_5.item())
 
