@@ -2,6 +2,8 @@ import argparse
 import os
 from pathlib import Path
 import uuid
+import numpy as np
+
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
@@ -82,6 +84,19 @@ if __name__ == '__main__':
     free_level = args.free_level
     real_td3 = args.real_td3
 
+    # TODO: CONFIG!!!!
+    # def f(M):
+    #     A = 2
+    #     alpha = 0.1
+    #     # M = 1
+    #     log_std_init = (- M / (A * alpha)) - np.log(np.sqrt(2 * np.pi))
+    #
+    #     G = 2
+    #     minus = A * alpha * G * G * np.pi / np.exp(-2*M/(A * alpha))
+    #     min_val = M - minus
+    #     print(min_val)
+    log_std_init = 0.0
+
     # ===== Setup the config =====
     config = dict(
 
@@ -124,7 +139,13 @@ if __name__ == '__main__':
                 discard_reward=True,  # We run in reward-free manner!
                 # max_steps=1000,  # TODO: CONFIG
             ),
-            policy_kwargs=dict(net_arch=[256, 256]),
+            policy_kwargs=dict(
+                net_arch=[256, 256],
+                dist_kwargs=dict(
+                    fixed_log_std=True,
+                    log_std_init=log_std_init,
+                ),
+            ),
             env=None,
             learning_rate=1e-4,
 

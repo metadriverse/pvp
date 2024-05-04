@@ -428,6 +428,7 @@ class ActorCriticPolicy(BasePolicy):
         normalize_images: bool = True,
         optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
+        fixed_log_std: bool = False,
     ):
 
         if optimizer_kwargs is None:
@@ -462,6 +463,7 @@ class ActorCriticPolicy(BasePolicy):
 
         self.normalize_images = normalize_images
         self.log_std_init = log_std_init
+        self.fixed_log_std = fixed_log_std
         dist_kwargs = None
         # Keyword arguments for gSDE distribution
         if use_sde:
@@ -546,7 +548,7 @@ class ActorCriticPolicy(BasePolicy):
 
         if isinstance(self.action_dist, DiagGaussianDistribution):
             self.action_net, self.log_std = self.action_dist.proba_distribution_net(
-                latent_dim=latent_dim_pi, log_std_init=self.log_std_init
+                latent_dim=latent_dim_pi, log_std_init=self.log_std_init, fixed_log_std=self.fixed_log_std
             )
         elif isinstance(self.action_dist, StateDependentNoiseDistribution):
             self.action_net, self.log_std = self.action_dist.proba_distribution_net(
