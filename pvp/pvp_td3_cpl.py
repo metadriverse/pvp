@@ -649,6 +649,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
         self.critic_target = self.policy.critic_target
 
         self.reward_model = self.policy.reward_model
+        self.reward_model_target = self.policy.reward_model_target
 
 
     def _setup_model(self) -> None:
