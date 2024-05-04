@@ -9,7 +9,7 @@ for i in {0..1}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-onlyfirstint=True-remove_loss_3=True \
+    --exp_name=cplppo-cpl_bias=0.5-fixedstd-remove_loss_3=True \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -21,7 +21,7 @@ do
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
-    --mask_same_actions=True \
+    --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
     --use_target_policy=False \
@@ -36,7 +36,7 @@ for i in {2..3}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-onlyfirstint=True-remove_loss_1=True \
+    --exp_name=cplppo-cpl_bias=0.5-fixedstd-remove_loss_1=True \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -48,7 +48,7 @@ do
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
-    --mask_same_actions=True \
+    --mask_same_actions=False \
     --remove_loss_1=True \
     --training_deterministic=True \
     --use_target_policy=False \
@@ -63,7 +63,7 @@ for i in {4..5}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.0-onlyfirstint=True-allloss \
+    --exp_name=cplppo-cpl_bias=0.0-fixedstd-allloss \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -75,7 +75,7 @@ do
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
-    --mask_same_actions=True \
+    --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
     --use_target_policy=False \
@@ -91,7 +91,7 @@ for i in {6..7}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-onlyfirstint=True-allloss \
+    --exp_name=cplppo-cpl_bias=0.5-fixedstd-allloss \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -103,7 +103,7 @@ do
     --num_comparisons=-1 \
     --add_loss_5=False \
     --prioritized_buffer=True \
-    --mask_same_actions=True \
+    --mask_same_actions=False \
     --remove_loss_1=False \
     --training_deterministic=True \
     --use_target_policy=False \
