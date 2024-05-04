@@ -429,6 +429,7 @@ class ActorCriticPolicy(BasePolicy):
         optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
         fixed_log_std: bool = False,
+        dist_kwargs: Optional[Dict[str, Any]] = None,
     ):
 
         if optimizer_kwargs is None:
@@ -464,7 +465,6 @@ class ActorCriticPolicy(BasePolicy):
         self.normalize_images = normalize_images
         self.log_std_init = log_std_init
         self.fixed_log_std = fixed_log_std
-        dist_kwargs = None
         # Keyword arguments for gSDE distribution
         if use_sde:
             dist_kwargs = {

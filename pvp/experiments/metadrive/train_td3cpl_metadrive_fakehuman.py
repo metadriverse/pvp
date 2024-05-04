@@ -141,10 +141,8 @@ if __name__ == '__main__':
             ),
             policy_kwargs=dict(
                 net_arch=[256, 256],
-                dist_kwargs=dict(
-                    fixed_log_std=True,
-                    log_std_init=log_std_init,
-                ),
+                fixed_log_std=True,
+                log_std_init=log_std_init,
             ),
             env=None,
             learning_rate=1e-4,
