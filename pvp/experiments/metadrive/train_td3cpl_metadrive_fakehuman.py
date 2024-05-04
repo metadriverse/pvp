@@ -88,13 +88,23 @@ if __name__ == '__main__':
     # def f(M):
     #     A = 2
     #     alpha = 0.1
-    #     # M = 1
-    #     log_std_init = (- M / (A * alpha)) - np.log(np.sqrt(2 * np.pi))
+    #     M = 1
+    #     # log_std_init = (- M / (A * alpha)) - np.log(np.sqrt(2 * np.pi))
     #
     #     G = 2
     #     minus = A * alpha * G * G * np.pi / np.exp(-2*M/(A * alpha))
     #     min_val = M - minus
     #     print(min_val)
+    #
+    # def f(log_std):
+    #     A = 2
+    #     alpha = 0.1
+    #     sigma = np.exp(log_std)
+    #     G = 2
+    #     max_a = - A * alpha * (log_std + np.log(np.sqrt(2 * np.pi)))
+    #     min_a = - A * alpha * (G * G / (2 * sigma * sigma)) + max_a
+    #     print(min_a, max_a)
+    #     print(min_a * 64, max_a * 64)
     log_std_init = 0.0
 
     # ===== Setup the config =====

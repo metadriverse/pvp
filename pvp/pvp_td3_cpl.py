@@ -482,7 +482,14 @@ class PVPTD3CPL(TD3):
 
             self.actor_update_count += 1
 
+        action_norm = np.linalg.norm(
+            self.policy.predict(a_obs.cpu().flatten(0, 1), deterministic=True)[0] - actions_behavior.flatten(0,
+                                                                                                             1).cpu().numpy(),
+            axis=-1).mean()
+        gt_norm = (actions_novice - actions_behavior).norm(dim=-1).mean().item()
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+        self.logger.record("train/pred_action_norm", action_norm)
+        self.logger.record("train/gt_action_norm", gt_norm)
         for key, values in stat_recorder.items():
             self.logger.record("train/{}".format(key), np.mean(values))
 
@@ -628,6 +635,9 @@ class PVPRealTD3Policy(TD3Policy):
             self.reward_model.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs
         )
 
+        self.reward_model_target = self.make_critic(features_extractor=None)
+        self.reward_model_target.load_state_dict(self.reward_model.state_dict())
+        self.reward_model_target.set_training_mode(False)
 
 class PVPRealTD3CPL(PVPTD3CPL):
     actor_update_count = 0
@@ -694,6 +704,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
 
         num_steps_per_chunk = self.extra_config["num_steps_per_chunk"]
 
+
         # if self.extra_config["use_chunk_adv"]:
         # Reorganize data with chunks
         # Now obs.shape = (#batches, #steps, #features)
@@ -701,13 +712,15 @@ class PVPRealTD3CPL(PVPTD3CPL):
         new_obs = []
         new_action_behaviors = []
         new_action_novices = []
-        new_next_obs = []
-        new_dones = []
 
         new_valid_ep = []
         new_valid_step = []
         new_valid_count = []
         new_valid_mask = []
+        new_next_obs = []
+        interventions = []
+        is_before_first_intervention = []
+        new_dones = []
 
         for i, ep in enumerate(replay_data_agent):
             if len(ep.observations) - num_steps_per_chunk >= 0:
@@ -722,6 +735,15 @@ class PVPRealTD3CPL(PVPTD3CPL):
                     new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
                     new_valid_mask.append(ep.interventions.new_ones(num_steps_per_chunk))
 
+                    intervention = ep.interventions[s: s + num_steps_per_chunk]
+                    first_intervention = intervention.squeeze(-1).argmax()
+                    interventions.append(intervention)
+                    is_before_first_intervention.append(
+                        torch.nn.functional.pad(
+                            intervention.new_ones(first_intervention + 1), pad=(0, num_steps_per_chunk - first_intervention - 1)
+                        )
+                    )
+
             else:
                 # Need to pad the data
                 new_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
@@ -733,8 +755,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
                 new_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
                     [num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
                 new_dones.append(torch.cat([ep.dones, ep.dones.new_zeros(
-                    [num_steps_per_chunk - len(ep.dones), *ep.dones.shape[1:]])], dim=0)
-                                 )
+                    [num_steps_per_chunk - len(ep.dones), *ep.dones.shape[1:]])], dim=0))
                 new_valid_ep.append(i)
                 new_valid_step.append(0)
                 new_valid_count.append(ep.interventions.sum())
@@ -743,18 +764,52 @@ class PVPRealTD3CPL(PVPTD3CPL):
                     ep.interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
                 ]))
 
+                intervention = torch.cat([
+                    ep.interventions,
+                    ep.interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
+                ])
+                first_intervention = intervention.squeeze(-1).argmax()
+                interventions.append(intervention)
+                is_before_first_intervention.append(
+                    torch.nn.functional.pad(
+                        intervention.new_ones(first_intervention + 1),
+                        pad=(0, num_steps_per_chunk - first_intervention - 1)
+                    )
+                )
+
         obs = torch.stack(new_obs)
-        dones = torch.stack(new_dones)
-        next_obs = torch.stack(new_next_obs)
         actions_behavior = torch.stack(new_action_behaviors)
         actions_novice = torch.stack(new_action_novices)
+        next_obs = torch.stack(new_next_obs)
+        dones = torch.stack(new_dones)
+        interventions = torch.stack(interventions).squeeze(-1)
+        is_before_first_intervention = torch.stack(is_before_first_intervention)
+
+
+
+
+        # We also need to prepare RL data:
+        rl_obs = []
+        rl_next_obs = []
+        rl_actions = []
+        rl_dones = []
+        for i, ep in enumerate(replay_data_agent):
+            rl_obs.append(ep.observations)
+            rl_next_obs.append(ep.next_observations)
+            rl_actions.append(ep.actions_behavior)
+            rl_dones.append(ep.dones)
+        rl_obs = torch.cat(rl_obs)
+        rl_next_obs = torch.cat(rl_next_obs)
+        rl_actions = torch.cat(rl_actions)
+        rl_dones = torch.cat(rl_dones)
+
 
         # FIXME
         # FIXME
         # FIXME
         # FIXME
         # FIXME
-        actions_novice = actions_novice.clamp(-1, 1)
+        # actions_novice = actions_novice.clamp(-1, 1)
 
         new_valid_mask = torch.stack(new_valid_mask).bool()
         new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(obs.device)
@@ -762,6 +817,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
         new_valid_count = torch.stack(new_valid_count).to(obs.device).int()
         valid_count = new_valid_count
         valid_mask = new_valid_mask
+
 
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
@@ -848,7 +904,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
             values = self.reward_model(flatten_obs[flatten_valid_mask], act)
             values = values[0]
             # values = torch.cat(values, dim=1)
-            # values, _ = torch.min(values, dim=1, keepdim=True)
+            # values = torch.mean(values, dim=1, keepdim=True)
             a = values
             full_values = a.new_zeros(flatten_valid_mask.shape[0])
             full_values[flatten_valid_mask] = a.flatten()
@@ -922,44 +978,29 @@ class PVPRealTD3CPL(PVPTD3CPL):
             # Clip grad norm
             self.reward_model.optimizer.step()
 
+            polyak_update(self.reward_model.parameters(), self.reward_model_target.parameters(), self.tau)
+
+            # if accuracy.item() > 0.95:
+            #     break
+
+        # ===== Relabel the dataset =====
+        # rl_obs = obs[valid_mask]
+        # rl_actions = actions_behavior[valid_mask]
+        # rl_next_obs = next_obs[valid_mask]
+        # rl_dones = dones[valid_mask]
+        # if c_ind is not None:
+        #     rl_obs = torch.cat([rl_obs, c_obs], dim=0)
+        #     rl_actions = torch.cat([rl_actions, actions_behavior[c_ind]], dim=0)
+        #     rl_next_obs = torch.cat([rl_next_obs, next_obs[c_ind]], dim=0)
+        with torch.no_grad():
+            new_rewards = self.reward_model_target(rl_obs, rl_actions)[0]
+            # new_rewards = torch.cat(new_rewards, dim=1)
+            # # TODO: Might want to use min.
+            # new_rewards, _ = torch.mean(new_rewards, dim=1, keepdim=True)
+
         for step in range(gradient_steps):
-            self._n_updates += 1
-            c_ind = None
-            num_comparisons = self.extra_config["num_comparisons"]
-
-            assert self.extra_config["use_chunk_adv"]
-            assert num_comparisons == -1
-            assert self.extra_config["prioritized_buffer"]
-            assert (valid_count > 0).any().item(), "No human in the loop data is found."
-
-            human_involved = valid_count > 0
-            num_human_involved = human_involved.sum().item()
-            stat_recorder["human_ratio"].append(num_human_involved / len(human_involved))
-
-            num_comparisons = num_human_involved
-            no_human_involved_indices = torch.nonzero(~human_involved, as_tuple=True)[0]
-
-            num_c_comparisons = 0
-            if len(no_human_involved_indices) > 0:
-                # Make the data from agent's exploration equally sized as human involved data.
-                c_ind = torch.randint(
-                    len(no_human_involved_indices), size=(num_comparisons,)
-                ).to(no_human_involved_indices.device)
-                num_c_comparisons = num_comparisons
-
-            stat_recorder["num_c_comparisons"].append(num_c_comparisons)
-
-
             # ========================================================
             # train the critic
-            rl_obs = obs[valid_mask]
-            rl_actions = actions_behavior[valid_mask]
-            rl_next_obs = next_obs[valid_mask]
-            rl_dones = dones[valid_mask]
-            if c_ind is not None:
-                rl_obs = torch.cat([rl_obs, c_obs], dim=0)
-                rl_actions = torch.cat([rl_actions, actions_behavior[c_ind]], dim=0)
-                rl_next_obs = torch.cat([rl_next_obs, next_obs[c_ind]], dim=0)
 
             with th.no_grad():
                 # Select action according to policy and add clipped noise
@@ -971,13 +1012,14 @@ class PVPRealTD3CPL(PVPTD3CPL):
                 next_q_values = th.cat(self.critic_target(rl_next_obs, next_actions), dim=1)
                 next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
 
-                new_rewards = self.reward_model(rl_obs, rl_actions)
-                new_rewards = torch.cat(new_rewards, dim=1)
-                new_rewards, _ = torch.min(new_rewards, dim=1, keepdim=True)
 
                 # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
                 # and at this moment an instant reward +1 or -1 is given.
                 target_q_values = new_rewards + (1 - rl_dones) * self.gamma * next_q_values
+
+                stat_recorder["reward_mean"].append(new_rewards.mean().item())
+                stat_recorder["reward_min"].append(new_rewards.min().item())
+                stat_recorder["reward_max"].append(new_rewards.max().item())
 
             # print("BS: ", len(replay_data.observations))
 
@@ -997,7 +1039,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
 
 
             # Delayed policy updates
-            if self._n_updates % self.policy_delay == 0:
+            if self.actor_update_count % self.policy_delay == 0:
 
                 # Compute actor loss
                 actor_loss = -self.critic.q1_forward(
@@ -1009,11 +1051,18 @@ class PVPRealTD3CPL(PVPTD3CPL):
                 actor_loss.backward()
                 self.actor.optimizer.step()
 
-                # polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
-                # polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
+                polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
+                polyak_update(self.actor.parameters(), self.actor_target.parameters(), self.tau)
 
                 stat_recorder["actor_loss"].append(actor_loss.item())
                 self.actor_update_count += 1
+
+        action_norm = np.linalg.norm(self.policy.predict(rl_obs.cpu(), deterministic=True)[0] - rl_actions.cpu().numpy(), axis=-1).mean()
+        gt_norm = (actions_novice - actions_behavior).norm(dim=-1).mean().item()
+
+
+        self.logger.record("train/pred_action_norm", action_norm)
+        self.logger.record("train/gt_action_norm", gt_norm)
 
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
         for key, values in stat_recorder.items():
