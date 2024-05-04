@@ -14,7 +14,7 @@ do
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.25 \
+    --free_level=0.95 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
     --cpl_bias=0.5 \
@@ -41,7 +41,7 @@ do
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.25 \
+    --free_level=0.95 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
     --cpl_bias=0.5 \
@@ -69,7 +69,7 @@ do
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
     --seed=${seeds[$i]} \
-    --free_level=0.25 \
+    --free_level=0.95 \
     --use_chunk_adv=True \
     --num_steps_per_chunk=64 \
     --cpl_bias=0.5 \
