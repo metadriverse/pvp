@@ -180,6 +180,7 @@ class PVPTD3CPL(TD3):
         new_valid_mask = []
 
         interventions = []
+        is_before_first_intervention = []
 
         for i, ep in enumerate(replay_data_agent):
             if len(ep.observations) - num_steps_per_chunk >= 0:
@@ -193,7 +194,14 @@ class PVPTD3CPL(TD3):
                     new_valid_count.append(ep.interventions[s: s + num_steps_per_chunk].sum())
                     new_valid_mask.append(ep.interventions.new_ones(num_steps_per_chunk))
 
-                    interventions.append(ep.interventions[s: s + num_steps_per_chunk])
+                    intervention = ep.interventions[s: s + num_steps_per_chunk]
+                    first_intervention = intervention.squeeze(-1).argmax()
+                    interventions.append(intervention)
+                    is_before_first_intervention.append(
+                        torch.nn.functional.pad(
+                            intervention.new_ones(first_intervention + 1), pad=(0, num_steps_per_chunk - first_intervention - 1)
+                        )
+                    )
 
             else:
                 # Need to pad the data
@@ -212,16 +220,25 @@ class PVPTD3CPL(TD3):
                     ep.interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
                 ]))
 
-                interventions.append(torch.cat([
+                intervention = torch.cat([
                     ep.interventions,
                     ep.interventions.new_zeros(num_steps_per_chunk - len(ep.interventions))
-                ]))
+                ])
+                first_intervention = intervention.squeeze(-1).argmax()
+                interventions.append(intervention)
+                is_before_first_intervention.append(
+                    torch.nn.functional.pad(
+                        intervention.new_ones(first_intervention + 1),
+                        pad=(0, num_steps_per_chunk - first_intervention - 1)
+                    )
+                )
 
         obs = torch.stack(new_obs)
         actions_behavior = torch.stack(new_action_behaviors)
         actions_novice = torch.stack(new_action_novices)
 
         interventions = torch.stack(interventions).squeeze(-1)
+        is_before_first_intervention = torch.stack(is_before_first_intervention)
 
         # FIXME
         # FIXME
@@ -372,7 +389,10 @@ class PVPTD3CPL(TD3):
             if not self.extra_config["remove_loss_1"]:
                 # Case 1: a+ > a-
                 if self.extra_config["mask_same_actions"]:
-                    cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * a_int).sum(-1), (adv_a_neg2 * a_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
+
+                    # Create a mask so that after the first step where intervention happens the mask is all zeros.
+                    before_int = is_before_first_intervention[a_ind]
+                    cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * before_int).sum(-1), (adv_a_neg2 * before_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
                 else:
                     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
                 cpl_losses.append(cpl_loss_1)
