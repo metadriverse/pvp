@@ -483,8 +483,8 @@ class PVPTD3CPL(TD3):
             self.actor_update_count += 1
 
         action_norm = np.linalg.norm(
-            self.policy.predict(a_obs.cpu().flatten(0, 1), deterministic=True)[0] - actions_behavior.flatten(0,
-                                                                                                             1).cpu().numpy(),
+            self.policy.predict(obs.cpu().flatten(0, 1), deterministic=True)[0]
+            - actions_behavior.flatten(0, 1).cpu().numpy(),
             axis=-1).mean()
         gt_norm = (actions_novice - actions_behavior).norm(dim=-1).mean().item()
         self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
