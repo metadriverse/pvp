@@ -79,6 +79,7 @@ class PVPTD3CPL(TD3):
             "mask_same_actions",
             "remove_loss_1",
             "remove_loss_3",
+            "remove_loss_6",
             "training_deterministic",
             "use_target_policy"
         ]:
@@ -410,14 +411,18 @@ class PVPTD3CPL(TD3):
                 stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
             # Case 5: a+ > b+ or b+ > a+
-            # TODO: FIX THIS
-            # label5 = a_count > a_count  # if a_count>b_count, we prefer b as it costs less intervention.
-            # label5 = label5.float()
-            # label5[b_count == a_count] = 0.5
-            # cpl_loss_5, accuracy_5 = biased_bce_with_logits(adv_a_pos, adv_b_pos, label5, bias=cpl_bias, shuffle=False)
-            # if self.extra_config["add_loss_5"]:
-            #     cpl_losses.append(cpl_loss_5)
-            #     accuracies.append(accuracy_5)
+            if self.extra_config["add_loss_5"]:
+                shuffled_indices5 = torch.randperm(num_comparisons)
+
+                b_count = valid_count[ind][shuffled_indices5]
+                a_count = valid_count[ind]
+                label5 = (a_count < b_count).float()
+                label5[a_count == b_count] = 0.5
+                cpl_loss_5, accuracy_5 = biased_bce_with_logits(
+                    adv_a_pos, adv_a_pos[shuffled_indices5], label5, bias=cpl_bias, shuffle=False)
+
+                cpl_losses.append(cpl_loss_5)
+                accuracies.append(accuracy_5)
 
             # Compute the c trajectory:
             if c_ind is not None:
@@ -441,8 +446,9 @@ class PVPTD3CPL(TD3):
                 cpl_loss_6, accuracy_6 = biased_bce_with_logits(
                     adv_c, adv_a_neg, zeros_label_c, bias=cpl_bias, shuffle=False
                 )
-                cpl_losses.append(cpl_loss_6)
-                accuracies.append(accuracy_6)
+                if not self.extra_config["remove_loss_6"]:
+                    cpl_losses.append(cpl_loss_6)
+                    accuracies.append(accuracy_6)
                 # cpl_loss_62, accuracy_62 = biased_bce_with_logits(
                 #     adv_c[:min_comparison], adv_b_neg[:min_comparison], zeros_label_c, bias=cpl_bias, shuffle=False
                 # )

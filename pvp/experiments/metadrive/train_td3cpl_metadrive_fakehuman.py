@@ -46,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument("--mask_same_actions", type=str, default="False")
     parser.add_argument("--remove_loss_1", type=str, default="False")
     parser.add_argument("--remove_loss_3", type=str, default="False")
+    parser.add_argument("--remove_loss_6", type=str, default="False")
     parser.add_argument("--use_target_policy", type=str, default="False")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
@@ -139,6 +140,7 @@ if __name__ == '__main__':
             mask_same_actions=args.mask_same_actions,
             remove_loss_1=args.remove_loss_1,
             remove_loss_3=args.remove_loss_3,
+            remove_loss_6=args.remove_loss_6,
             use_target_policy=args.use_target_policy,
             last_ratio=args.last_ratio,
 
