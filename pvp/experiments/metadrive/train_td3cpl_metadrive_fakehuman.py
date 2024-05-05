@@ -49,6 +49,7 @@ if __name__ == '__main__':
     parser.add_argument("--remove_loss_3", type=str, default="False")
     parser.add_argument("--remove_loss_6", type=str, default="False")
     parser.add_argument("--use_target_policy", type=str, default="False")
+    parser.add_argument("--use_target_policy_only_overwrite_takeover", type=str, default="False")
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--max_comparisons", type=int, default=10000)
@@ -148,7 +149,7 @@ if __name__ == '__main__':
             use_target_policy=args.use_target_policy,
             last_ratio=args.last_ratio,
             max_comparisons=args.max_comparisons,
-
+            use_target_policy_only_overwrite_takeover=args.use_target_policy_only_overwrite_takeover,
 
             use_balance_sample=True,
             policy=MlpPolicy if not real_td3 else PVPRealTD3Policy,

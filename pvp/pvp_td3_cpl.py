@@ -82,7 +82,8 @@ class PVPTD3CPL(TD3):
             "remove_loss_3",
             "remove_loss_6",
             "training_deterministic",
-            "use_target_policy"
+            "use_target_policy",
+            "use_target_policy_only_overwrite_takeover"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -248,6 +249,7 @@ class PVPTD3CPL(TD3):
         # FIXME
         # FIXME
         # FIXME
+        actions_novice_noclamp = actions_novice
         actions_novice = actions_novice.clamp(-1, 1)
 
         new_valid_mask = torch.stack(new_valid_mask).bool()
@@ -274,7 +276,19 @@ class PVPTD3CPL(TD3):
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
 
+        # TODO REMOVE
+        # first_chunk = valid_count.nonzero()[0].item()
+        # first_step = interventions[first_chunk].nonzero()[0].item()
+        # print("Action behavior: ", actions_behavior[first_chunk, first_step])
+        # print("Action novice: ", actions_novice[first_chunk, first_step])
+
         for step in range(gradient_steps):
+
+            # TODO: REMOVE
+            # if step % 100 == 0 or step == gradient_steps - 1:
+            #     print("STEP", step, self.policy.predict(obs[first_chunk, first_step].cpu(), deterministic=True)[0])
+
+
             self._n_updates += 1
             alpha = 0.1
             c_ind = None
@@ -328,8 +342,20 @@ class PVPTD3CPL(TD3):
                 lp_a_pos = log_probs_tmp1.new_zeros(m.shape[0])
                 lp_a_pos[m] = log_probs_tmp1
 
-                _, log_probs_tmp2, entropy2 = self.policy_target.evaluate_actions(
-                    a_obs.flatten(0, 1)[m], a_actions_novice.flatten(0, 1)[m]
+                with torch.no_grad():
+                    a_actions_novice_target = self.policy_target._predict(a_obs.flatten(0, 1)[m], deterministic=False)
+
+                if self.extra_config["use_target_policy_only_overwrite_takeover"]:
+                    int_mask = a_int.flatten(0, 1)
+                    a_actions_novice = torch.where(
+                        (int_mask == 1)[:, None], a_actions_novice_target, a_actions_novice.flatten(0, 1)[m]
+                    )
+
+                else:
+                    a_actions_novice = a_actions_novice_target
+
+                _, log_probs_tmp2, entropy2 = self.policy.evaluate_actions(
+                    a_obs.flatten(0, 1)[m], a_actions_novice
                 )
                 lp_a_neg = log_probs_tmp2.new_zeros(m.shape[0])
                 lp_a_neg[m] = log_probs_tmp2
@@ -355,6 +381,8 @@ class PVPTD3CPL(TD3):
                 log_probs = log_probs_tmp.new_zeros(flatten_valid_mask.shape[0])
                 log_probs[flatten_valid_mask] = log_probs_tmp
                 lp_a_pos, lp_a_neg = torch.chunk(log_probs, 2)
+
+                stat_recorder["log_probs"].append(log_probs_tmp.mean().item())
 
             # Debug code:
             # gt = torch.cat(
