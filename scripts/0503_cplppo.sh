@@ -9,7 +9,7 @@ for i in {4..5}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-remove_loss_1 \
+    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-remove_loss_1-clamp \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -37,7 +37,7 @@ for i in {6..7}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-regression \
+    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-regression-clamp \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
