@@ -924,6 +924,8 @@ class PVPRealTD3CPL(PVPTD3CPL):
             cpl_loss_3, accuracy_3 = biased_bce_with_logits(adv_a_pos, adv_a_neg[shuffled_indices], zeros_label, bias=cpl_bias, shuffle=False)
             cpl_losses.append(cpl_loss_3)
             accuracies.append(accuracy_3)
+            stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
+            stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
             # Case 5: a+ > b+ or b+ > a+
             # TODO: FIX THIS
@@ -968,10 +970,8 @@ class PVPRealTD3CPL(PVPTD3CPL):
             cpl_loss = sum(cpl_losses)
             accuracy = sum(accuracies) / len(cpl_losses)
             stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
-            stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
             stat_recorder["cpl_accuracy"].append(accuracy.item())
             stat_recorder["cpl_accuracy_1"].append(accuracy_1.item())
-            stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
             # Optimization step
             self.reward_model.optimizer.zero_grad()

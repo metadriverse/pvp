@@ -52,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
     parser.add_argument("--last_ratio", type=float, default=-1)
+    parser.add_argument("--log_std_init", type=float, default=0.0)
 
     parser.add_argument("--real_td3", action="store_true")
 
@@ -105,7 +106,7 @@ if __name__ == '__main__':
     #     min_a = - A * alpha * (G * G / (2 * sigma * sigma)) + max_a
     #     print(min_a, max_a)
     #     print(min_a * 64, max_a * 64)
-    log_std_init = 0.0
+    log_std_init = args.log_std_init
 
     # ===== Setup the config =====
     config = dict(
