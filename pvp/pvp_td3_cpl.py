@@ -821,7 +821,7 @@ class PVPRealTD3CPL(PVPTD3CPL):
         # FIXME
         # FIXME
         # FIXME
-        # actions_novice = actions_novice.clamp(-1, 1)
+        actions_novice = actions_novice.clamp(-1, 1)
 
         new_valid_mask = torch.stack(new_valid_mask).bool()
         new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(obs.device)
