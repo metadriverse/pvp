@@ -648,6 +648,12 @@ class PVPRealTD3Policy(TD3Policy):
 class PVPRealTD3CPL(PVPTD3CPL):
     actor_update_count = 0
 
+    def __init__(self, *args, **kwargs):
+        for k in ["log_std_init", "fixed_log_std"]:
+            if k in kwargs:
+                kwargs.pop(k)
+        super().__init__(*args, **kwargs)
+
     def _create_aliases(self) -> None:
         self.actor = self.policy.actor
         self.actor_target = self.policy.actor_target
@@ -656,7 +662,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
 
         self.reward_model = self.policy.reward_model
         self.reward_model_target = self.policy.reward_model_target
-
 
     def _setup_model(self) -> None:
         super()._setup_model()

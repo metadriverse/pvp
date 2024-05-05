@@ -118,6 +118,7 @@ class TD3Policy(BasePolicy):
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
         n_critics: int = 2,
         share_features_extractor: bool = True,
+        **kwargs
     ):
         super(TD3Policy, self).__init__(
             observation_space,

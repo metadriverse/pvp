@@ -105,6 +105,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         sde_support: bool = True,
         remove_time_limit_termination: bool = False,
         supported_action_spaces: Optional[Tuple[gym.spaces.Space, ...]] = None,
+        **kwargs
     ):
 
         super(OffPolicyAlgorithm, self).__init__(

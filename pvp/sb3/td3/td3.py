@@ -87,9 +87,6 @@ class TD3(OffPolicyAlgorithm):
         _init_setup_model: bool = True,
         monitor_wrapper=False,
     ):
-        for k in ["log_std_init", "fixed_log_std"]:
-            if k in policy_kwargs:
-                policy_kwargs.pop(k)
 
         super(TD3, self).__init__(
             policy,

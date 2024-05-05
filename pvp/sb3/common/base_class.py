@@ -99,6 +99,7 @@ class BaseAlgorithm(ABC):
         use_sde: bool = False,
         sde_sample_freq: int = -1,
         supported_action_spaces: Optional[Tuple[gym.spaces.Space, ...]] = None,
+        **kwargs
     ):
 
         if isinstance(policy, str) and policy_base is not None:
