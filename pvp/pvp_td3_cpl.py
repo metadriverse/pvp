@@ -93,7 +93,8 @@ class PVPTD3CPL(TD3):
             "num_steps_per_chunk",
             "cpl_bias",
             "top_factor",
-            "last_ratio"
+            "last_ratio",
+            "max_comparisons"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -296,12 +297,14 @@ class PVPTD3CPL(TD3):
             # num_left = max(10, num_left)
             # descending_indices = descending_indices[:num_left]
 
-            # num_comparisons = num_human_involved // 2
-            num_comparisons = num_human_involved
+            # Hard limit the number of comparisons to avoid GPU OOM
+            num_comparisons = min(num_human_involved, self.extra_config["max_comparisons"])
 
             # Randomly select num_comparisons indices in the human involved data. The indices should in
             # range len(valid_count) not num_human_involved.
             ind = torch.randperm(num_human_involved)
+            ind = ind[:num_comparisons]
+
             human_involved_indices = torch.nonzero(human_involved, as_tuple=True)[0]
             no_human_involved_indices = torch.nonzero(~human_involved, as_tuple=True)[0]
             a_ind = human_involved_indices[ind]
