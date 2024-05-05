@@ -43,6 +43,7 @@ if __name__ == '__main__':
     parser.add_argument("--use_chunk_adv", type=str, default="True")
     parser.add_argument("--training_deterministic", type=str, default="True")
     parser.add_argument("--add_loss_5", type=str, default="False")
+    parser.add_argument("--add_loss_5_inverse", type=str, default="False")
     parser.add_argument("--mask_same_actions", type=str, default="False")
     parser.add_argument("--remove_loss_1", type=str, default="False")
     parser.add_argument("--remove_loss_3", type=str, default="False")
@@ -56,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--last_ratio", type=float, default=-1)
     parser.add_argument("--log_std_init", type=float, default=0.0)
 
+    parser.add_argument("--fixed_log_std", action="store_true")
     parser.add_argument("--real_td3", action="store_true")
 
     parser.add_argument("--eval", action="store_true")
@@ -137,6 +139,7 @@ if __name__ == '__main__':
             training_deterministic=args.training_deterministic,
             cpl_bias=args.cpl_bias,
             add_loss_5=args.add_loss_5,
+            add_loss_5_inverse=args.add_loss_5_inverse,
             top_factor=args.top_factor,
             mask_same_actions=args.mask_same_actions,
             remove_loss_1=args.remove_loss_1,
@@ -156,7 +159,7 @@ if __name__ == '__main__':
             ),
             policy_kwargs=dict(
                 net_arch=[256, 256],
-                fixed_log_std=True,
+                fixed_log_std=args.fixed_log_std,
                 log_std_init=log_std_init,
             ),
             env=None,

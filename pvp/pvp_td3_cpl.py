@@ -75,6 +75,7 @@ class PVPTD3CPL(TD3):
         for k in [
             "use_chunk_adv",
             "add_loss_5",
+            "add_loss_5_inverse",
             "prioritized_buffer",
             "mask_same_actions",
             "remove_loss_1",
@@ -310,16 +311,6 @@ class PVPTD3CPL(TD3):
             a_ind = human_involved_indices[ind]
             # b_ind = human_involved_indices[ind[-num_comparisons:]]
 
-            num_c_comparisons = 0
-            if len(no_human_involved_indices) > 0:
-                # Make the data from agent's exploration equally sized as human involved data.
-                c_ind = torch.randint(
-                    len(no_human_involved_indices), size=(num_comparisons,)
-                ).to(no_human_involved_indices.device)
-                num_c_comparisons = num_comparisons
-
-            stat_recorder["num_c_comparisons"].append(num_c_comparisons)
-
             a_count = valid_count[a_ind]
             a_obs = obs[a_ind]
             a_actions_behavior = actions_behavior[a_ind]
@@ -419,8 +410,13 @@ class PVPTD3CPL(TD3):
 
                 b_count = valid_count[ind][shuffled_indices5]
                 a_count = valid_count[ind]
-                label5 = (a_count < b_count).float()
+
+                if self.extra_config["add_loss_5_inverse"]:
+                    label5 = (a_count > b_count).float()
+                else:
+                    label5 = (a_count < b_count).float()
                 label5[a_count == b_count] = 0.5
+
                 cpl_loss_5, accuracy_5 = biased_bce_with_logits(
                     adv_a_pos, adv_a_pos[shuffled_indices5], label5, bias=cpl_bias, shuffle=False)
 
@@ -428,7 +424,15 @@ class PVPTD3CPL(TD3):
                 accuracies.append(accuracy_5)
 
             # Compute the c trajectory:
-            if c_ind is not None:
+
+            num_c_comparisons = 0
+            if len(no_human_involved_indices) > 0 and (not self.extra_config["remove_loss_6"]):
+                # Make the data from agent's exploration equally sized as human involved data.
+                c_ind = torch.randint(
+                    len(no_human_involved_indices), size=(num_comparisons,)
+                ).to(no_human_involved_indices.device)
+                num_c_comparisons = num_comparisons
+
                 c_obs = obs[c_ind]
                 c_actions_behavior = actions_behavior[c_ind]
                 c_valid_mask = valid_mask[c_ind].flatten()
@@ -449,19 +453,12 @@ class PVPTD3CPL(TD3):
                 cpl_loss_6, accuracy_6 = biased_bce_with_logits(
                     adv_c, adv_a_neg, zeros_label_c, bias=cpl_bias, shuffle=False
                 )
-                if not self.extra_config["remove_loss_6"]:
-                    cpl_losses.append(cpl_loss_6)
-                    accuracies.append(accuracy_6)
-                # cpl_loss_62, accuracy_62 = biased_bce_with_logits(
-                #     adv_c[:min_comparison], adv_b_neg[:min_comparison], zeros_label_c, bias=cpl_bias, shuffle=False
-                # )
-                # cpl_losses.append(cpl_loss_62)
-                # accuracies.append(accuracy_62)
-                # cpl_loss_6 = (cpl_loss_61 + cpl_loss_62) / 2
-                # accuracy_6 = (accuracy_61 + accuracy_62) / 2
+                cpl_losses.append(cpl_loss_6)
+                accuracies.append(accuracy_6)
                 stat_recorder["cpl_loss_6"].append(cpl_loss_6.item())
                 stat_recorder["cpl_accuracy_6"].append(accuracy_6.item())
 
+            stat_recorder["num_c_comparisons"].append(num_c_comparisons)
             stat_recorder["adv_pos"].append(adv_a_pos.mean().item())
             stat_recorder["adv_neg"].append(adv_a_neg.mean().item())
             # stat_recorder["int_count_pos"].append(torch.where(a_count > b_count, b_count, a_count).float().mean().item())
