@@ -436,7 +436,13 @@ class PVPTD3CPL(TD3):
                 #     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
 
                 loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
-                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice[rl_interventions])[1]
+
+                with torch.no_grad():
+                    rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
+
+                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_new_novice)[1]
+
+
 
                 loss1_pos_adv = alpha * loss1_pos_lp
                 loss1_neg_adv = alpha * loss1_neg_lp
