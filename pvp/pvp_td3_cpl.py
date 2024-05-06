@@ -683,6 +683,7 @@ class PVPTD3CPL(TD3):
             load_path_replay: Union[str, pathlib.Path, io.BufferedIOBase] = "",
             warmup: bool = False,
             warmup_steps: int = 5000,
+            eval_deterministic=True,
     ) -> "OffPolicyAlgorithm":
 
         total_timesteps, callback = self._setup_learn(
@@ -694,6 +695,7 @@ class PVPTD3CPL(TD3):
             eval_log_path,
             reset_num_timesteps,
             tb_log_name,
+            eval_deterministic
         )
         if load_buffer:
             self.load_replay_buffer(load_path_human, load_path_replay)

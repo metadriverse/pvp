@@ -357,6 +357,7 @@ class BaseAlgorithm(ABC):
         eval_freq: int = 10000,
         n_eval_episodes: int = 5,
         log_path: Optional[str] = None,
+        deterministic=True,
     ) -> BaseCallback:
         """
         :param callback: Callback(s) called at every step with state of the algorithm.
@@ -382,6 +383,7 @@ class BaseAlgorithm(ABC):
                 log_path=log_path,
                 eval_freq=eval_freq,
                 n_eval_episodes=n_eval_episodes,
+                deterministic=deterministic
             )
             callback = CallbackList([callback, eval_callback])
 
@@ -398,6 +400,7 @@ class BaseAlgorithm(ABC):
         log_path: Optional[str] = None,
         reset_num_timesteps: bool = True,
         tb_log_name: str = "run",
+        deterministic=True,
     ) -> Tuple[int, BaseCallback]:
         """
         Initialize different variables needed for training.
@@ -449,7 +452,7 @@ class BaseAlgorithm(ABC):
             self._logger = utils.configure_logger(self.verbose, self.tensorboard_log, tb_log_name, reset_num_timesteps)
 
         # Create eval callback if needed
-        callback = self._init_callback(callback, eval_env, eval_freq, n_eval_episodes, log_path)
+        callback = self._init_callback(callback, eval_env, eval_freq, n_eval_episodes, log_path, deterministic)
 
         return total_timesteps, callback
 

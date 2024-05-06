@@ -172,8 +172,9 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             # Rescale and perform action
             clipped_actions = actions
             # Clip the actions to avoid out of bound error
+
+            raise ValueError("compatiblity gymnasium space?")
             if isinstance(self.action_space, gym.spaces.Box):
-                raise ValueError("compatiblity gymnasium space?")
                 clipped_actions = np.clip(actions, self.action_space.low, self.action_space.high)
 
             new_obs, rewards, dones, infos = env.step(clipped_actions)
@@ -235,12 +236,13 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         tb_log_name: str = "OnPolicyAlgorithm",
         eval_log_path: Optional[str] = None,
         reset_num_timesteps: bool = True,
+            eval_deterministic=True,
     ) -> "OnPolicyAlgorithm":
         iteration = 0
 
         total_timesteps, callback = self._setup_learn(
             total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps,
-            tb_log_name
+            tb_log_name, deterministic=eval_deterministic
         )
 
         callback.on_training_start(locals(), globals())

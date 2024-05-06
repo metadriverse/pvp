@@ -222,16 +222,25 @@ if __name__ == '__main__':
             manual_control=False,  # Allow receiving control signal from external device
             start_seed=1000,
             horizon=1500,
+
+
+# start_seed=1024,
+#             num_scenarios=1,
+#             free_level=-1000
         )
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
+
         eval_env = HumanInTheLoopEnv(config=eval_env_config)
+        # eval_env = FakeHumanEnv(config=eval_env_config)
+
         eval_env = Monitor(env=eval_env, filename=str(trial_dir))
         return eval_env
 
 
     if args.eval:
         eval_env = SubprocVecEnv([lambda: _make_eval_env(True)])
+        # eval_env = SubprocVecEnv([lambda: _make_eval_env(False)])
         config["algo"]["learning_rate"] = 0.0
         config["algo"]["train_freq"] = (1, "step")
         model = PVPTD3CPL.load(args.ckpt, **config["algo"])
@@ -251,7 +260,7 @@ if __name__ == '__main__':
             # eval
             eval_env=eval_env,
             eval_freq=1,
-            n_eval_episodes=10,
+            n_eval_episodes=500,
             eval_log_path=str(trial_dir),
 
             # logging
@@ -259,6 +268,8 @@ if __name__ == '__main__':
             log_interval=1,
             save_buffer=False,
             load_buffer=False,
+
+            eval_deterministic=True,
         )
         exit(0)
 

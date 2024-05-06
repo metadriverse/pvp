@@ -283,6 +283,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         log_path: Optional[str] = None,
         reset_num_timesteps: bool = True,
         tb_log_name: str = "run",
+            eval_deterministic=True,
     ) -> Tuple[int, BaseCallback]:
         """
         cf `BaseAlgorithm`.
@@ -323,6 +324,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
             log_path,
             reset_num_timesteps,
             tb_log_name,
+            deterministic=eval_deterministic
         )
 
     def learn(

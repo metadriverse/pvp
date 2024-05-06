@@ -33,6 +33,7 @@ from pvp.sb3.common.torch_layers import (
 from pvp.sb3.common.type_aliases import Schedule
 from pvp.sb3.common.utils import get_device, is_vectorized_observation, obs_as_tensor
 
+import gymnasium
 
 class BaseModel(nn.Module, ABC):
     """
@@ -337,8 +338,7 @@ class BasePolicy(BaseModel):
         # Convert to numpy
         actions = actions.cpu().numpy()
 
-        if isinstance(self.action_space, gym.spaces.Box):
-            raise ValueError("compatiblity gymnasium space?")
+        if isinstance(self.action_space, (gym.spaces.Box, gymnasium.spaces.Box)):
 
             if self.squash_output:
                 # Rescale to proper domain when using squashing
