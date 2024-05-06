@@ -52,8 +52,8 @@ do
     --remove_loss_1=False \
     --remove_loss_6=True \
     --training_deterministic=True \
-    --use_target_policy_only_overwrite_takeover=True \
-    --use_target_policy=False \
+    --use_target_policy_only_overwrite_takeover=False \
+    --use_target_policy=True \
     --remove_loss_3=False \
     > "0503-exp422522-seed${seeds[$i]}.log" 2>&1 &
 done
