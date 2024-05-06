@@ -5,11 +5,11 @@ seeds=(0 100 200 300 400 500 600 700)
 
 
 # Loop over each GPU
-for i in {4..7}
+for i in {0..3}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-newloss1v3 \
+    --exp_name=cplppo-cpl_bias=0.5-remove_loss_6-hard_reset4000 \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -28,5 +28,6 @@ do
     --use_target_policy_only_overwrite_takeover=False \
     --use_target_policy=False \
     --remove_loss_3=False \
+    --hard_reset=4000 \
     > "0503-exp42-seed${seeds[$i]}.log" 2>&1 &
 done
