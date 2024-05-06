@@ -7,7 +7,8 @@ import numpy as np
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.pvp_td3_cpl import PVPTD3CPL, PVPRealTD3CPL, PVPRealTD3Policy
+from pvp.pvp_td3_cpl import PVPTD3CPL
+from pvp.pvp_td3_cpl_real import PVPRealTD3Policy, PVPRealTD3CPL
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
 from pvp.sb3.common.wandb_callback import WandbCallback
