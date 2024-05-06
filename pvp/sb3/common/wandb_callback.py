@@ -117,7 +117,8 @@ class WandbCallback(BaseCallback):
             resume=True,
             reinit=True,
             sync_tensorboard=True,  # Open this and setup tb in sb3 so that we can get log!
-            save_code=True
+            save_code=True,
+            settings=wandb.Settings(code_dir=str(PACKAGE_ROOT))
         )
 
 
@@ -126,7 +127,7 @@ class WandbCallback(BaseCallback):
             raise wandb.Error("You must call wandb.init() before WandbCallback()")
 
         print("Logging code at: ", PACKAGE_ROOT)
-        wandb.run.log_code(PACKAGE_ROOT)
+        wandb.run.log_code(str(PACKAGE_ROOT))
 
         with wb_telemetry.context() as tel:
             tel.feature.sb3 = True
