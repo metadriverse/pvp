@@ -606,6 +606,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
             new_obs, rewards, dones, infos = env.step(actions)
 
             self.num_timesteps += env.num_envs
+            self.since_last_reset += env.num_envs
             num_collected_steps += 1
 
             # Give access to local variables

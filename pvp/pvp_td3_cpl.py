@@ -332,8 +332,10 @@ class PVPTD3CPL(TD3):
 
 
         if self.extra_config["hard_reset"] > 0:
-            if self.num_timesteps % self.extra_config["hard_reset"] == 0:
+            if (self.since_last_reset - self.extra_config["hard_reset"]) >= 0:
                 self.policy.reset_parameters()
+                print("Hard reset the policy. Since last step: ", self.since_last_reset)
+                self.since_last_reset = 0
 
                 # TODO: Policy target??
                 # self.policy_target.reset()
@@ -1115,7 +1117,8 @@ class PVPRealTD3CPL(PVPTD3CPL):
         #     rl_actions = torch.cat([rl_actions, actions_behavior[c_ind]], dim=0)
         #     rl_next_obs = torch.cat([rl_next_obs, next_obs[c_ind]], dim=0)
         with torch.no_grad():
-            new_rewards = self.reward_model_target(rl_obs, rl_actions)[0]
+            new_rewards = self.reward_model(rl_obs, rl_actions)[0]
+            # new_rewards = self.reward_model_target(rl_obs, rl_actions)[0]
             # new_rewards = torch.cat(new_rewards, dim=1)
             # # TODO: Might want to use min.
             # new_rewards, _ = torch.mean(new_rewards, dim=1, keepdim=True)

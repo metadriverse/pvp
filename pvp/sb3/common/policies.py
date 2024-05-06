@@ -581,6 +581,7 @@ class ActorCriticPolicy(BasePolicy):
         self.optimizer = self.optimizer_class(self.parameters(), lr=lr_schedule(1), **self.optimizer_kwargs)
 
     def reset_parameters(self):
+        print("RESETTING POLICY PARAMETERS ...")
         if self.ortho_init:
             # TODO: check for features_extractor
             # Values from stable-baselines.

@@ -120,6 +120,7 @@ class BaseAlgorithm(ABC):
         self.action_space = None  # type: Optional[gym.spaces.Space]
         self.n_envs = None
         self.num_timesteps = 0
+        self.since_last_reset = 0
         # Used for updating schedules
         self._total_timesteps = 0
         # Used for computing fps, it is updated at each call of learn()
