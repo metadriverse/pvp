@@ -277,6 +277,27 @@ class PVPTD3CPL(TD3):
         # print("Action behavior: ", actions_behavior[first_chunk, first_step])
         # print("Action novice: ", actions_novice[first_chunk, first_step])
 
+        rl_obs = []
+        rl_next_obs = []
+        rl_actions = []
+        rl_actions_novice = []
+        rl_dones = []
+        rl_interventions = []
+        for i, ep in enumerate(replay_data_agent):
+            rl_obs.append(ep.observations)
+            rl_next_obs.append(ep.next_observations)
+            rl_actions.append(ep.actions_behavior)
+            rl_actions_novice.append(ep.actions_novice)
+            rl_dones.append(ep.dones)
+            rl_interventions.append(ep.interventions)
+        rl_obs = torch.cat(rl_obs)
+        rl_next_obs = torch.cat(rl_next_obs)
+        rl_actions = torch.cat(rl_actions)
+        rl_dones = torch.cat(rl_dones)
+        rl_interventions = torch.cat(rl_interventions)
+        rl_interventions = rl_interventions.flatten().bool()
+        rl_actions_novice = torch.cat(rl_actions_novice)
+
         for step in range(gradient_steps):
 
             # TODO: REMOVE
@@ -406,13 +427,24 @@ class PVPTD3CPL(TD3):
             zeros_label = torch.zeros_like(adv_a_pos)
             if not self.extra_config["remove_loss_1"]:
                 # Case 1: a+ > a-
-                if self.extra_config["mask_same_actions"]:
+                # if self.extra_config["mask_same_actions"]:
+                #
+                #     # Create a mask so that after the first step where intervention happens the mask is all zeros.
+                #     before_int = is_before_first_intervention[a_ind]
+                #     cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * before_int).sum(-1), (adv_a_neg2 * before_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
+                # else:
+                #     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
 
-                    # Create a mask so that after the first step where intervention happens the mask is all zeros.
-                    before_int = is_before_first_intervention[a_ind]
-                    cpl_loss_1, accuracy_1 = biased_bce_with_logits((adv_a_pos2 * before_int).sum(-1), (adv_a_neg2 * before_int).sum(-1), zeros_label, bias=cpl_bias, shuffle=False)
-                else:
-                    cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
+                loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
+                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice[rl_interventions])[1]
+
+                loss1_pos_adv = alpha * loss1_pos_lp
+                loss1_neg_adv = alpha * loss1_neg_lp
+                cpl_loss_1, accuracy_1 = biased_bce_with_logits(
+                    loss1_pos_adv, loss1_neg_adv, torch.zeros_like(loss1_pos_adv), bias=cpl_bias,
+                                                                shuffle=False
+                )
+
                 cpl_losses.append(cpl_loss_1)
                 accuracies.append(accuracy_1)
                 stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
