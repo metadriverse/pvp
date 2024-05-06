@@ -100,7 +100,8 @@ class PVPTD3CPL(TD3):
             "cpl_bias",
             "top_factor",
             "last_ratio",
-            "max_comparisons"
+            "max_comparisons",
+            "hard_reset"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -329,12 +330,21 @@ class PVPTD3CPL(TD3):
         full_action_novices = torch.stack(full_action_novices, dim=0)
         full_interventions = torch.stack(full_interventions).bool()
 
+
+        if self.extra_config["hard_reset"] > 0:
+            if self.num_timesteps % self.extra_config["hard_reset"] == 0:
+                self.policy.reset_parameters()
+
+                # TODO: Policy target??
+                # self.policy_target.reset()
+
+
+
         for step in range(gradient_steps):
 
             # TODO: REMOVE
             # if step % 100 == 0 or step == gradient_steps - 1:
             #     print("STEP", step, self.policy.predict(obs[first_chunk, first_step].cpu(), deterministic=True)[0])
-
 
             self._n_updates += 1
             alpha = 0.1

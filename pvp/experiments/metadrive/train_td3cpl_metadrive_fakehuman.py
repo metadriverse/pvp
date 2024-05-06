@@ -53,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument("--num_comparisons", type=int, default=64)
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--max_comparisons", type=int, default=10000)
+    parser.add_argument("--hard_reset", type=int, default=-1)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
     parser.add_argument("--last_ratio", type=float, default=-1)
@@ -146,6 +147,7 @@ if __name__ == '__main__':
             remove_loss_1=args.remove_loss_1,
             remove_loss_3=args.remove_loss_3,
             remove_loss_6=args.remove_loss_6,
+            hard_reset=args.hard_reset,
             use_target_policy=args.use_target_policy,
             last_ratio=args.last_ratio,
             max_comparisons=args.max_comparisons,
