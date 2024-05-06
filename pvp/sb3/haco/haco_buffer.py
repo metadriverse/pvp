@@ -347,8 +347,24 @@ class HACOReplayBufferEpisode(ReplayBuffer):
         assert len(obs) == 1, "Only support one env for now"
         self.episodes[-1].add(obs, next_obs, action, reward, done, infos)
         if done[0]:
+
+            # FIXME
+            # FIXME
+            # FIXME
+            # FIXME
+            # FIXME
+            # FIXME
+            # FIXME
+            if not infos[0]['arrive_dest']:
+                self.pos -= 1
+                self.episodes = self.episodes[:-1]
+                print("THIS EPISODE IS DISCARDED AS IT DOES NOT SUCCESS!!!! THIS IS DEBUG CODE AND SHOULD BE REMOVED!!!")
+
+
             self.episodes.append(self.make_buffer())
             self.pos += 1
+
+
 
     def sample(
         self, batch_size: int, env: Optional[VecNormalize] = None, return_all=False,
