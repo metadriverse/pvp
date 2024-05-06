@@ -18,6 +18,10 @@ import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
+def unwrap(tensor, mask):
+    new = tensor.new_zeros(mask.shape)
+    new[mask] = tensor
+    return new
 
 def log_probs_to_advantages(log_probs, alpha, remove_sum=False):
     if remove_sum:
@@ -298,6 +302,33 @@ class PVPTD3CPL(TD3):
         rl_interventions = rl_interventions.flatten().bool()
         rl_actions_novice = torch.cat(rl_actions_novice)
 
+        # if self.extra_config["use_chunk_adv"]:
+        # Reorganize data with chunks
+        # Now obs.shape = (#batches, #steps, #features)
+        # We need to make it to be: obs.shape = (#batches, #steps-chunk_size, chunk_size, #features)
+        full_obs = []
+        full_action_behaviors = []
+        full_action_novices = []
+        full_interventions = []
+        full_num_steps_per_chunk = 1000
+        for i, ep in enumerate(replay_data_agent):
+            # Need to pad the data
+            full_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
+                [full_num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
+            full_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
+                [full_num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
+            full_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
+                [full_num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
+            full_intervention = torch.cat([
+                ep.interventions.flatten(),
+                ep.interventions.new_zeros(full_num_steps_per_chunk - len(ep.interventions))
+            ])
+            full_interventions.append(full_intervention)
+        full_obs = torch.stack(full_obs, dim=0)
+        full_action_behaviors = torch.stack(full_action_behaviors, dim=0)
+        full_action_novices = torch.stack(full_action_novices, dim=0)
+        full_interventions = torch.stack(full_interventions).bool()
+
         for step in range(gradient_steps):
 
             # TODO: REMOVE
@@ -435,20 +466,28 @@ class PVPTD3CPL(TD3):
                 # else:
                 #     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
 
-                loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
+                # loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
+                #
+                # with torch.no_grad():
+                #     rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
+                #
+                # loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_new_novice)[1]
+                #
 
-                with torch.no_grad():
-                    rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
+                loss1_lp_pos = unwrap(
+                    self.policy.evaluate_actions(full_obs[full_interventions], full_action_behaviors[full_interventions])[1],
+                    full_interventions
+                )
+                loss1_adv_pos = log_probs_to_advantages(loss1_lp_pos, alpha)
 
-                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_new_novice)[1]
+                loss1_lp_neg = unwrap(
+                    self.policy.evaluate_actions(full_obs[full_interventions], full_action_novices[full_interventions])[1],
+                    full_interventions
+                )
+                loss1_adv_neg = log_probs_to_advantages(loss1_lp_neg, alpha)
 
-
-
-                loss1_pos_adv = alpha * loss1_pos_lp
-                loss1_neg_adv = alpha * loss1_neg_lp
                 cpl_loss_1, accuracy_1 = biased_bce_with_logits(
-                    loss1_pos_adv, loss1_neg_adv, torch.zeros_like(loss1_pos_adv), bias=cpl_bias,
-                                                                shuffle=False
+                    loss1_adv_pos, loss1_adv_neg, torch.zeros_like(loss1_adv_neg), bias=cpl_bias,
                 )
 
                 cpl_losses.append(cpl_loss_1)
