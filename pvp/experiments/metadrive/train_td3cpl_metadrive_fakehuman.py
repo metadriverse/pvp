@@ -57,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--hard_reset", type=int, default=-1)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
+    parser.add_argument("--lr", type=float, default=0.0001)
     parser.add_argument("--bc_loss_weight", type=float, default=-1.0)
     parser.add_argument("--last_ratio", type=float, default=-1)
     parser.add_argument("--log_std_init", type=float, default=0.0)
@@ -169,7 +170,7 @@ if __name__ == '__main__':
                 log_std_init=log_std_init,
             ),
             env=None,
-            learning_rate=1e-4,
+            learning_rate=args.lr,
 
             # learning_rate=dict(
             #     actor=1e-4,

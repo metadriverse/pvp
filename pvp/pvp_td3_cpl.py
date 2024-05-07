@@ -363,7 +363,6 @@ class PVPTD3CPL(TD3):
             accuracies = []
 
             assert self.extra_config["use_chunk_adv"]
-            assert num_comparisons == -1
             assert self.extra_config["prioritized_buffer"]
 
             assert (valid_count > 0).any().item(), "No human in the loop data is found."
@@ -378,7 +377,10 @@ class PVPTD3CPL(TD3):
             # descending_indices = descending_indices[:num_left]
 
             # Hard limit the number of comparisons to avoid GPU OOM
-            num_comparisons = min(num_human_involved, self.extra_config["max_comparisons"])
+            if num_comparisons < 0:
+                num_comparisons = min(num_human_involved, self.extra_config["max_comparisons"])
+            else:
+                num_comparisons = min(num_human_involved, num_comparisons)
 
             # Randomly select num_comparisons indices in the human involved data. The indices should in
             # range len(valid_count) not num_human_involved.
@@ -484,10 +486,16 @@ class PVPTD3CPL(TD3):
                 # else:
                 #     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
 
-                loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
-                # with torch.no_grad():
-                #     rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
-                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice[rl_interventions])[1]
+                if self.extra_config["num_comparisons"] < 0:
+                    loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
+                    loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice[rl_interventions])[1]
+                else:
+                    rl_ind = torch.randint(
+                        len(rl_obs[rl_interventions]), size=(self.extra_config["num_comparisons"],)
+                    ).to(no_human_involved_indices.device)
+                    loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions][rl_ind], rl_actions[rl_interventions][rl_ind])[1]
+                    loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions][rl_ind], rl_actions_novice[rl_interventions][rl_ind])[1]
+
                 loss1_adv_pos = loss1_pos_lp * alpha
                 loss1_adv_neg = loss1_neg_lp * alpha
                 loss1_cpl_bias = 1.0
