@@ -215,7 +215,14 @@ if __name__ == '__main__':
     train_env = FakeHumanEnv(config=config["env_config"], )
     train_env = Monitor(env=train_env, filename=str(trial_dir))
     # Store all shared control data to the files.
-    train_env = SharedControlMonitor(env=train_env, folder=trial_dir / "data", prefix=trial_name)
+
+    # TODO: FIXME:
+    # TODO: FIXME:
+    # TODO: FIXME:
+    # TODO: FIXME: should add back when human experiemetn.
+    # train_env = SharedControlMonitor(env=train_env, folder=trial_dir / "data", prefix=trial_name)
+
+
     config["algo"]["env"] = train_env
     assert config["algo"]["env"] is not None
 
