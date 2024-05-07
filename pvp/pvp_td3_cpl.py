@@ -313,17 +313,23 @@ class PVPTD3CPL(TD3):
         full_num_steps_per_chunk = 1000
         for i, ep in enumerate(replay_data_agent):
             # Need to pad the data
-            full_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
-                [full_num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
-            full_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
-                [full_num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
-            full_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
-                [full_num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
-            full_intervention = torch.cat([
-                ep.interventions.flatten(),
-                ep.interventions.new_zeros(full_num_steps_per_chunk - len(ep.interventions))
-            ])
-            full_interventions.append(full_intervention)
+            if len(ep.observations) > full_num_steps_per_chunk:
+                full_obs.append(ep.observations[:full_num_steps_per_chunk])
+                full_action_behaviors.append(ep.actions_behavior[:full_num_steps_per_chunk])
+                full_action_novices.append(ep.actions_novice[:full_num_steps_per_chunk])
+                full_interventions.append(ep.interventions.flatten()[:full_num_steps_per_chunk])
+            else:
+                full_obs.append(torch.cat([ep.observations, ep.observations.new_zeros(
+                    [full_num_steps_per_chunk - len(ep.observations), *ep.observations.shape[1:]])], dim=0))
+                full_action_behaviors.append(torch.cat([ep.actions_behavior, ep.actions_behavior.new_zeros(
+                    [full_num_steps_per_chunk - len(ep.actions_behavior), *ep.actions_behavior.shape[1:]])], dim=0))
+                full_action_novices.append(torch.cat([ep.actions_novice, ep.actions_novice.new_zeros(
+                    [full_num_steps_per_chunk - len(ep.actions_novice), *ep.actions_novice.shape[1:]])], dim=0))
+                full_intervention = torch.cat([
+                    ep.interventions.flatten(),
+                    ep.interventions.new_zeros(full_num_steps_per_chunk - len(ep.interventions))
+                ])
+                full_interventions.append(full_intervention)
         full_obs = torch.stack(full_obs, dim=0)
         full_action_behaviors = torch.stack(full_action_behaviors, dim=0)
         full_action_novices = torch.stack(full_action_novices, dim=0)
