@@ -477,28 +477,29 @@ class PVPTD3CPL(TD3):
                 # else:
                 #     cpl_loss_1, accuracy_1 = biased_bce_with_logits(adv_a_pos, adv_a_neg, zeros_label, bias=cpl_bias, shuffle=False)
 
-                # loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
-                #
+                loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
                 # with torch.no_grad():
                 #     rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
-                #
-                # loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_new_novice)[1]
-                #
+                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice)[1]
+                loss1_adv_pos = loss1_pos_lp * alpha
+                loss1_adv_neg = loss1_neg_lp * alpha
+                loss1_cpl_bias = 1.0
 
-                loss1_lp_pos = unwrap(
-                    self.policy.evaluate_actions(full_obs[full_interventions], full_action_behaviors[full_interventions])[1],
-                    full_interventions
-                )
-                loss1_adv_pos = log_probs_to_advantages(loss1_lp_pos, alpha)
 
-                loss1_lp_neg = unwrap(
-                    self.policy.evaluate_actions(full_obs[full_interventions], full_action_novices[full_interventions])[1],
-                    full_interventions
-                )
-                loss1_adv_neg = log_probs_to_advantages(loss1_lp_neg, alpha)
+                # loss1_lp_pos = unwrap(
+                #     self.policy.evaluate_actions(full_obs[full_interventions], full_action_behaviors[full_interventions])[1],
+                #     full_interventions
+                # )
+                # loss1_adv_pos = log_probs_to_advantages(loss1_lp_pos, alpha)
+                #
+                # loss1_lp_neg = unwrap(
+                #     self.policy.evaluate_actions(full_obs[full_interventions], full_action_novices[full_interventions])[1],
+                #     full_interventions
+                # )
+                # loss1_adv_neg = log_probs_to_advantages(loss1_lp_neg, alpha)
 
                 cpl_loss_1, accuracy_1 = biased_bce_with_logits(
-                    loss1_adv_pos, loss1_adv_neg, torch.zeros_like(loss1_adv_neg), bias=cpl_bias,
+                    loss1_adv_pos, loss1_adv_neg, torch.zeros_like(loss1_adv_neg), bias=loss1_cpl_bias,
                 )
 
                 cpl_losses.append(cpl_loss_1)
