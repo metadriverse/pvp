@@ -57,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--hard_reset", type=int, default=-1)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
+    parser.add_argument("--bc_loss_weight", type=float, default=-1.0)
     parser.add_argument("--last_ratio", type=float, default=-1)
     parser.add_argument("--log_std_init", type=float, default=0.0)
 
@@ -153,6 +154,7 @@ if __name__ == '__main__':
             last_ratio=args.last_ratio,
             max_comparisons=args.max_comparisons,
             use_target_policy_only_overwrite_takeover=args.use_target_policy_only_overwrite_takeover,
+            bc_loss_weight=args.bc_loss_weight,
 
             use_balance_sample=True,
             policy=MlpPolicy if not real_td3 else PVPRealTD3Policy,

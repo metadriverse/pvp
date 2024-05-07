@@ -100,7 +100,8 @@ class PVPTD3CPL(TD3):
             "top_factor",
             "last_ratio",
             "max_comparisons",
-            "hard_reset"
+            "hard_reset",
+            "bc_loss_weight"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -512,6 +513,11 @@ class PVPTD3CPL(TD3):
                 accuracies.append(accuracy_1)
                 stat_recorder["cpl_loss_1"].append(cpl_loss_1.item())
                 stat_recorder["cpl_accuracy_1"].append(accuracy_1.item())
+
+                bc_loss = -loss1_pos_lp.mean()
+                stat_recorder["bc_loss"].append(bc_loss.item())
+                if self.extra_config["bc_loss_weight"] > 0:
+                    cpl_losses.append(bc_loss * self.extra_config["bc_loss_weight"])
 
             # Case 3: a+ > b-
             if not self.extra_config["remove_loss_3"]:
