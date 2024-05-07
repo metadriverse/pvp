@@ -480,7 +480,7 @@ class PVPTD3CPL(TD3):
                 loss1_pos_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
                 # with torch.no_grad():
                 #     rl_actions_new_novice = self.policy._predict(rl_obs[rl_interventions], deterministic=False)
-                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice)[1]
+                loss1_neg_lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions_novice[rl_interventions])[1]
                 loss1_adv_pos = loss1_pos_lp * alpha
                 loss1_adv_neg = loss1_neg_lp * alpha
                 loss1_cpl_bias = 1.0
