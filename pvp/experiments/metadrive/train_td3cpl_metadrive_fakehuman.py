@@ -55,6 +55,7 @@ if __name__ == '__main__':
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--max_comparisons", type=int, default=10000)
     parser.add_argument("--hard_reset", type=int, default=-1)
+    parser.add_argument("--learning_starts", type=int, default=0)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
     parser.add_argument("--top_factor", type=float, default=1.0)
     parser.add_argument("--lr", type=float, default=0.0001)
@@ -180,7 +181,7 @@ if __name__ == '__main__':
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=150_000,  # We only conduct experiment less than 50K steps
-            learning_starts=0,  # The number of steps before
+            learning_starts=args.learning_starts,  # The number of steps before
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
