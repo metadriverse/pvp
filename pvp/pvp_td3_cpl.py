@@ -565,9 +565,16 @@ class PVPTD3CPL(TD3):
                 ).to(no_human_involved_indices.device)
                 num_c_comparisons = num_comparisons
 
+                # This is very important!! We need to map the indices back to the original indices.
+                c_ind = no_human_involved_indices[c_ind]
+
                 c_obs = obs[c_ind]
                 c_actions_behavior = actions_behavior[c_ind]
+                c_actions_novice = actions_novice[c_ind]
                 c_valid_mask = valid_mask[c_ind].flatten()
+
+                # TODO: Remove a quick test
+                assert (c_actions_novice == c_actions_novice).all()
 
                 _, log_probs_tmp_c, entropy_c = self.policy.evaluate_actions(
                     c_obs.flatten(0, 1)[c_valid_mask], c_actions_behavior.flatten(0, 1)[c_valid_mask]
@@ -590,6 +597,7 @@ class PVPTD3CPL(TD3):
                 stat_recorder["cpl_loss_6"].append(cpl_loss_6.item())
                 stat_recorder["cpl_accuracy_6"].append(accuracy_6.item())
 
+            stat_recorder["num_comparisons"].append(num_comparisons)
             stat_recorder["num_c_comparisons"].append(num_c_comparisons)
             stat_recorder["adv_pos"].append(adv_a_pos.mean().item())
             stat_recorder["adv_neg"].append(adv_a_neg.mean().item())
