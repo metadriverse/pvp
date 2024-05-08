@@ -7,7 +7,7 @@ import numpy as np
 
 from pvp.experiments.metadrive.egpo.fakehuman_env import FakeHumanEnv
 from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
-from pvp.pvp_td3_cpl import PVPTD3CPL
+from pvp.pvp_td3_cpl import PVPTD3CPL, PVPTD3CPLPolicy
 from pvp.pvp_td3_cpl_real import PVPRealTD3Policy, PVPRealTD3CPL
 from pvp.sb3.common.callbacks import CallbackList, CheckpointCallback
 from pvp.sb3.common.monitor import Monitor
@@ -67,6 +67,7 @@ if __name__ == '__main__':
     parser.add_argument("--log_std_init", type=float, default=0.0)
 
     parser.add_argument("--fixed_log_std", action="store_true")
+    parser.add_argument("--eval_stochastic", action="store_true")
     parser.add_argument("--real_td3", action="store_true")
 
     parser.add_argument("--eval", action="store_true")
@@ -164,7 +165,7 @@ if __name__ == '__main__':
             add_bc_loss_only_interventions=args.add_bc_loss_only_interventions,
 
             use_balance_sample=True,
-            policy=MlpPolicy if not real_td3 else PVPRealTD3Policy,
+            policy=PVPTD3CPLPolicy if not real_td3 else PVPRealTD3Policy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!
@@ -285,7 +286,7 @@ if __name__ == '__main__':
             save_buffer=False,
             load_buffer=False,
 
-            eval_deterministic=True,
+            eval_deterministic=not args.eval_stochastic,
         )
         exit(0)
 

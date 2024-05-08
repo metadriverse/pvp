@@ -13,6 +13,64 @@ from pvp.sb3.common.save_util import load_from_pkl, save_to_pkl
 from pvp.sb3.common.type_aliases import GymEnv, MaybeCallback
 from pvp.sb3.haco.haco_buffer import HACOReplayBuffer
 from pvp.sb3.td3.td3 import TD3
+# from pvp.sb3.dqn.policies import DQNPolicy,QNetwork
+
+from pvp.sb3.ppo.policies import ActorCriticPolicy
+
+class PVPTD3CPLPolicy(ActorCriticPolicy):
+
+    def __init__(self, obss, acts, *args, **kwargs):
+        for k in ["fixed_log_std", "log_std_init"]:
+            if k in kwargs:
+                kwargs.pop(k)
+
+        self.num_bins = 13
+        total_num_bins = self.num_bins ** acts.shape[0]
+
+        self.raw_action_space = acts
+
+        from gym.spaces import Discrete
+        super().__init__(obss, Discrete(total_num_bins), *args, **kwargs)
+
+        self.num_axes = len(acts.low)
+
+        # Compute the bin sizes for each axis and prepare the flattened lookup table
+        self.lookup_table = torch.zeros(self.num_bins ** self.num_axes, self.num_axes)
+        ranges = [torch.linspace(acts.low[axis], acts.high[axis], self.num_bins)
+                  for axis in range(self.num_axes)]
+
+        grid = torch.meshgrid(*ranges, indexing='ij')
+        # Flatten the grid and store it in the lookup table
+        for i in range(self.num_axes):
+            self.lookup_table[:, i] = grid[i].flatten()
+
+    def evaluate_actions(self, obs, act):
+        dact = torch.cdist(act, self.lookup_table).argmin(-1)
+        out = super().evaluate_actions(obs, dact)
+        return out
+
+    def raw_predict(self, obs, deterministic=False):
+        discrete_action = super()._predict(obs, deterministic)
+        return discrete_action
+
+    def scale_action(self, action):
+        low, high = self.raw_action_space.low, self.raw_action_space.high
+        return 2.0 * ((action - low) / (high - low)) - 1.0
+
+    def unscale_action(self, scaled_action: np.ndarray) -> np.ndarray:
+        low, high = self.raw_action_space.low, self.raw_action_space.high
+        return low + (0.5 * (scaled_action + 1.0) * (high - low))
+
+    def _predict(self, obs, state=None, episode_start=None, deterministic=False):
+        if self.lookup_table.device != obs.device:
+            self.lookup_table = self.lookup_table.to(self.device)
+
+        discrete_action = self.raw_predict(obs, deterministic=deterministic)
+
+        # Use advanced indexing to map discrete actions to continuous actions
+        continuous_action = self.lookup_table[discrete_action]
+        return continuous_action
+
 
 logger = logging.getLogger(__name__)
 
