@@ -477,11 +477,11 @@ class PVPTD3CPL(TD3):
             npneg2 = npneg * inte
 
 
-            if self.extra_config["only_bc_loss"]:
-                assert self.extra_config["remove_loss_1"]
-                assert self.extra_config["remove_loss_3"]
-                assert self.extra_config["remove_loss_6"]
-                assert not self.extra_config["add_loss_5"]
+            if self.extra_config["add_bc_loss"]:
+                # assert self.extra_config["remove_loss_1"]
+                # assert self.extra_config["remove_loss_3"]
+                # assert self.extra_config["remove_loss_6"]
+                # assert not self.extra_config["add_loss_5"]
 
                 lp = self.policy.evaluate_actions(rl_obs, rl_actions)[1]
                 bc_loss = -lp.mean()

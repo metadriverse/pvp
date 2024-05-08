@@ -340,9 +340,7 @@ class PVPES(PVPTD3):
             if replay_data_human is not None:
                 # Augment the reward / dones here.
 
-                current_q_behavior_values = self.critic(
-                    replay_data_human.observations, replay_data_human.actions_behavior
-                )
+                current_q_behavior_values = self.critic(replay_data_human.observations, replay_data_human.actions_behavior)
                 current_q_behavior_values = np.mean([q.mean().item() for q in current_q_behavior_values])
                 current_q_novice_values = self.critic(replay_data_human.observations, replay_data_human.actions_novice)
                 current_q_novice_values = np.mean([q.mean().item() for q in current_q_novice_values])

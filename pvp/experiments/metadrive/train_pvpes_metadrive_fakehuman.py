@@ -30,9 +30,11 @@ if __name__ == '__main__':
     parser.add_argument("--wandb", action="store_true", help="Set to True to upload stats to wandb.")
     parser.add_argument("--wandb_project", type=str, default="", help="The project name for wandb.")
     parser.add_argument("--wandb_team", type=str, default="", help="The team name for wandb.")
+    parser.add_argument("--ckpt", type=str, default="")
     parser.add_argument("--log_dir", type=str, default="/data/zhenghao/pvp", help="Folder to store the logs.")
     parser.add_argument("--free_level", type=float, default=0.95)
     parser.add_argument("--agent_data_ratio", type=float, default=1.0)
+    parser.add_argument("--learning_starts", type=int, default=0)
     parser.add_argument("--no_done_for_positive", type=str, default="False")
     parser.add_argument("--reward_0_for_positive", type=str, default="False")
     parser.add_argument("--reward_n2_for_intervention", type=str, default="False")
@@ -116,7 +118,7 @@ if __name__ == '__main__':
             q_value_bound=1,
             optimize_memory_usage=True,
             buffer_size=50_000,  # We only conduct experiment less than 50K steps
-            learning_starts=100,  # The number of steps before
+            learning_starts=args.learning_starts,  # The number of steps before
             batch_size=128,  # Reduce the batch size for real-time copilot
             tau=0.005,
             gamma=0.99,
@@ -186,7 +188,11 @@ if __name__ == '__main__':
     callbacks = CallbackList(callbacks)
 
     # ===== Setup the training algorithm =====
-    model = PVPES(**config["algo"])
+    if args.ckpt:
+        model = PVPES.load(args.ckpt, **config["algo"])
+    else:
+        model = PVPES(**config["algo"])
+
 
     # ===== Launch training =====
     model.learn(
