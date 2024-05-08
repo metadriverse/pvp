@@ -57,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--num_steps_per_chunk", type=int, default=64)
     parser.add_argument("--max_comparisons", type=int, default=10000)
     parser.add_argument("--n_eval_episodes", type=int, default=50)
+    parser.add_argument("--eval_freq", type=int, default=500)
     parser.add_argument("--hard_reset", type=int, default=-1)
     parser.add_argument("--learning_starts", type=int, default=0)
     parser.add_argument("--cpl_bias", type=float, default=0.5)
@@ -291,6 +292,7 @@ if __name__ == '__main__':
         exit(0)
 
     eval_env = SubprocVecEnv([_make_eval_env])
+    # eval_env = None
 
     # ===== Setup the callbacks =====
     save_freq = 500  # Number of steps per model checkpoint
@@ -334,7 +336,7 @@ if __name__ == '__main__':
 
         # eval
         eval_env=eval_env,
-        eval_freq=500,
+        eval_freq=args.eval_freq,
         n_eval_episodes=args.n_eval_episodes,
         eval_log_path=str(trial_dir),
 
