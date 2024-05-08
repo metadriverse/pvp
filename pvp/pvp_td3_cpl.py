@@ -85,7 +85,8 @@ class PVPTD3CPL(TD3):
             "remove_loss_6",
             "training_deterministic",
             "use_target_policy",
-            "use_target_policy_only_overwrite_takeover"
+            "use_target_policy_only_overwrite_takeover",
+            "only_bc_loss"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -474,6 +475,20 @@ class PVPTD3CPL(TD3):
             inte = interventions[a_ind].cpu().detach().numpy()
             nppos2 = nppos * inte
             npneg2 = npneg * inte
+
+
+            if self.extra_config["only_bc_loss"]:
+                assert self.extra_config["remove_loss1"]
+                assert self.extra_config["remove_loss3"]
+                assert self.extra_config["remove_loss6"]
+                assert not self.extra_config["add_loss5"]
+
+                lp = self.policy.evaluate_actions(rl_obs, rl_actions)[1]
+                bc_loss = -lp.mean()
+
+                cpl_losses.append(bc_loss)
+
+
 
             zeros_label = torch.zeros_like(adv_a_pos)
             if not self.extra_config["remove_loss_1"]:

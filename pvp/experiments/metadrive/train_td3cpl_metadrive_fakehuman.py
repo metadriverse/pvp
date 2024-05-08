@@ -49,6 +49,7 @@ if __name__ == '__main__':
     parser.add_argument("--remove_loss_1", type=str, default="False")
     parser.add_argument("--remove_loss_3", type=str, default="False")
     parser.add_argument("--remove_loss_6", type=str, default="False")
+    parser.add_argument("--only_bc_loss", type=str, default="False")
     parser.add_argument("--use_target_policy", type=str, default="False")
     parser.add_argument("--use_target_policy_only_overwrite_takeover", type=str, default="False")
     parser.add_argument("--num_comparisons", type=int, default=64)
@@ -143,6 +144,7 @@ if __name__ == '__main__':
             num_steps_per_chunk=args.num_steps_per_chunk,
             prioritized_buffer=args.prioritized_buffer,
             training_deterministic=args.training_deterministic,
+            only_bc_loss=args.only_bc_loss,
             cpl_bias=args.cpl_bias,
             add_loss_5=args.add_loss_5,
             add_loss_5_inverse=args.add_loss_5_inverse,
