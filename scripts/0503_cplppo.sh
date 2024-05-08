@@ -29,7 +29,7 @@ do
     --use_target_policy_only_overwrite_takeover=False \
     --use_target_policy=False \
     --learning_starts=0 \
-    --only_bc_loss=True \
+    --add_bc_loss=True \
     > "0503-exp2-seed${seeds[$i]}.log" 2>&1 &
 done
 
