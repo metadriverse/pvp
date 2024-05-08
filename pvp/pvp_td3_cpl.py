@@ -86,7 +86,7 @@ class PVPTD3CPL(TD3):
             "training_deterministic",
             "use_target_policy",
             "use_target_policy_only_overwrite_takeover",
-            "only_bc_loss"
+            "add_bc_loss"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
