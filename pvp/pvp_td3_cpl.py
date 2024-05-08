@@ -621,13 +621,13 @@ class PVPTD3CPL(TD3):
             stat_recorder["entropy"].append(entropy.mean().item())
 
             cpl_loss = sum(cpl_losses)
-            accuracy = sum(accuracies) / len(cpl_losses)
+            accuracy = sum(accuracies) / len(cpl_losses) if accuracies else None
 
             # stat_recorder["cpl_loss_2"].append(cpl_loss_2.item())
             # stat_recorder["cpl_loss_4"].append(cpl_loss_4.item())
             # stat_recorder["cpl_loss_5"].append(cpl_loss_5.item())
 
-            stat_recorder["cpl_accuracy"].append(accuracy.item())
+            stat_recorder["cpl_accuracy"].append(accuracy.item() if accuracy else float("nan"))
             # stat_recorder["cpl_accuracy_2"].append(accuracy_2.item())
             # stat_recorder["cpl_accuracy_4"].append(accuracy_4.item())
             # stat_recorder["cpl_accuracy_5"].append(accuracy_5.item())
