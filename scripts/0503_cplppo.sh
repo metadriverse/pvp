@@ -5,11 +5,11 @@ seeds=(0 100 200 300 400 500 600 700)
 
 
 # Loop over each GPU
-for i in {7..8}
+for i in {4..7}
 do
 CUDA_VISIBLE_DEVICES=$i \
 nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
---exp_name=cplppo-cpl_bias=0.5-qnetwork-hgdagger-deter \
+--exp_name=cplppo-hgdagger-expert_deter \
 --wandb \
 --wandb_project=pvp2024 \
 --wandb_team=drivingforce \
@@ -32,5 +32,6 @@ nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
 --add_bc_loss=True \
 --add_bc_loss_only_interventions=True \
 --eval_freq=1000 \
+--expert_deterministic \
 > "0503-exp232233-seed${seeds[$i]}.log" 2>&1 &
 done

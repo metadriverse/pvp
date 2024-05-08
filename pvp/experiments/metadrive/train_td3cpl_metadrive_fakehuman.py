@@ -168,7 +168,7 @@ if __name__ == '__main__':
             add_bc_loss_only_interventions=args.add_bc_loss_only_interventions,
 
             use_balance_sample=True,
-            policy=PVPTD3CPLPolicy if not real_td3 else PVPRealTD3Policy,
+            policy=MlpPolicy if not real_td3 else PVPRealTD3Policy,
             replay_buffer_class=HACOReplayBuffer,  # TODO: USELESS
             replay_buffer_kwargs=dict(
                 discard_reward=True,  # We run in reward-free manner!
