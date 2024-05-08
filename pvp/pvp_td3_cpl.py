@@ -86,7 +86,8 @@ class PVPTD3CPL(TD3):
             "training_deterministic",
             "use_target_policy",
             "use_target_policy_only_overwrite_takeover",
-            "add_bc_loss"
+            "add_bc_loss",
+            "add_bc_loss_only_interventions"
         ]:
             if k in kwargs:
                 v = kwargs.pop(k)
@@ -483,7 +484,10 @@ class PVPTD3CPL(TD3):
                 # assert self.extra_config["remove_loss_6"]
                 # assert not self.extra_config["add_loss_5"]
 
-                lp = self.policy.evaluate_actions(rl_obs, rl_actions)[1]
+                if self.extra_config["add_bc_loss_only_interventions"]:
+                    lp = self.policy.evaluate_actions(rl_obs[rl_interventions], rl_actions[rl_interventions])[1]
+                else:
+                    lp = self.policy.evaluate_actions(rl_obs, rl_actions)[1]
                 bc_loss = -lp.mean()
 
                 cpl_losses.append(bc_loss)
