@@ -46,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument("--adaptive_batch_size", type=str, default="False")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
+    parser.add_argument("--expert_deterministic", action="store_true")
     # parser.add_argument(
     #     "--device",
     #     required=True,
@@ -92,6 +93,7 @@ if __name__ == '__main__':
 
             # FakeHumanEnv config:
             free_level=free_level,
+            expert_deterministic=args.expert_deterministic,
         ),
 
         # Algorithm config
