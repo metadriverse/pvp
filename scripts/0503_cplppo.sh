@@ -5,11 +5,11 @@ seeds=(0 100 200 300 400 500 600 700)
 
 
 # Loop over each GPU
-for i in {6..7}
+for i in {0..2}
 do
     CUDA_VISIBLE_DEVICES=$i \
     nohup python pvp/experiments/metadrive/train_td3cpl_metadrive_fakehuman.py \
-    --exp_name=cplppo-onlybc-stochastic \
+    --exp_name=cplppo-onlybc-deter \
     --wandb \
     --wandb_project=pvp2024 \
     --wandb_team=drivingforce \
@@ -24,7 +24,7 @@ do
     --mask_same_actions=False \
     --remove_loss_1=True \
     --remove_loss_6=True \
-    --training_deterministic=False \
+    --training_deterministic=True \
     --use_target_policy_only_overwrite_takeover=False \
     --use_target_policy=False \
     --remove_loss_3=True \
