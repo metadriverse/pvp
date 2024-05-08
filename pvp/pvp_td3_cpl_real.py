@@ -62,27 +62,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
             optimize_memory_usage=self.optimize_memory_usage,
             **self.replay_buffer_kwargs
         )
-        # else:
-        # self.human_data_buffer = self.replay_buffer
-
-    # def _update_learning_rate(self, optimizers: Union[List[th.optim.Optimizer], th.optim.Optimizer]) -> None:
-    #     """
-    #     Update the optimizers learning rate using the current learning rate schedule
-    #     and the current progress remaining (from 1 to 0).
-    #
-    #     :param optimizers:
-    #         An optimizer or a list of optimizers.
-    #     """
-    #     pass
-    # from pvp.sb3.common.utils import update_learning_rate
-
-    # # Log the current learning rate
-    # self.logger.record("train/learning_rate", self.lr_schedule(self._current_progress_remaining))
-    #
-    # if not isinstance(optimizers, list):
-    #     optimizers = [optimizers]
-    # for optimizer in optimizers:
-    #     update_learning_rate(optimizer, self.lr_schedule(self._current_progress_remaining))
 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Switch to train mode (this affects batch norm / dropout)
@@ -182,9 +161,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
         interventions = torch.stack(interventions).squeeze(-1)
         is_before_first_intervention = torch.stack(is_before_first_intervention)
 
-
-
-
         # We also need to prepare RL data:
         rl_obs = []
         rl_next_obs = []
@@ -200,21 +176,12 @@ class PVPRealTD3CPL(PVPTD3CPL):
         rl_actions = torch.cat(rl_actions)
         rl_dones = torch.cat(rl_dones)
 
-
-        # FIXME
-        # FIXME
-        # FIXME
-        # FIXME
-        # FIXME
-        actions_novice = actions_novice.clamp(-1, 1)
-
         new_valid_mask = torch.stack(new_valid_mask).bool()
         new_valid_ep = torch.from_numpy(np.array(new_valid_ep)).to(obs.device)
         new_valid_step = torch.from_numpy(np.array(new_valid_step)).to(obs.device)
         new_valid_count = torch.stack(new_valid_count).to(obs.device).int()
         valid_count = new_valid_count
         valid_mask = new_valid_mask
-
 
         # Number of chunks to compare
         cpl_bias = self.extra_config["cpl_bias"]
@@ -238,12 +205,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
             num_human_involved = human_involved.sum().item()
             stat_recorder["human_ratio"].append(num_human_involved / len(human_involved))
 
-            # Pick up top half samples
-            # num_left = int(len(valid_count) * self.extra_config["top_factor"])
-            # num_left = max(10, num_left)
-            # descending_indices = descending_indices[:num_left]
-
-            # num_comparisons = num_human_involved // 2
             num_comparisons = num_human_involved
 
             # Randomly select num_comparisons indices in the human involved data. The indices should in
@@ -252,7 +213,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
             human_involved_indices = torch.nonzero(human_involved, as_tuple=True)[0]
             no_human_involved_indices = torch.nonzero(~human_involved, as_tuple=True)[0]
             a_ind = human_involved_indices[ind]
-            # b_ind = human_involved_indices[ind[-num_comparisons:]]
 
             num_c_comparisons = 0
             if len(no_human_involved_indices) > 0:
@@ -269,39 +229,24 @@ class PVPRealTD3CPL(PVPTD3CPL):
             a_actions_behavior = actions_behavior[a_ind]
             a_actions_novice = actions_novice[a_ind]
 
-            # b_count = valid_count[b_ind]
-            # b_obs = obs[b_ind]
-            # b_actions_behavior = actions_behavior[b_ind]
-            # b_actions_novice = actions_novice[b_ind]
-
             # Compute advantage for a+, b+, a-, b- trajectory:
             flatten_obs = torch.cat([
                 a_obs.flatten(0, 1),
-                # b_obs.flatten(0, 1),
                 a_obs.flatten(0, 1),
-                # b_obs.flatten(0, 1)
             ], dim=0)
             flatten_actions = torch.cat([
                 a_actions_behavior.flatten(0, 1),
-                # b_actions_behavior.flatten(0, 1),
                 a_actions_novice.flatten(0, 1),
-                # b_actions_novice.flatten(0, 1)
             ], dim=0)
             flatten_valid_mask = torch.cat([
                 valid_mask[a_ind].flatten(),
-                # valid_mask[b_ind].flatten(),
                 valid_mask[a_ind].flatten(),
-                # valid_mask[b_ind].flatten()
             ], dim=0)
-
-            # flatten_actions = flatten_actions.clamp(-1, 1)
 
             # NOTE: to make life easier, we assume q1 is Q net and q2 is value net.
             act = flatten_actions[flatten_valid_mask]
             values = self.reward_model(flatten_obs[flatten_valid_mask], act)
             values = values[0]
-            # values = torch.cat(values, dim=1)
-            # values = torch.mean(values, dim=1, keepdim=True)
             a = values
             full_values = a.new_zeros(flatten_valid_mask.shape[0])
             full_values[flatten_valid_mask] = a.flatten()
@@ -323,44 +268,6 @@ class PVPRealTD3CPL(PVPTD3CPL):
             stat_recorder["cpl_loss_3"].append(cpl_loss_3.item())
             stat_recorder["cpl_accuracy_3"].append(accuracy_3.item())
 
-            # Case 5: a+ > b+ or b+ > a+
-            # TODO: FIX THIS
-            # label5 = a_count > a_count  # if a_count>b_count, we prefer b as it costs less intervention.
-            # label5 = label5.float()
-            # label5[b_count == a_count] = 0.5
-            # cpl_loss_5, accuracy_5 = biased_bce_with_logits(adv_a_pos, adv_b_pos, label5, bias=cpl_bias, shuffle=False)
-            # if self.extra_config["add_loss_5"]:
-            #     cpl_losses.append(cpl_loss_5)
-            #     accuracies.append(accuracy_5)
-
-            # Compute the c trajectory:
-            if c_ind is not None:
-                c_obs = obs[c_ind]
-                c_actions_behavior = actions_behavior[c_ind]
-                c_valid_mask = valid_mask[c_ind].flatten()
-
-
-                raise ValueError()
-                _, log_probs_tmp_c, entropy_c = self.policy.evaluate_actions(
-                    c_obs.flatten(0, 1)[c_valid_mask], c_actions_behavior.flatten(0, 1)[c_valid_mask]
-                )
-                log_probs_c = log_probs_tmp_c.new_zeros(c_valid_mask.shape[0])
-                log_probs_c[c_valid_mask] = log_probs_tmp_c
-                adv_c = log_probs_to_advantages(
-                    log_probs_c.reshape(num_c_comparisons, num_steps_per_chunk), alpha
-                )
-
-                # Case 6: c > a- & c > b-
-                min_comparison = min(num_c_comparisons, num_comparisons)
-                zeros_label_c = zeros_label.new_zeros((min_comparison, ))
-                cpl_loss_6, accuracy_6 = biased_bce_with_logits(
-                    adv_c, adv_a_neg, zeros_label_c, bias=cpl_bias, shuffle=False
-                )
-                cpl_losses.append(cpl_loss_6)
-                accuracies.append(accuracy_6)
-                stat_recorder["cpl_loss_6"].append(cpl_loss_6.item())
-                stat_recorder["cpl_accuracy_6"].append(accuracy_6.item())
-
             stat_recorder["adv_pos"].append(adv_a_pos.mean().item())
             stat_recorder["adv_neg"].append(adv_a_neg.mean().item())
             cpl_loss = sum(cpl_losses)
@@ -377,70 +284,11 @@ class PVPRealTD3CPL(PVPTD3CPL):
 
             polyak_update(self.reward_model.parameters(), self.reward_model_target.parameters(), self.tau)
 
-            # if accuracy.item() > 0.95:
-            #     break
-
-        # ===== Relabel the dataset =====
-        # rl_obs = obs[valid_mask]
-        # rl_actions = actions_behavior[valid_mask]
-        # rl_next_obs = next_obs[valid_mask]
-        # rl_dones = dones[valid_mask]
-        # if c_ind is not None:
-        #     rl_obs = torch.cat([rl_obs, c_obs], dim=0)
-        #     rl_actions = torch.cat([rl_actions, actions_behavior[c_ind]], dim=0)
-        #     rl_next_obs = torch.cat([rl_next_obs, next_obs[c_ind]], dim=0)
-        with torch.no_grad():
-            new_rewards = self.reward_model(rl_obs, rl_actions)[0]
-            # new_rewards = self.reward_model_target(rl_obs, rl_actions)[0]
-            # new_rewards = torch.cat(new_rewards, dim=1)
-            # # TODO: Might want to use min.
-            # new_rewards, _ = torch.mean(new_rewards, dim=1, keepdim=True)
-
-        for step in range(gradient_steps):
-            # ========================================================
-            # train the critic
-
-            with th.no_grad():
-                # Select action according to policy and add clipped noise
-                noise = rl_actions.clone().data.normal_(0, self.target_policy_noise)
-                noise = noise.clamp(-self.target_noise_clip, self.target_noise_clip)
-                next_actions = (self.actor_target(rl_next_obs) + noise).clamp(-1, 1)
-
-                # Compute the next Q-values: min over all critics targets
-                next_q_values = th.cat(self.critic_target(rl_next_obs, next_actions), dim=1)
-                next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
-
-
-                # PZH NOTE: For Early Stop PVP, we can consider the environments dones when human involved.
-                # and at this moment an instant reward +1 or -1 is given.
-                target_q_values = new_rewards + (1 - rl_dones) * self.gamma * next_q_values
-
-                stat_recorder["reward_mean"].append(new_rewards.mean().item())
-                stat_recorder["reward_min"].append(new_rewards.min().item())
-                stat_recorder["reward_max"].append(new_rewards.max().item())
-
-            # print("BS: ", len(replay_data.observations))
-
-            # Get current Q-values estimates for each critic network
-            current_q_values = self.critic(rl_obs, rl_actions)
-
-            # Compute critic loss
-            critic_loss = sum([F.mse_loss(current_q, target_q_values) for current_q in current_q_values])
-
-            stat_recorder["q_value"].append(current_q_values[0].mean().item())
-
-            # Optimize the critics
-            self.critic.optimizer.zero_grad()
-            critic_loss.backward()
-            self.critic.optimizer.step()
-            stat_recorder["critic_loss"].append(critic_loss.item())
-
-
             # Delayed policy updates
-            if self.actor_update_count % self.policy_delay == 0:
+            if self._n_updates % self.policy_delay == 0:
 
                 # Compute actor loss
-                actor_loss = -self.critic.q1_forward(
+                actor_loss = -self.reward_model.q1_forward(
                     rl_obs, self.actor(rl_obs)
                 ).mean()
 
