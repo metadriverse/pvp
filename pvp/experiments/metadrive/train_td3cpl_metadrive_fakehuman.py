@@ -70,6 +70,7 @@ if __name__ == '__main__':
     parser.add_argument("--fixed_log_std", action="store_true")
     parser.add_argument("--eval_stochastic", action="store_true")
     parser.add_argument("--real_td3", action="store_true")
+    parser.add_argument("--expert_deterministic", action="store_true")
 
     parser.add_argument("--eval", action="store_true")
     parser.add_argument("--ckpt", type=str, default="")
@@ -138,6 +139,7 @@ if __name__ == '__main__':
             # FakeHumanEnv config:
             free_level=free_level,
             use_render=False,
+            expert_deterministic=args.expert_deterministic,
         ),
 
         # Algorithm config
@@ -244,7 +246,8 @@ if __name__ == '__main__':
 
 # start_seed=1024,
 #             num_scenarios=1,
-#             free_level=-1000
+#             free_level=-1000,
+#             expert_deterministic=True,
         )
         from pvp.experiments.metadrive.human_in_the_loop_env import HumanInTheLoopEnv
         from pvp.sb3.common.monitor import Monitor
@@ -261,7 +264,10 @@ if __name__ == '__main__':
         # eval_env = SubprocVecEnv([lambda: _make_eval_env(False)])
         config["algo"]["learning_rate"] = 0.0
         config["algo"]["train_freq"] = (1, "step")
+
+
         model = PVPTD3CPL.load(args.ckpt, **config["algo"])
+        # model = PVPTD3CPL(**config["algo"])
 
         model.learn(
             # training
