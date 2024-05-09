@@ -35,6 +35,7 @@ if __name__ == '__main__':
     parser.add_argument("--free_level", type=float, default=0.95)
     parser.add_argument("--agent_data_ratio", type=float, default=1.0)
     parser.add_argument("--learning_starts", type=int, default=0)
+    parser.add_argument("--eval_freq", type=int, default=500)
     parser.add_argument("--no_done_for_positive", type=str, default="False")
     parser.add_argument("--reward_0_for_positive", type=str, default="False")
     parser.add_argument("--reward_n2_for_intervention", type=str, default="False")
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     parser.add_argument("--remove_negative", type=str, default="False")
     parser.add_argument("--no_done_for_negative", type=str, default="False")
     parser.add_argument("--adaptive_batch_size", type=str, default="False")
+    parser.add_argument("--add_bc_loss", type=str, default="False")
 
     parser.add_argument("--toy_env", action="store_true", help="Whether to use a toy environment.")
     parser.add_argument("--expert_deterministic", action="store_true")
@@ -98,6 +100,7 @@ if __name__ == '__main__':
 
         # Algorithm config
         algo=dict(
+            add_bc_loss=args.add_bc_loss,
             no_done_for_positive=args.no_done_for_positive,
             reward_0_for_positive=args.reward_0_for_positive,
             reward_n2_for_intervention=args.reward_n2_for_intervention,
@@ -211,7 +214,7 @@ if __name__ == '__main__':
 
         # eval
         eval_env=eval_env,
-        eval_freq=500,
+        eval_freq=args.eval_freq,
         n_eval_episodes=50,
         eval_log_path=str(trial_dir),
 
