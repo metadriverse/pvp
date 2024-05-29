@@ -10,7 +10,7 @@ import pandas as pd
 import json
 import numpy as np
 from pvp.sb3.common.monitor import Monitor
-from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
+from pvp.eval_script.carla.carla_eval_utils import setup_model_pvp, setup_model_haco
 from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 
 
@@ -80,9 +80,9 @@ if __name__ == '__main__':
             ckpt_index
         ) + "_steps.zip"
 
-        model1 = setup_model(eval_env=train_env, seed=seed, obs_mode=obs_mode)
+        model1 = setup_model_pvp(eval_env=train_env, seed=seed, obs_mode=obs_mode)
         model1.set_parameters(model_path1)
-        model2 = setup_model_old(eval_env=train_env, seed=seed, obs_mode=obs_mode)
+        model2 = setup_model_haco(eval_env=train_env, seed=seed, obs_mode=obs_mode)
         model2.set_parameters(model_path2)
         count = 0
         recorder = defaultdict(list)
