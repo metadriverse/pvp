@@ -7,7 +7,7 @@ from collections import defaultdict
 import pandas as pd
 
 from pvp.sb3.common.monitor import Monitor
-from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_td3
+from pvp.eval_script.carla.carla_eval_utils import setup_model_pvp, setup_model_td3
 from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     )
     eval_env = Monitor(env=train_env, filename=None)
     eval_env.seed(0)
-    model = setup_model(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
+    model = setup_model_pvp(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
 
     os.makedirs(log_dir, exist_ok=True)
     eval_one_checkpoint(

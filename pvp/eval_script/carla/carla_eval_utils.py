@@ -1,18 +1,19 @@
 import argparse
 import os
 import os.path as osp
+import time
 from collections import defaultdict
 
 import pandas as pd
 
-from pvp.pvp_td3 import pvpTD3
+
+from pvp.pvp_td3 import PVPTD3
 from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 from pvp.sb3.sac.our_features_extractor import OurFeaturesExtractor
 from pvp.sb3.td3.policies import TD3Policy
-from pvp.sb3.old import oldPolicy, oldReplayBuffer, old
+from pvp.sb3.haco import HACOPolicy, HACOReplayBuffer, HACO
 from pvp.sb3 import TD3
 from pvp.sb3.td3.policies import MultiInputPolicy
-
 
 def set_up_env(port, obs_mode, debug_vis=False, disable_vis=False, disable_takeover=True, force_fps=10):
     eval_env = HumanInTheLoopCARLAEnv(
@@ -34,7 +35,7 @@ def set_up_env(port, obs_mode, debug_vis=False, disable_vis=False, disable_takeo
     return eval_env
 
 
-def setup_model_old(eval_env, seed, obs_mode):
+def setup_model_haco(eval_env, seed, obs_mode):
     if obs_mode.endswith("stack"):
         other_feat_dim = 0
     else:
@@ -44,14 +45,15 @@ def setup_model_old(eval_env, seed, obs_mode):
     config = dict(
         # Algorithm config
         algo=dict(
-            policy=oldPolicy,
-            replay_buffer_class=oldReplayBuffer,  ###
-            replay_buffer_kwargs=dict(discard_reward=True  # xxx: We run in reward-free manner!
-                                      ),
+            policy=HACOPolicy,
+            replay_buffer_class=HACOReplayBuffer,  ###
+            replay_buffer_kwargs=dict(
+                discard_reward=True  # We run in reward-free manner!
+            ),
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
                 features_extractor_kwargs=dict(features_dim=256 + other_feat_dim),
-                share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
+                share_features_extractor=False,  # Using independent CNNs for actor and critics
                 net_arch=[
                     256,
                 ]
@@ -84,11 +86,11 @@ def setup_model_old(eval_env, seed, obs_mode):
     )
 
     # ===== Setup the training algorithm =====
-    model = old(**config["algo"])
+    model = HACO(**config["algo"])
     return model
 
 
-def setup_model(eval_env, seed, obs_mode):
+def setup_model_pvp(eval_env, seed, obs_mode):
     if obs_mode.endswith("stack"):
         other_feat_dim = 0
     else:
@@ -99,13 +101,14 @@ def setup_model(eval_env, seed, obs_mode):
         # Algorithm config
         algo=dict(
             policy=TD3Policy,
-            replay_buffer_class=oldReplayBuffer,  ###
-            replay_buffer_kwargs=dict(discard_reward=True  # xxx: We run in reward-free manner!
-                                      ),
+            replay_buffer_class=HACOReplayBuffer,  ###
+            replay_buffer_kwargs=dict(
+                discard_reward=True  # We run in reward-free manner!
+            ),
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
                 features_extractor_kwargs=dict(features_dim=256 + other_feat_dim),
-                share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
+                share_features_extractor=False,  # Using independent CNNs for actor and critics
                 net_arch=[
                     256,
                 ]
@@ -136,7 +139,7 @@ def setup_model(eval_env, seed, obs_mode):
     )
 
     # ===== Setup the training algorithm =====
-    model = pvpTD3(**config["algo"])
+    model = PVPTD3(**config["algo"])
     return model
 
 
@@ -154,7 +157,7 @@ def setup_model_td3(eval_env, seed, obs_mode):
             policy_kwargs=dict(
                 features_extractor_class=OurFeaturesExtractor,
                 features_extractor_kwargs=dict(features_dim=256 + other_feat_dim, ),
-                share_features_extractor=False,  # xxx: Using independent CNNs for actor and critics
+                share_features_extractor=False,  # Using independent CNNs for actor and critics
                 net_arch=[
                     256,
                 ]
@@ -250,7 +253,7 @@ if __name__ == '__main__':
     exp_log_dir = osp.join("runs", exp_name)
 
     eval_env = set_up_env(port=args.port, obs_mode=obs_mode)
-    model = setup_model(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
+    model = setup_model_pvp(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
 
     last_model = ""
     tmp_log_dir = None

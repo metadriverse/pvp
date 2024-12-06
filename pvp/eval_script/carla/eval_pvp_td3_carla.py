@@ -8,7 +8,7 @@ import pandas as pd
 import json
 import numpy as np
 from pvp.sb3.common.monitor import Monitor
-from pvp.eval_script.carla.carla_eval_utils import setup_model, setup_model_old
+from pvp.eval_script.carla.carla_eval_utils import setup_model_pvp, setup_model_haco
 from pvp.experiments.carla.carla_env import HumanInTheLoopCARLAEnv
 
 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         )
     )
     eval_env = Monitor(env=train_env, filename=None)
-    model = setup_model(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
+    model = setup_model_pvp(eval_env=eval_env, seed=seed, obs_mode=obs_mode)
     #setuo_model_old for old old, setup_modeltd3 for td3 baselines
     model_root_path = ckpt
     checkpoints = [p for p in os.listdir(model_root_path) if p.startswith("rl_model")]
