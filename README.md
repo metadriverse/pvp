@@ -265,6 +265,21 @@ python pvp/experiments/minigrid/train_pvp_minigrid.py \
 
 
 
+## FAQ
+
+### Why my minigrid experiment fails?
+
+There are some important information I want to share:
+
+1. We as the human demonstrator always follow the same behavior. For myself, I will always move around the room in counterclockwise until I reach the door.
+2. The agent takes 7x7 grid (with different semantic information in different channels) as input and we have a CNN network as the feature extractor. You should notice that 
+    1) the agent is “blind” for those information outside its perceptive field, 
+    2) the agent does not has memory because the input to the network does not contain history information. 
+
+So a consistent behavior as the supervision signal is required when human provides demonstrations.
+
+
+
 
 ## 📎 References
 
